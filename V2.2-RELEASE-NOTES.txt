@@ -1,0 +1,70 @@
+MARKET DESK REBORN 2.2.0 — PRICE ALERTS
+3 November 2026
+
+WHAT IS NEW
+- A dedicated Price Alerts page with armed, paused and triggered targets.
+- At-or-above and at-or-below targets for stocks you watch.
+- One trigger per arming, with pause, edit, re-arm and delete controls.
+- Saved trigger history showing the target, observed price, source, provider
+  price time and received time. History is shown 25 records per page.
+- An in-app message when a new trigger is received while the page is open.
+- Monitoring status that explains missing connections and missing watched stocks.
+- Private persistence in the existing local SQLite database, plus a downloadable
+  JSON copy of alert settings and trigger records. No keys are exported.
+
+HOW TO USE IT
+1. Start Market Desk and open Price Alerts.
+2. Choose a watched stock, at or above / at or below, and a target price.
+3. Select Save and arm alert. Keep the app open and connected.
+4. After a trigger, inspect its price and times in Triggered history.
+5. Re-arm when you want to monitor again. Editing also starts a new arming.
+
+The target uses the provider price's units. Directory US listings use USD;
+other listings show provider units. There is no currency conversion.
+A target is your own setting, not a recommended price or a real trade order.
+Identical already-armed targets reuse the existing alert rather than creating
+another active copy. Pause and re-arm to explicitly start a new arming.
+
+HONEST MONITORING RULES
+Alerts use the prices the app already receives. They do not add provider polling
+or alter the existing request budgets, quote rotation or live-feed limits.
+Only Finnhub quotes and positive-size recorded trades can trigger. A price must
+be dated at or after arming, no more than five minutes old when received, and
+not ahead of this Mac's clock. Duplicate and out-of-order timestamps are skipped.
+Daily bars, zero-size stream updates and old prices never trigger an alert.
+
+Conditions include equality: a target of 200 at or above is met by 200 or more.
+The first new qualifying match triggers once. The price does not need to cross
+from the other side of the target. The record is the observed match, not a
+claim about the exact time the target was first crossed in the market.
+
+There is no monitoring while the Mac is off or this app is closed. Browser
+throttling, sleep, network failures, sparse quotes and provider delays can miss
+short moves. On reconnect, only newly received qualifying prices are checked;
+missed periods are not filled in. Some free/delayed feeds may never provide
+prices recent enough to trigger. Removing a watched stock stops regular checks,
+but a final in-flight price can still be evaluated.
+
+Notifications are in-app only. No emails, desktop notifications, real trades,
+paid OpenAI service or new market-data subscription is added.
+
+SAVED DATA & COMPATIBILITY
+Up to 100 alerts and the latest 2,000 trigger records are retained. Trigger
+records keep their own source and target even if the alert is edited or deleted.
+Deleting an alert does not delete its history. Data survives restarting the app.
+SQLite transactions and per-arming uniqueness prevent duplicate trigger records;
+versioned snapshots prevent an older browser response from undoing newer state.
+
+Alerts live in ~/.marketdesk-reborn/observations.sqlite3. Research JSON backups
+remain separate and do not include alerts. Download alert records for a readable
+copy; that file is not an automatic restore file. Do not delete the private
+folder when upgrading. The database changes add tables, preserving prior data.
+Existing chart, research, portfolio, directory and watchlist features are kept.
+Empty-watchlist research backups can now also be imported without a fake default
+stock selection.
+
+UPGRADE
+Export a research backup, stop the old Terminal with Control+C, extract the new
+ZIP and open Start Market Desk.command. Keep Terminal open. Use the same browser
+and local port for existing browser research data. Never run old and new versions
+at the same time. No keys or personal database are bundled in the ZIP.

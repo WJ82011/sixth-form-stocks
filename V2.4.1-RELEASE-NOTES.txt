@@ -1,0 +1,43 @@
+MARKET DESK REBORN v2.4.1 — SIMPLER SIDEBAR
+
+Six main entries replace the long list of 17 tools:
+
+OVERVIEW — your main chart and watchlist.
+MARKETS — Stock Browser, Live Tape, Market News and Economy Overview.
+INTELLIGENCE — the existing Market Desk AI and statistical overviews.
+RESEARCH TOOLS — Company Overview, Compare Companies, Chart Indicators,
+Company Valuation, Price Forecasts and Forecast Results.
+MY WORKSPACE — Price Alerts, Practice Portfolio, My Research Notes and
+Research Reports.
+SETTINGS — all existing connections, appearance and backup controls.
+
+Open a group to reveal its tools. One group stays expanded at a time. You can
+collapse the current group; its heading still indicates the current section.
+Opening a tool from a chart shortcut, module button or quick search reveals
+its sidebar group automatically. Overview, Intelligence and Settings condense
+the groups again when selected. Groups start compact on a new page load.
+
+QUICK NAVIGATION AND ALERTS
+Command+K (Control+K on other keyboards) still searches all 17 tools, including
+those inside closed groups. The full names Market Desk Intelligence and
+Settings & Checks remain searchable despite the shorter sidebar wording.
+Triggered price-alert counts also appear on My workspace, so you can see
+that count even when the group's tool list is closed.
+
+KEYBOARD AND MOBILE
+Tab to a group heading and press Return or Space to expand/collapse it.
+Escape inside an open group collapses it and focuses its heading. Native
+browser disclosure controls supply the expanded/collapsed state. The same
+menu groups work inside the existing phone menu drawer. Reduced motion,
+high contrast, both editions and original rounded styling remain available.
+
+PRESERVED
+All 17 tools remain. No charts, AI functions, alerts, notes, reports, saved
+research, provider rules or existing settings are removed. No AI model download
+or paid service is needed for this navigation change. No private data is in
+this release. The previous v2.4 source folder is unchanged.
+
+TO UPDATE
+Stop the older Terminal window with Control+C, unzip this release and open
+Start Market Desk.command. Keep the private ~/.marketdesk-reborn folder.
+Use Ollama as before for AI. See V2.4.1-QA-REPORT.txt for checks.

@@ -1,0 +1,27 @@
+MARKET DESK REBORN 2.8 — VALIDATION / 5 NOVEMBER 2026
+
+PASS: 229 Python tests (full offline suite; temporary localhost servers).
+PASS: 22 JavaScript regression suites, including new design behaviour tests.
+PASS: all shipped site JavaScript parses.
+
+New checks cover preference validation, unknown-field exclusion, legacy
+backup compatibility, intensity bounds, interrupted navigation, cancellation
+settlement and OS Reduce Motion. Existing chart, model, intelligence,
+provider limits, reports, alerts, screener and heatmap checks remain.
+
+Browser checks: real app at 1280 x 900 and 390 x 844; no horizontal page
+overflow on the phone; all 19 destinations in All tools, including Settings;
+native settings dialog fits the phone and restores focus; dark/light modes,
+Balanced/Off, saved settings after reload, optional sidebar, saved AAPL 1Y
+history and chart expansion checked. Expanded chart panel fits the viewport.
+No browser console errors were observed during the checks.
+
+QA used a temporary database with genuine saved provider quotes/profiles and
+499 saved AAPL daily bars. The 1Y chart contained 248 actual recorded closes.
+Source timestamps, stale quote labels, gaps and model limits stayed visible.
+No new paid service, model download or provider request was needed for this
+interface release. This does not establish forecast accuracy or promise
+future provider access. Original user research and databases were unchanged.
+
+Packaging: no runtime database, workspace, provider key, .env, caches or
+preview assets included. Archive CRC and byte-for-byte source checks pass.

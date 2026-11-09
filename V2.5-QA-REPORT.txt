@@ -1,0 +1,64 @@
+MARKET DESK REBORN v2.5.0 — QA / 3 NOVEMBER 2026
+
+AUTOMATED CHECKS
+206 Python tests passed: all 183 v2.4.1 checks retained plus 23 screener checks.
+Tests use temporary homes/databases and blocked external networking. New cases
+cover finite values, missing versus zero, source timestamps, no false renewal,
+older-quote rejection, profile/metric symbol matching, field whitelists,
+retention, persistence, AI reuse of saved source dates, read-only local scans,
+three-request refresh, cooldown/permission stops, partial financial failures,
+refresh locking and local HTTP mutation protection. Expected version, eighteen
+workspaces and 35 essential assets updated without dropping prior checks.
+
+17 JavaScript suites passed: all 15 earlier suites plus pure screener and
+screener-UI suites. New checks cover positive P/E, missing/zero, quote/financial
+ages, future bounds, unknown currency, numeric range validation, TTWO/Rockstar
+alias, missing-last sorting in both directions, CSV escaping, saved-filter
+validation, exact matched CSV, hidden criteria summary, five-stock selection
+limit, rate-limit stop, user stop and local-only UI requests. All 17 website
+scripts parsed. Existing model, chart, alert, report and navigation suites pass.
+
+BOUNDED REAL-PROVIDER CHECK
+A temporary server requested AAPL, MSFT and TTWO through the existing Finnhub
+connection: up to nine provider calls, with zero reported warnings for all
+three stocks. No key content was printed, placed in exports or loaded into
+the browser preview. Only sanitized snapshots were retained in a temporary
+database, and in-memory provider data was then cleared. The original private
+research database was not modified by this check. This verifies those response
+paths at that time, not every ticker/field or independent financial accuracy.
+
+The source quotes returned by the provider were dated 2 November 2026 at the
+US close; they were NOT labelled as newly verified live trades. They were
+eligible under the explicit default three-day quote policy. The map displayed
+quote times and 3-of-16 coverage. Provider financial periods were not inferred.
+
+BROWSER WORKFLOWS
+Opened Stock Screener from the compact Markets group; eighteen tool links
+remain inside six main navigation entries. The watchlist had sixteen rows,
+three eligible quote snapshots and three eligible financial snapshots.
+P/E up to 50 produced the two eligible positive-P/E matches, excluding missing
+or nonpositive ratios. Actual CSV download was parsed and confirmed to contain
+only those two symbols, the exact criterion, UTC source dates and provenance.
+A saved criterion was stored, cleared and reopened with the same two matches.
+Page reload reused stored snapshots without market-provider requests.
+
+Price-change map displayed exactly three eligible tiles with original quote
+times and signed percentages; missing changes were not fabricated. Hide filters
+kept active criteria visible. At 390px viewport, page width remained 390px,
+filters fitted 360px, result scroll container 328px, and the wide table scrolled
+inside its panel. The map also fitted its panel. Desktop layout and keyboard/
+source labels retained the original rounded visual system.
+
+PRESERVATION AND LIMITS
+The language-model engine, statistical model engine, price-alert engine,
+chart research calculations, valuation/portfolio models and report tools were
+not replaced. AI source retrieval can now reuse saved whitelisted financial
+snapshots with original dates. No new model accuracy or return claim is made.
+No full-market coverage, official sector weighting, financial-period alignment,
+market-cap currency mapping or independent audit is asserted.
+
+PACKAGE
+Integrity, source-byte matching and executable Mac launcher permissions checked.
+No provider keys, user database, workspace export, preview market snapshots,
+model weights or Python caches included. Prior version folders unchanged.
+Historical QA reports remain clearly associated with their earlier releases.

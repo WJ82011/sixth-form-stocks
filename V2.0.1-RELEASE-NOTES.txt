@@ -1,0 +1,28 @@
+MARKET DESK REBORN 2.0.1 — CLEARER WORDING
+
+Simpler English across the website: navigation, page headings, buttons, form
+prompts, explanations, chart messages, model results, settings and data checks.
+
+Examples:
+- Paper Portfolio → Practice Portfolio
+- Comparison Studio → Compare Companies
+- Macro Intelligence → Economy Overview
+- Settings & Diagnostics → Settings & Checks
+- Data provenance → Data sources
+- Model mean absolute percentage error → Model average price error
+
+Useful financial terms remain where needed, with clearer labels or explanations.
+Important distinctions about live trades, price quotes, missing history, model
+uncertainty, practice trading and private keys are preserved.
+
+No changes to the price calculations, model rules, API routes or saved-data
+format. Your old ZIP is kept separately. Launch this version using its own
+Start Market Desk.command after stopping the old version.
+
+CHECKS
+113 Python regression tests passed in a temporary home with external requests
+blocked and temporary localhost HTTP tests allowed. Nine JavaScript suites
+passed. All 13 website scripts passed syntax checks. String-based checks were
+updated to expect the new wording while retaining their existing assertions.
+The new Intelligence wording was also checked in a no-key browser preview.
+Legacy QA reports describe earlier releases.

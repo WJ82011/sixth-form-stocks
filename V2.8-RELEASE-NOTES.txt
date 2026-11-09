@@ -1,0 +1,25 @@
+MARKET DESK REBORN 2.8.0 — 5 NOVEMBER 2026
+
+Integrated the approved original design and motion study into the real app.
+A short top navigation replaces the sidebar by default; every research tool
+is available in All tools. The original sidebar is an optional setting.
+The real selected-company chart sits beside company context and an
+Intelligence entry card. Existing features and their server routes remain.
+
+Customisation includes appearance, accent, curves, spacing, navigation,
+presets, transition style and speed, background and individual effects.
+The original lightweight procedural background uses Canvas; transitions use
+the browser's animation API and can be interrupted. Reduce Motion and Off
+settle navigation immediately. Hidden tabs stop ambient rendering.
+
+Preferences migrate from existing workstation settings, sync both settings
+panels, and are validated in the private workspace backup/import boundary.
+The previous version's folder is preserved. No additional AI model, price
+provider, recurring task, subscription or frontend dependency is introduced.
+The app uses its existing data sources; the preview's demonstration content
+is not included. API keys, personal research and saved prices are excluded.
+
+Original implementation assisted by AI. Apple, Lusion and Igloo were visual
+references only. No third-party source, models, screenshots, fonts or branded
+visual assets were copied into the app. For an application portfolio, keep
+this development record and explain the code and evidence checks yourself.

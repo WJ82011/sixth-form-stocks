@@ -1,0 +1,16 @@
+MARKET DESK REBORN 3.1.0 — RELIABILITY RELEASE
+
+All V3.0/V3.0.1 tools retained. This update focuses on trust and recovery.
+
+- Previous valid workspace recovery with a visible recovery notice.
+- Damaged backup evidence retained rather than silently deleted.
+- Browser import rollback if storage is full or unavailable.
+- Stronger request, symbol, trade timestamp and price-bar validation.
+- Improved handling of bursts of local requests.
+- Invalid cached bars withheld without deleting the saved database.
+- Forecast controls fit narrow screens.
+- Run Reliability Tests.command and optional JavaScript test runner.
+
+Read V3.1-RELIABILITY-REPORT.md for findings, methods, limits and instructions.
+V3.1-AUTOMATED-RESULTS.json records the final repeated Python suite results.
+Historical release reports describe earlier baselines, not this release count.

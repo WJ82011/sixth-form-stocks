@@ -1,0 +1,66 @@
+MARKET DESK v2.6.1 — STOCK PRICES OVER THE YEARS
+
+1. Open Overview and choose a stock in your watchlist.
+2. Choose 1Y, 2Y, 5Y or 10Y above its chart. 6M is also available.
+3. Read the dates and the rise/fall summary below the chart. It compares the
+   first and last displayed prices, not a made-up full-period return.
+
+WHAT LOADS AUTOMATICALLY
+Massive daily history uses your existing key. The app requests enough dates
+for the selected period, but conservatively keeps Massive within its free
+Stocks Basic window: about two years, ending before the current New York date.
+The 1Y option already existed; its loader previously requested only 430 days.
+This update supports longer requests, preserves longer imported series and
+labels partial history visibly. Paid Massive plans are not required and are
+not auto-detected. Finnhub daily access still depends on your plan.
+
+A full 5- or 10-year series is NOT supplied automatically by Massive Basic.
+Choosing 5Y on a free two-year series shows the two years at their real dates,
+leaves earlier time empty and says Partial 5Y history. No prices are generated.
+
+HOW TO ADD FIVE OR TEN YEARS WITHOUT A PAID API
+Get a daily-price CSV export for your selected stock from a source you trust
+and are allowed to use. Under its chart, open Longer history · import daily
+prices. Select the file, name the source, choose its split adjustment and
+confirm the ticker is correct. Click Import for selected stock.
+
+Required columns: Date and Close, or Date and Adj Close / Adjusted Close.
+Dates must be YYYY-MM-DD, from 2000 through today. Extra OHLC/volume columns
+are ignored. An optional Symbol column must match the selected stock.
+One row per date; at least 2, at most 10,000 rows; file smaller than 900 KB.
+Prices must be positive finite numbers. Invalid files leave the old import
+untouched. Rows are sorted. Adjusted Close takes priority over Close.
+Check the source: an adjusted-close series may adjust for both splits and
+other corporate actions. The app cannot verify its methodology. Unadjusted
+prices can show stock splits as abrupt price falls or rises.
+
+The import is saved for that ticker only. It supplies the daily chart until
+you choose Use provider history. That button removes this app's imported copy
+for the selected ticker; it does not delete your original CSV or provider data.
+No CSV files or example market prices are included in the release ZIP.
+
+WHAT THE SUMMARY MEANS
+Percentage change = (last displayed price / first displayed price - 1) x 100.
+Actual endpoint dates and prices appear alongside it. This is a change in the
+selected price series, not independently calculated total investment return.
+No separate dividends, fees or currency conversions are added. An imported
+adjusted-close file may already reflect its source's dividend adjustments.
+Missing years are not silently treated as flat prices. Daily gaps longer than
+10 days break the line. Axis labels include years for long ranges. A partial
+history label appears if the beginning is more than 14 days late or the last
+record is more than 10 days old; exact dates always remain visible.
+
+Imported files are user-supplied, not independently verified. They are not
+mixed into provider daily bars or intraday observations. Forecast overlays,
+Price Forecasts, Indicator Studio and the server's AI/statistical training
+continue to use provider data; imported files do not train or validate them.
+The 1-hour and 24-hour charts retain their observed timestamped prices only.
+
+BACKUP AND STORAGE
+Imports stay on this Mac in the existing private observations.sqlite3 database
+inside ~/.marketdesk-reborn. Research JSON exports do not include price data.
+Keep your original CSVs and back up the private folder while the app is stopped.
+No new model download or chart library is required.
+
+Provider history reference, checked 3 November 2026:
+https://massive.com/knowledge-base/article/how-much-historical-stock-data-does-massive-have

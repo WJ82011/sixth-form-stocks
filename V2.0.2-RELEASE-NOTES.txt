@@ -1,0 +1,23 @@
+MARKET DESK 2.0.2 — TAKE-TWO INTERACTIVE
+
+Take-Two Interactive (Nasdaq: TTWO, US dollars) is now in new default watchlists.
+Existing watchlists are kept as you set them. Open Stock Browser and choose
+Add / open Take-Two to add it to your own watchlist, or open it if already added.
+
+Search for Take Two, Take-Two Interactive, Rockstar Games, GTA VI, GTA 6 or
+Grand Theft Auto to find TTWO in Stock Browser and Live Tape. The result clearly
+identifies Take-Two as Rockstar's listed parent, not a separate Rockstar stock.
+Known company names are searchable without a provider connection; prices,
+company data, news and history still require your data plan. Other stocks can
+be found through the existing Finnhub search. No prices are bundled or invented.
+
+The existing quote request budget, polling groups, live-feed subscription
+limit and 60-stock watchlist cap are unchanged. This is not investment advice.
+
+Company source checked 3 November 2026: https://www.take2games.com/ir
+All 113 Python tests and all ten JavaScript regression suites passed. New checks
+cover aliases in both searches, offline results, the listed-parent label,
+absence of invented prices and preservation of an existing watchlist.
+
+Browser checked with no keys: Rockstar search returned TTWO; adding it grew
+an existing 15-stock watchlist to 16 while preserving the other stocks.

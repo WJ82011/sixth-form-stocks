@@ -1,0 +1,47 @@
+MARKET DESK REBORN v2.4.0 — QA / 3 NOVEMBER 2026
+
+183 Python tests passed with a temporary home/database and blocked external
+network requests. All 182 v2.3 tests retained, plus a Blue-preference backup
+roundtrip test. Expected version and essential asset count updated to 31.
+
+14 JavaScript interaction suites passed. Preference checks include the one-time
+Brass-to-Blue migration, preservation of edition/layout/accessibility settings,
+and persistence of an explicit Brass choice after migration. Existing chart,
+AI UI, alert, directory, model and backup checks still pass. All 15 site scripts
+parsed. Every workspace and original DOM anchor remains; one plot-status label
+was added. There are no duplicate element IDs.
+
+Unchanged core files were compared byte-for-byte with v2.3: research_ai.py,
+intelligence.py, price_alerts.py, chart-research.js, intelligence.js,
+ai-research.js, alerts.js, reports.js, v19.js and v19-models.js. No repeat LLM
+benchmark was needed for this visual update; the v2.3 model evaluations are
+historical checks, not new v2.4 runs. AI accuracy limitations remain unchanged.
+
+BROWSER REVIEW
+Signal and Professional editions reviewed at 1440px and 390px viewport widths.
+No horizontal document overflow at those sizes; small-screen quote cards scroll
+within their strip. Professional chart measured approximately 819px wide at
+1440px viewport, with a 20px outer panel radius. Signal panel radius: 22px.
+Phone canvases fitted their panels (310–326px wide). Intelligence was checked
+at 390px with no document overflow and the installed local model ready.
+
+Overview's recorded chart, range controls, expansion, source labels, gap
+markers and observed-price tooltip checked. Pointer inspection returned a
+recorded price and original timestamp. Larger charts retain the existing
+high-DPI rendering and gap segmentation. A last-plotted-observation label
+clearly distinguishes recorded data from a guaranteed current price.
+
+Preview used a temporary database, seeded only with read-only copies of the
+user's saved observations and daily price bars. No keys, user notes, practice
+trades, AI excerpts or AI drafts were loaded into the preview. Original files
+were not altered. The market feed was disconnected, so quote cards honestly
+showed missing live/current values. Screenshots show saved historical prices,
+not a newly verified live session. No preview prices are shipped in the ZIP.
+
+ORIGINALITY AND PACKAGING
+New visual CSS was authored for this project. No Apple or TradingView layout,
+logo, source code, chart package or screenshot was imported. Existing original
+Market Desk branding retained. Local system fonts; no new asset dependencies.
+ZIP contents checked against source bytes, with executable launcher permissions.
+No keys, runtime databases, workspace exports, Python caches or model weights
+are packaged. See STORAGE-GUIDE.txt for measured sizes and exclusions.

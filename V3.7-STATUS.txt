@@ -1,0 +1,15 @@
+MARKET DESK REBORN 3.7.0 — FINAL RELEASE
+
+Selectable 1-day, 3-day and 1-week historical heatmaps; automatic paced
+whole-directory history loading; one-click company charts with matching dates;
+separate optional following; tiny price lines; sorting; remembered map choices;
+CSV export; preserved older tools below the map and all 22 workspaces.
+
+Free Massive connection required for the new bulk historical map. These are
+completed trading-session returns, not live or rolling 24-hour data. All 221
+companies returned full coverage during this release check, but missing bars
+and provider restrictions remain possible. Other markets' total-capitalization
+coverage remains as documented in V3.6. No invented fills or paid AI added.
+
+Read V3.7-QUICK-GUIDE.txt for opening instructions and V3.7-VERIFICATION.md
+for evidence, tests and practical limits. Keep the existing private data folder.

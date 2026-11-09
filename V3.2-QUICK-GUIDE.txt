@@ -1,0 +1,69 @@
+MARKET DESK REBORN 3.2 — RESEARCH PROJECTS
+
+START
+Open Workspace at the top, or All tools > Research projects.
+Choose New project. Enter a company symbol, a title and the question you want
+to answer. Save the project. No demonstration projects are inserted for you.
+
+BUILD YOUR VIEW
+Add your working view, risks and research stage. A stage describes your own
+progress, not an AI score, recommendation or guarantee. Save form changes
+before closing the page. The app blocks switching projects over an unsaved
+form; Discard changes affects that form, not already saved research.
+
+CONNECT YOUR EVIDENCE
+- Add note or source: write a note, or save a public HTTPS link with your
+  explanation and optional source date. Links are not downloaded or verified.
+  Use a link without credentials or query parameters.
+- Your existing research notes: the original notes tool is retained below the
+  project workspace. Bring in an existing note makes a labelled independent
+  copy; it preserves the original title/date in the copied text.
+- Open chart: opens that company's normal chart. Return using Back to project,
+  choose Add note or source > Last viewed chart snapshot, then Save. It freezes
+  up to the last 600 actual displayed prices with their original timestamps,
+  source label and your explanation. The forecast line is excluded. The saved
+  chart does not change when the live chart, selected company or range changes.
+- Company accounts opens the existing sourced statements.
+- Ask Intelligence prefills the project question; it does not generate an
+  answer automatically. The AI still uses its existing bounded source packets.
+  Project notes/links are not silently treated as verified AI evidence.
+- Start a report copies your question, view, risks and source references into
+  an unsaved report draft. Review and Save report in Reports, return to the
+  project, then add a Link a saved report item. Existing unsaved report text
+  and review checkboxes are protected. A missing report is labelled unavailable.
+
+NAMED WATCHLISTS
+Open Companies / Stock Browser. The original current list is copied once as
+My original watchlist before switching lists. Save current list as new opens
+an editable form; enter up to 60 symbols separated by commas/spaces. Use this
+list changes the current monitored view. Other lists do not start extra quote
+loops. Source access and the existing shared provider budgets still apply.
+Switching lists does not delete saved prices, reports, notes or projects.
+
+SAVE / BACK UP / EXPORT
+Projects and named lists save in the existing private V3 browser workspace and
+are queued for the private local backup. Settings > Export full research backup
+includes them and captured chart prices. It still excludes the complete market
+recording/import databases, provider keys and model weights.
+Export notes (.md) creates a readable project record with current linked-report
+text. Export data (.json) keeps the frozen prices and linked-report copies.
+The per-project JSON is a readable archive; use the full research backup to
+restore the whole workspace through Settings. Markdown does not embed graphs.
+
+ARCHIVE AND SPACE
+Archive projects, lists or items to hide them; Restore brings them back.
+Archived records still count toward capacity. After exporting a backup, an
+archived project/item/additional list can be removed permanently through its
+confirmation. Removal has no in-app undo. Original notes and linked reports
+are kept. The original-list recovery copy cannot be permanently removed here.
+Limits: 24 projects, 40 items per project, 16 named lists, 60 symbols per list,
+600 recorded prices per chart and 750 KB for the research library. A limit
+rejects the new change instead of silently truncating existing research.
+
+PRIVACY / UPGRADE
+Local saved research works offline while the local server runs. New market
+prices still require provider access and internet. No collection or training
+happens while the Mac/app is off. This release needs no new model or paid AI.
+Stop older app versions before starting 3.2, and export a backup before any
+version change. Older releases do not understand the new project fields; keep
+a 3.2 full backup before downgrading. Keep ~/.marketdesk-reborn when upgrading.

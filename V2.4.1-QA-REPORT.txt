@@ -1,0 +1,32 @@
+MARKET DESK REBORN v2.4.1 — QA / 3 NOVEMBER 2026
+
+183 Python checks passed in an isolated home and database, with external
+network blocked. All previous checks retained; expected version and required
+asset count updated to 33. Every original workspace and required DOM anchor
+remains, with no duplicate IDs.
+
+15 JavaScript suites passed, including all 14 prior suites and a new compact
+navigation suite. Navigation checks cover initial condensation, one-group
+expansion, automatic deep-link reveal, manual collapse of the current group,
+current-page state, parent alert-count synchronization, and Escape focus.
+All 16 website scripts parsed.
+
+Browser checked desktop and a 390px phone viewport using an empty temporary
+private folder with no keys. Six top-level entries and all 17 tool buttons
+confirmed in the DOM. Group expansion closes the prior group. Quick search
+found Research Reports inside a closed group; Return opened it and revealed
+My workspace with the correct current-page state. Direct Intelligence then
+closed all groups. Escape closed Research tools and focused its summary.
+Native Return expanded Research tools in the phone drawer. At 390px, document
+width remained 390px and the drawer was 242px wide, without page overflow.
+
+The original AI, price/statistical models, chart renderer, price alerts,
+report tools and saved-data logic were not changed. Only sidebar markup,
+small navigation assets, command-search labels and version/static-asset
+registration changed. The original rounded theme remains. No new data
+requests, fabricated prices or additional models were introduced.
+
+Release ZIP checked for integrity, matching source bytes and executable
+launcher permissions. Private keys, databases, saved workspace files, model
+weights and generated Python caches excluded. Older QA files in this folder
+refer to their named releases, not new model evaluations.

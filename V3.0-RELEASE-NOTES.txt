@@ -1,0 +1,30 @@
+MARKET DESK REBORN 3.0.0
+
+A consolidated research-workbench release covering the deferred V2 categories:
+- Personal home with five arrangeable modules and a saved research question.
+- Expanded selected three-statement SEC books, IFRS/currency separation,
+  disclosed quarter/TTM calculations, manual rows and sourced report handoff.
+- New practice accounting, explicit FX, fees, income, splits, dated marks,
+  validated checkpoints, Modified Dietz review and price-only benchmarks.
+- Company calendar with SEC filing history, optional provider estimates,
+  manual revisions, zones and local calendar export.
+- Four official macro series, broader SEC search, saved-account screening,
+  source-qualified cap map and shared-date rebased comparison.
+- Expanded local Intelligence evidence, valuation source worksheet, sources
+  dashboard and validated V3 backup/import integration.
+
+All original V2 tools remain. Historical guides describe their original scope.
+The bounded coverage is explained in V3.0-METHODOLOGY.txt. Complete regulatory
+footnotes, automatic multi-currency brokerage accounting, licensed global
+fundamentals, confirmed real-time calendars and always-on cloud collection
+remain outside this local, free-data release.
+
+VALIDATION
+321 Python regression tests passed, including isolated loopback HTTP checks.
+24 JavaScript test files passed; all site scripts passed syntax checks.
+Accounting fixtures are synthetic and labelled; they are not market history.
+Live source checks retrieved four SEC issuers (including Take-Two and TSM),
+10,409 SEC listing associations, four FRED series and three bounded company
+profiles. Results reflect the retrieval dates, not guaranteed future access.
+Browser QA used isolated temporary data, not the user's live workspace.
+See V3.0-QA.txt for the final browser and package checks.

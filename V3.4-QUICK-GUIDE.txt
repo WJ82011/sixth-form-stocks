@@ -1,0 +1,74 @@
+MARKET DESK V3.4 — ANALYST LAB
+
+OPEN THE UPDATE
+1. Export a full research backup from Settings in your old version.
+2. Stop its Terminal window with Control+C.
+3. Extract MarketDesk-Reborn-v3.4.0-Mac.zip.
+4. Open the extracted folder and double-click Start Market Desk.command.
+5. Keep Terminal open and visit http://127.0.0.1:8765.
+   If Terminal prints another address, use it. Close the older app to keep
+   using port 8765 and your existing browser workspace.
+
+If the launcher does not run: type python3 and a space in Terminal, drag the
+new server.py into Terminal and press Return. Install Python 3 from python.org
+if it is missing. No Node.js installation is needed to use Market Desk.
+Keep your existing ~/.marketdesk-reborn folder. Do not delete your keys,
+recorded prices, local model or saved research.
+
+FIND THE NEW TOOLS
+All tools → Market Desk Intelligence → Analyst Lab at the top.
+
+1. Enter a symbol, such as TTWO, and load saved accounts. If none are saved,
+   press Update SEC accounts. Some companies lack supported statement facts.
+   Check the annual dates, accounting basis, currency and source filing.
+2. Open Source desk for saved headlines and economic indicators. These are
+   context to investigate, not automatic causes or trained news signals.
+3. Decide how much existing revenue is affected and how costs behave.
+   Variable costs move with sales volume; the remaining operating costs are
+   treated as fixed in this simplified worksheet. Explain the classification.
+4. Start unchanged-business references, then edit Downside, Base and Upside.
+   This button only sets zero changes and no launch. It is not a forecast.
+5. Add source records or clearly labelled assumptions. Keep what a report
+   actually says separate from what you think it might mean.
+6. Optional launch: supply company net receipts, annualized run-rate units,
+   selling month, recognised-revenue share, cannibalisation and cost share.
+   Attach an evidence record and avoid counting the launch twice.
+7. Compare cases. Valuation multiples and share/ADR calculations are optional
+   and require explicit inputs. Missing inputs stay unavailable.
+8. Save the analysis. It becomes a dated, immutable record included in your
+   full research backup. Review, download or archive it under Saved analyses.
+   Up to 20 records and 30 evidence items per record are retained. Archive
+   before permanently removing a record; download it first if wanted.
+
+Draft forms are not saved automatically. Save a complete analysis before
+closing the tab; an unsaved-change warning helps prevent accidental loss.
+Changing assumptions invalidates earlier calculated results until recalculated.
+Source inputs changing on the server require a reload and a fresh review.
+
+TRAIN THE PRICE MODEL
+Open Separate experiment and press Train and test saved price data. It needs
+at least 220 verified saved provider daily closes. Load daily history through
+the existing company chart tools first. Imported CSV prices are not silently
+substituted into this experiment. The current New York session is excluded.
+
+It forecasts five observed closes, not a guaranteed calendar week. It reports
+historical test errors, an unchanged-price baseline, learned factor weights,
+prior-error range coverage and missing/stale data. Negative skill means it
+performed worse than predicting no price change. A short successful test is
+not proof that it will work in future. Old data withholds the current estimate.
+
+ASK THE LOCAL AI
+Save an analysis, then choose Ask Intelligence about this company. Press the
+existing Ask Market Desk AI button yourself. The assistant receives the latest
+active saved worksheet for that company as conditional evidence. It can explain
+the assumptions and calculations; it is not being retrained by them. Existing
+source checks still apply. A local model must already be installed for local
+AI answers. No paid OpenAI service or new model download is required by V3.4.
+
+For Take-Two, TTWO is the listed company; Rockstar is a subsidiary. A game's
+retail price is not automatically company net receipts. Net bookings and GAAP
+recognised revenue are different measures. No GTA release date, sales volume
+or future price has been invented for you.
+
+Nothing records or learns while this server or your Mac is off. Read
+V3.4-METHODOLOGY.md for formulas, source links and practical limits.

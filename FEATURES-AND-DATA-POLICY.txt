@@ -1,0 +1,124 @@
+V2.3 UPDATE: Real local language-model questions and research drafts are now
+available alongside the older statistical summaries. Read AI-START-HERE.txt
+and AI-METHODOLOGY.txt for the new feature and its limits. The methods below
+describe the preserved earlier tools.
+
+V1.9 ADDITIONS — Indicator Studio (true daily closes only), DCF Valuation Studio (manually entered assumptions), and Paper Portfolio (hypothetical trades, Finnhub marked quotes only). See V1.9-RELEASE-NOTES.txt for the complete limitations.
+
+MARKET DESK REBORN v1.8.0 — ECONOMICS & INTELLIGENCE UPDATE
+
+Company Comparison Studio: 2–3 watchlist companies, Finnhub company profile
+and metric API, side-by-side key ratios, clear missing values and context.
+It does not calculate a proprietary investment rating or infer missing data.
+Reported financial periods may differ between companies.
+
+Research Reports: locally saved, structured dossiers with evidence and
+counterarguments; individual report Markdown download; print-to-PDF via Mac
+browser; local/private workspace backup includes reports. No external AI
+service or additional data subscription required.
+
+MARKET DESK v1.6.2 — FEATURES & MARKET-DATA TRUST POLICY
+========================================================
+
+SOURCE PRIORITY AND HONEST LABELS
+--------------------------------
+1. FINNHUB WEBSOCKET: A verified, positive-volume, timestamped trade event
+   may be labelled a verified live trade if connection/time checks pass.
+   This is NOT necessarily consolidated whole-market or SIP coverage.
+2. FINNHUB REST: Genuine stock quote snapshot. A >15-minute provider age
+   is labelled STALE QUOTE. A connected socket is NOT proof of live ticks.
+3. MASSIVE US DAILY OHLC: For D resolution when configured, Stocks Basic
+   supplies split-adjusted end-of-day bars from Massive REST. Each bar is
+   checked for ticker, price-range consistency, volume, timestamp and order.
+   These are NOT live trades; missing weekends/holidays remain empty.
+4. GENUINE LOCAL CACHE: Only bars already validated from Massive are stored
+   in private SQLite across restarts. When a refresh fails and prior bars
+   are adequately complete, the UI explicitly discloses stored-data use.
+5. FINNHUB DAILY OHLC: If Massive is not configured, try real Finnhub
+   historical candles where the account permits; restricted endpoints
+   display a clear error rather than fabricated history.
+6. LOCALLY RECORDED PRICE POINTS: Observations from Finnhub, not a full
+   market-wide historical feed. Sparse time ranges remain incomplete.
+7. PURPLE FORECAST: Research-model scenario derived from >=45 genuine
+   recent daily closes spanning >=55 days; no daily history means NO line.
+   Five-, 20- and 60-session trends, diminishing momentum and observed
+   volatility drive a curved research scenario. Headlines are contextual
+   only, not numerical prediction inputs. Model-implied bands are NOT
+   calibrated. Historical 5/20-session checks compare the model with an
+   unchanged-price baseline and do NOT establish future predictive skill.
+
+PROVIDER SEPARATION
+-------------------
+Finnhub stays responsible for quote snapshots, trade streaming, company
+information, ticker search, and headlines. Massive is used exclusively for
+US daily historical OHLC bars and derived research scenarios, not for live
+WebSockets. Free Massive Basic limits are respected with a bounded 4/min
+local request budget and 6-hour/disk caches of previously downloaded bars.
+
+WORKSPACES PRESERVED
+--------------------
+Overview; Market Terminal (up to 60 watched stocks); Live Tape with Time &
+Sales and source indicators; Company Intelligence; Forecast Lab; Market
+News; Research Notes, export and backup; Settings & Diagnostics; Professional
+Terminal and Signal Edition; accessibility/appearance preferences.
+
+LOCAL DATA
+----------
+~/.marketdesk-reborn/finnhub_key          private Finnhub key (0600)
+~/.marketdesk-reborn/massive_key          private Massive key (0600)
+~/.marketdesk-reborn/observations.sqlite3 local observations, captured trades,
+                                          validated Massive daily bar cache
+~/.marketdesk-reborn/workspace.json       watchlist, notes, preferences
+Browser localStorage                       editable workspace cache
+
+SECURITY
+--------
+Only localhost is served; HTTPS verification is enforced for both providers.
+Massive credentials travel solely in an HTTPS Authorization Bearer header,
+never query parameters, and are not sent back to the browser. Finnhub token
+must remain in the local browser for direct Finnhub streaming, as already
+implemented. Neither private key is included in research backup exports.
+Do not deploy the existing localhost app as a public website without a new
+multi-user security model and server-side stream relay.
+
+NOT CLAIMED
+-----------
+No always-live global market prices, consolidated whole-market tape, Level II
+order book, trading/execution capability, full international market history,
+accurate future stock predictions, guaranteed intervals or investment advice.
+
+V1.6.2 MASSIVE ENTITLEMENT POLICY
+--------------------------------
+Basic excludes the current New York date, even after market close; requests
+clip to the previous NY date and within a conservative 2-year historical
+window. A documented DELAYED status with validated bars is valid historical
+data. Neither DELAYED nor EOD is presented as a live quote.
+Provider error text is bounded and private API keys are removed before display.
+
+CHART CONTINUITY AND MARKET DATA INTEGRITY — v1.6.4
+------------------------------------------------
+* 1D is a local recording, not a continuous exchange feed. When the Mac is
+  off, missing time is not backfilled or drawn as observed prices.
+* 1W/1M/3M/1Y use authenticated verified daily EOD bars when available;
+  they do not splice irregular local ticks into a daily close sequence.
+* A purple dashed forecast needs adequate, recent, genuine daily closes.
+  Selecting the overlay while on 1D moves to 1Y; failures remain explicit.
+
+V1.6.4 ADAPTIVE RESEARCH FORECAST / LIMITATIONS
+---------------------------------------------
+* Derived entirely from verified provider daily closing prices and past
+  return statistics. No synthetic price history or invented future candles.
+* The centre curve fades shorter-horizon momentum rapidly while longer-term
+  trends decay more slowly. A flat centre is legitimate when the data are flat.
+* Recent volatility shrinks speculative trend extrapolation; illustrative
+  low/high fan widens with horizon and has no promised coverage probability.
+* Historic backtests with non-overlapping 5- and 20-session outcomes show
+  model MAPE next to the naive unchanged-price baseline. A poor result is
+  shown explicitly rather than hidden. Backtesting itself does not prove
+  predictive ability, particularly with only two years of end-of-day data.
+* Finnhub headline keywords are a contextual signal only; not used to
+  calculate target prices and never presented as a trained AI predictor.
+* The forecast is not an investment recommendation, trading signal or
+  realistic realised future stock-price path. It may be completely wrong.
+
+V1.8: Macro Intelligence uses World Bank WDI public annual observations; each indicator includes a direct source link and observation year. No macro figures are estimated if unavailable. The Forecast Accuracy Centre compares historical walk-forward errors with an unchanged-price baseline. Research report deletions use durable tombstones; Comparison Studio labels cached source timestamps.

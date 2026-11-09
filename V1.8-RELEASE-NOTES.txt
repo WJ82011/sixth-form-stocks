@@ -1,0 +1,8 @@
+Market Desk Reborn v1.8.0 — Economics & Forecast Accuracy
+
+NEW: Macro Intelligence: World Bank official UK vs US annual GDP growth, CPI inflation, ILO-modelled unemployment, exports as share of GDP and lending interest rates. Annual history chart shows actual years, sources, revision limitations, missing values and publication lag. Requests are cached for 12 hours; no API key.
+NEW: Forecast Accuracy Centre: separate workspace with 5/20-session non-overlapping walk-forward testing of the purple model, using genuine Finnhub or Massive daily closes and comparison to an unchanged-price baseline. No cherry-picked forecast claims, no fabricated data.
+FIX: Durable report deletion tombstones prevent resurrection from a stale private backup after immediate reload.
+FIX: Company Comparison Studio preserves original fundamental-data retrieval timestamps, marks cached and stale sources, and refreshes after 30 minutes.
+PRESERVED: Finnhub Live Tape, Massive daily bars, existing charts, forecast curves, Company Comparison, research reports, Crest logo, local backups and all prior features.
+LIMITATIONS: Macro source is ANNUAL, not real-time or a policy-rate feed. Historical accuracy does not guarantee predictive skill. Provider keys and Mac Safari sleep-wake behaviour require on-device verification.

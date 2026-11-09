@@ -1,0 +1,51 @@
+MARKET DESK 3.0.1 — SAVED CHARTS AFTER RESTART
+
+WHAT CHANGED
+The old 1-hour/24-hour chart used only the current time window. After the
+Mac was off overnight, older saved prices could be outside that window.
+The records had not necessarily been deleted.
+
+If that window has no recordings, the chart now opens the last saved session,
+with its actual dates and an explicit LAST SAVED SESSION / NOT CURRENT label.
+It never moves old timestamps to today or fills the time when the Mac was off.
+When current recordings become available, the normal current window returns.
+Intelligence's current-hour/day overview stays separate from the older chart.
+
+Daily charts read existing downloaded prices first, including when provider
+keys are configured. Opening a saved chart does not wait for an internet
+refresh. Update daily prices requests newer daily data explicitly; if it fails,
+existing saved prices remain available. Imported files retain priority.
+If no daily history has ever been downloaded for that company, the first
+request still needs internet and provider access (or a sourced CSV import).
+The free Massive/Finnhub limits remain; the button does not bypass them.
+
+AFTER RESTARTING YOUR MAC
+1. Open Start Market Desk.command in the new extracted app folder.
+2. Keep Terminal open and visit http://127.0.0.1:8765.
+3. Open a company chart. Previously saved prices work without internet.
+4. Connect to the internet and use Update daily prices when you want newer
+   daily records. Live intraday collection resumes only while the app runs.
+
+KEEP YOUR DATA
+The price database remains in ~/.marketdesk-reborn/observations.sqlite3.
+Do not delete that private folder when replacing the app source folder.
+Changing the app's extracted folder does not create a new price database.
+Research JSON backups do not include this price database: back up the private
+folder too if moving Macs. Stop the app before copying its private folder.
+That folder also contains private credentials; do not publish or share it.
+
+LIMITS
+Offline viewing means previously saved data, not live market data. The website
+still needs its local server running. It cannot run on a switched-off Mac.
+No monitoring, collection, alerting or learning happens while the Mac/app is
+off. No prices have been invented, downloaded model added or keys included.
+
+VALIDATION
+322 Python tests and 25 JavaScript test files passed. New checks cover storage
+reinitialisation, genuine saved timestamps, zero-provider offline reads,
+returning to current recordings, saved daily load before external requests,
+and retaining saved history after an explicit refresh fails.
+Browser checked genuine older observations in an isolated preview: 62 recorded
+prices restored with original 3–4 November dates; gaps remained visible.
+Saved daily chart displayed 250 prices with no provider credentials in preview.
+Original private workspace/data unchanged by these preview checks.

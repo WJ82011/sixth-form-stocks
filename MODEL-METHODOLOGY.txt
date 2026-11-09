@@ -1,0 +1,93 @@
+V1.9 METHODS: simple moving averages and Wilder RSI/Bollinger on verified EOD closes; a manual five-year Gordon-growth DCF and sensitivity grid; paper ledger and source-labelled optional Finnhub marks. None of these is a promise of forecast skill or investment advice. See README for missing-data and accounting limitations.
+
+MARKET DESK REBORN v1.6.4 — RESEARCH FORECAST METHODOLOGY
+===========================================================
+
+PURPOSE
+-------
+The violet dashed path is an experimental scenario to make statistical
+assumptions visible. It is NOT a promise of future prices, trading advice,
+or a claim to outperform a naive forecast. A curve alone does not establish
+predictive accuracy; markets are noisy and surprise events matter.
+
+DATA SOURCE AND ELIGIBILITY
+---------------------------
+Only genuine, provider-verified historical DAILY closing prices from Massive
+(split-adjusted EOD) or Finnhub's historical daily endpoint are eligible.
+Never infer past closing prices from intraday ticks captured on this Mac.
+Require 45+ unique daily observations spanning 55+ calendar days and a last
+close within ten calendar days. Display the provider identity on the chart.
+Store the provider data separately from projected values.
+
+MODEL (DETERMINISTIC, NO RANDOM WAVES)
+--------------------------------------
+For each session t, compute the observed log-return:
+    r[t] = ln(close[t] / close[t-1])
+Compute the averages over the most recent 5, 20 and 60 return observations.
+Compute exponentially weighted historical volatility using a 0.965 decay,
+with a minimum volatility floor. Dampen trend signals when that measured
+volatility is high; cap all daily expected-return components.
+
+Three components contribute to the future return forecast:
+  1. SLOW:   a shrunk long-run trend from the last 60 returns.
+  2. MEDIUM: a shrunk mean trend from the last 20 returns.
+  3. FAST:   the recent 5-session trend relative to the 20-session trend.
+
+On projected session d, use:
+    expected_log_return[d]
+      = slow   * exp(-(d-1)/55)
+      + medium * exp(-(d-1)/14)
+      + fast   * exp(-(d-1)/4)
+
+The components are bounded; the sum is capped at +/-0.35% per session.
+Cumulative expected log-returns transform the most recent authentic close
+into future SCENARIO prices. The fast component fades most quickly. This
+makes the trajectory bend if recent and longer-run price trends differ.
+A genuinely flat trend can quite properly produce a nearly flat forecast.
+No sine waves, artificial jagged oscillations or random 'price paths' are
+added to make the projection look interesting.
+
+UNCERTAINTY
+-----------
+An indicative volatility fan uses a multiplicative log-price spread of
+1.65 * measured_daily_volatility * sqrt(projected_sessions).
+The low/high paths are not empirically calibrated to 80%, 90%, 95%, or any
+specified coverage rate. Gaps, earnings, geopolitical news, stock splits,
+trading halts and macroeconomic shocks can produce results well outside
+these bounds. The model is NOT a probability forecast.
+
+HEADLINES
+---------
+Finnhub headlines may be shown as sourced context with a simple keyword
+classifier. The classifier is not a trained sentiment model and its score
+DOES NOT ALTER predicted prices in v1.6.4.
+
+VALIDATION (LIMITED HISTORICAL CHECK)
+-------------------------------------
+Forecast Lab generates non-overlapping 5-session and 20-session examples.
+Each prediction uses only historical closes available at its earlier anchor;
+there is no deliberate future-price leakage. Calculate mean absolute
+percentage error (MAPE) for the curve's terminal price and for an unchanged-
+price baseline using the same dates. Show whichever wins or loses, rather
+than reporting only favourable cases. These are backtests of fixed model
+assumptions, NOT out-of-sample certification of predictive accuracy;
+we have NOT established that the model is generally better than holding
+the last observed price, and long-horizon skill is especially uncertain.
+
+TRANSPARENCY / USER INTERFACE
+-----------------------------
+The real observed chart remains separate from the purple model scenario.
+A future hover reads 'SCENARIO, NOT OBSERVED'. A user can disable the overlay.
+Provider errors or too little data suppress projected values instead of
+manufacturing substitutes. The model has no API-key or extra payment needs
+beyond the existing authenticated historical data connection.
+
+REPRODUCIBLE TESTS (OFFLINE)
+---------------------------
+node tests/test_chart_research.cjs
+node tests/test_forecast.cjs
+python3 -m unittest discover -s tests -p 'test_*.py'
+python3 tests/audit_chart_reliability.py
+
+All test series and fake API payloads are confined to the test environment;
+no demo numbers are shipped as user-facing real market quotes.

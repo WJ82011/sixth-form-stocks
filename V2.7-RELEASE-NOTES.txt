@@ -1,0 +1,59 @@
+MARKET DESK REBORN v2.8.0 — A CLEARER DAILY WORKSPACE
+
+DAILY BRIEFING
+Overview opens with your watchlist's available price comparisons, its largest
+recorded rise/fall, dated company cards and linked general headlines. Counts
+are for your watchlist, not a market index. A genuine zero change remains zero;
+missing or over-age data stays labelled. Quotes over 15 minutes old are marked;
+comparisons older than three days are excluded. News is dated publisher context,
+not an asserted cause of price movements.
+
+COMPANY & CHART
+Choose a watchlist company for a short description, its existing interactive
+chart, source dates and company-name/ticker title matches from its headline
+feed. Sixteen default companies have original, manually written background
+summaries, including Take-Two/Rockstar. Other companies use a saved provider
+industry when available; a missing business description is not generated.
+More company details and the original research pages remain available.
+
+CLEARER PRICE HISTORY
+Range buttons show saved, partial, outdated or import-needed status before you
+select them. These are date-span hints, not a guarantee of every trading day.
+The chart's actual dates, gaps and endpoint-change summary remain visible.
+Saved genuine Massive daily bars are readable offline without a key or fresh
+provider request. This does not download missing history or make old prices live.
+
+Your price history reviews the selected source plus a saved-file library.
+Download an imported CSV, open the simple sourcing guide, or add/replace a file.
+Use provider history removes only that ticker's imported copy and restores the
+provider path. Original downloaded CSVs and provider bars are untouched.
+Import metadata is migrated at startup and updated atomically, so rereading
+the briefing does not decode full multi-year files.
+
+THE DETAILED WORKSPACE REMAINS
+The original Signal/Professional layouts are available through Detailed
+workspace. Heatmap, screening, AI/model lab, news, notes, alerts and portfolio
+tools remain in the same sidebar groups. The same chart canvas moves between
+layouts; there is no duplicate price feed, chart engine or local AI model.
+Keyboard operation, Reduce Motion and the app's animation preference remain.
+Phone and fullscreen chart layouts were checked in Professional Edition.
+
+PROVIDER REQUESTS
+Opening/rereading the briefing reads saved snapshots. Explicit briefing refresh
+requests up to eight quotes plus general headlines, rotating through the oldest
+checked stocks. Company refresh requests one quote, one profile and company
+news; it does not request financial metrics. Both use the existing caches,
+shared Finnhub budget and provider backoff. The app's existing scheduled quote
+cycle continues separately. New briefing reads do not add a provider timer.
+Massive Basic remains within the existing conservative two-year date window.
+Full 5Y/10Y history still needs an appropriate longer CSV or eligible provider
+access. No paid OpenAI, extra model or paid data subscription is required.
+
+START
+Stop the old Terminal process with Control+C, extract this ZIP and open
+Start Market Desk.command. Existing private data stays in ~/.marketdesk-reborn.
+Keep a backup of that folder; research JSON exports exclude price histories,
+headline snapshots, imports, alerts and AI source data. Do not remove keys.
+
+Read V2.7-QUICK-GUIDE.txt and V2.7-QA-REPORT.txt. DEVELOPMENT-LOG-v2.7.md and
+USER-TEST-GUIDE.txt support documenting and reviewing the application project.

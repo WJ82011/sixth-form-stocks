@@ -1,0 +1,23 @@
+MARKET DESK REBORN 3.2.0 — FOLLOW THE IDEA, KEEP THE EVIDENCE
+
+- Connected company research projects with questions, views, risks and stages.
+- Editable notes/source links; independent copies of existing notes.
+- Frozen actual-price chart snapshots with source labels and written notes.
+- Company accounts, chart, Intelligence and report handoffs; Back to project.
+- Existing report links and portable Markdown/JSON project archives.
+- Named watchlists with one-time preservation of the original list.
+- Archive/restore, capacity checks and explicit removal of archived records.
+- Full V3 workspace backup/import integration, stale-form and save-conflict
+  protection, and stronger unsaved-report protection.
+
+All 22 existing destinations remain. Research projects replaces the old
+My Research Notes navigation label; the original notes tool remains inside it.
+V3.1 reliability protections and V3.0.1 offline chart recovery are retained.
+
+376 Python tests passed on three consecutive runs; 28 JavaScript test files
+passed, including a regression for the form-field ID shadowing issue found
+in browser QA. See V3.2-VERIFICATION.md and the machine-readable result files.
+
+No copied third-party site assets, new visual library, AI model, paid AI
+requirement or public hosting is added. Test projects and screenshots are
+separate from the release and are not seeded into your research library.

@@ -1,0 +1,27 @@
+MARKET DESK — SHORT FIRST-USER REVIEW (NOT YET COMPLETED)
+
+Ask someone unfamiliar with the app to try these five tasks. Use public market
+data and your own app setup. Do not ask them to enter personal or financial data.
+Avoid explaining the interface first; observe where they hesitate.
+
+1. Choose Take-Two and explain in their own words what the company does.
+2. Find a stock's one-year chart and explain which dates it actually shows.
+3. Choose five years and identify whether some history is missing or a file is
+   needed. Explain what the rise/fall percentage compares.
+4. Find a headline, its publication date and its original source link. Ask whether
+   the app has proved that headline caused the price movement.
+5. Locate the detailed workspace, then return to the daily briefing.
+
+Record the actual outcome, not the expected one:
+Date: ____________________   Participant label: ____________________
+Task 1: completed / help needed / not completed; note: _________________
+Task 2: completed / help needed / not completed; note: _________________
+Task 3: completed / help needed / not completed; note: _________________
+Task 4: completed / help needed / not completed; note: _________________
+Task 5: completed / help needed / not completed; note: _________________
+What felt clear? _____________________________________________________
+What felt confusing? _________________________________________________
+Most important improvement to make next: ______________________________
+
+Keep results anonymous. A completed session can support the development log;
+this blank checklist alone does not demonstrate that usability has improved.

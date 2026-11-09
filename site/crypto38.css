@@ -1,0 +1,12 @@
+#view-crypto .crypto38-panel{padding:clamp(18px,3vw,34px);margin-bottom:20px;border-radius:24px}
+.crypto38-switches{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.crypto38-switches button[aria-pressed=true]{border-color:var(--accent);color:var(--text);background:var(--surf2)}
+.crypto38-quote{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.crypto38-quote h2{margin:4px 0 8px;font-size:clamp(25px,4vw,38px)}
+.crypto38-quote strong{display:block;font-size:clamp(27px,5vw,48px);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.crypto38-quote p,.crypto38-details,.crypto38-foot{color:var(--muted);font-size:13px;line-height:1.65}
+.crypto38-canvas{display:block;width:100%;height:clamp(220px,36vh,360px);border-radius:16px;background:var(--surf2)}
+.crypto38-details{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:12px}
+.crypto38-details strong{color:var(--text)}
+.crypto38-foot{margin:12px 0 0}
+#crypto38-pair{letter-spacing:.09em}

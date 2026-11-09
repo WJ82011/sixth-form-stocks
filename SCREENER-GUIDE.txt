@@ -1,0 +1,55 @@
+MARKET DESK — USING THE STOCK SCREENER
+
+1. Open Markets > Stock Screener.
+2. Start with My watchlist, or choose the 221-company directory.
+3. If figures are missing, leave number filters empty, select up to five stocks
+   and press Refresh selected. Finnhub must be connected in Settings.
+4. Enter a maximum positive P/E, minimum growth or minimum margin. For example,
+   P/E up to 50 finds stocks with usable, positive ratios no higher than 50;
+   it does not mean those stocks are cheap or suitable investments.
+5. Check dates & sources before comparing companies. Retrieved today does not
+   mean the financial reporting period is today. Missing figures remain dashes.
+6. Switch to Price-change map for the same shortlist. Only eligible quote pairs
+   appear. The quote time and eligible count stay visible.
+7. Open a chart or ask Intelligence for further research. Unwatched stocks are
+   added first, within the existing watchlist limit.
+
+AGE LIMITS
+Quote eligibility defaults to three days to allow closed-market weekends.
+Financial snapshot eligibility defaults to seven days. These are user-chosen
+retrieval/quote-age policies, not guarantees about financial reporting dates.
+Choose 15 minutes if you need recent quotes. A provider may supply older quotes
+or restricted fields even after a refresh; the app does not invent replacements.
+Old numbers can still be inspected in the table but do not pass active filters.
+
+WHY DO I SEE NO MATCHES?
+The app does not download data for the entire directory automatically. Clear
+active numeric filters, select companies and refresh a small batch first.
+Widen age limits only after checking source dates. Unknown values are not zero.
+Stocks outside the directory may have unknown listing currency; those cannot
+pass USD price filters. Ratios and percentage change need no currency conversion.
+Negative or zero P/E may be displayed if the provider reports it, but cannot
+pass the Maximum positive P/E filter. Revenue growth and net profit margin use
+TTM (trailing twelve months) fields; different companies' periods can differ.
+
+MAP INTERPRETATION
+The change is (recorded quote price / provider previous close - 1) * 100.
+It is not necessarily the change today or over the last 24 hours, and it is not
+a dividend-adjusted investment return. Red, green and neutral tiles also carry
+arrows and numbers. Every tile has equal area. Browsing groups are editorial,
+not official sectors. Neither colour nor passing a filter is a buy/sell signal.
+
+FILTERS AND DOWNLOADS
+Hide filters gives more room for results; the active criteria remain visible.
+Clear filters resets criteria. Filter presets are browser-local, capped at ten,
+and are not part of the research JSON backup. Download their JSON before
+changing browsers or ports. An import replaces the saved bank after confirmation.
+CSV downloads only the current matches and includes filters, original UTC
+source dates, links and age-eligibility flags. It can include explicitly labelled
+old values when no numeric filter requires their exclusion.
+
+PRIVATE DATA
+Saved quote/profile/financial snapshots use the existing private database.
+Keep that folder on upgrade. They are excluded from research JSON backups;
+CSV is a readable source copy. Credentials are never included in these exports.
+No collection, refresh or model training continues while the Mac is off.

@@ -1,0 +1,59 @@
+MARKET DESK REBORN v2.3.0 — QA / 3 NOVEMBER 2026
+
+AUTOMATED CHECKS
+182 Python tests passed in an isolated temporary home and database. External
+network requests were blocked; local HTTP tests were allowed. Includes all
+144 existing v2.2 tests plus 38 AI tests. No personal keys or data were used.
+
+14 JavaScript interaction suites passed (13 existing plus the AI suite).
+All 15 website scripts parsed. Checks cover escaped model text, safe links,
+local-only browser requests, report draft review boxes, stock/file/library
+response races, error recovery, source-scoped storage, numeric/source checks,
+unknown citations, immutable saved snapshots, local engine selection and
+untrusted HTTP mutation rejection. Existing charts, models, alerts, directory,
+backup and design checks remain passing.
+
+LOCAL MODEL AND BROWSER
+Hardware: Apple Silicon, 16 GB RAM. Existing installed qwen3.5:4b local model,
+approximately 4 GB weights, running through local Ollama with MLX safetensors.
+No model installation, cloud inference or paid OpenAI API was used.
+
+Four controlled fictional-source tasks passed the final reference checks:
+- Report supplied revenue and operating profit.
+- Decline a current share-price question when the source gives none.
+- Produce a short balanced research report.
+- Compare two supplied company revenue figures without calculating a difference.
+Observed times in that run: 17.4, 14.8, 16.2 and 14.2 seconds. Timing varies.
+This run requested an 8,192-token context. The release requests 16,384 tokens
+for the larger bounded source packs; a separate packaged-script run verifies
+that final setting: 4 of 4 accepted. See V2.3-LOCAL-AI-EVALUATION.txt
+for the actual outputs and timings.
+
+Earlier iterations rejected mismatched excerpts, source-free claims and empty
+report headings. Failed drafts were withheld; no placeholder success was shown.
+Passage-key selection and empty-heading normalization fixed those format issues.
+References and numeric checks do not establish factual correctness. These few
+fixtures are development smoke checks, not an accuracy benchmark. Some generated
+wording can still infer unsupported context or misdescribe a missing source.
+Human source review is required. No superiority to paid platforms is claimed.
+
+Browser checked with an empty temporary database and no market-provider keys:
+local readiness; honest absent-price coverage; TTWO/Rockstar answer with exact
+supporting source excerpt; reopening an accepted draft with its unchanged
+source snapshot; copying it into the report editor with Draft status and all
+verification checkboxes unchecked. The preview did not use or alter the user's
+actual saved research or observation database. No live quote, full-market
+coverage, financial return or prediction performance was fabricated.
+
+REPRODUCING
+Offline Python: python3 tests/run_all.py
+JavaScript: run tests/test_*.cjs individually with Node, awaiting the promise
+exports for alerts, v2.1.1 and AI UI suites when using an embedded Node runner.
+Optional local-model smoke checks: python3 tests/evaluate_local_ai.py
+This last command contacts only the local Ollama engine and uses fictional
+sources embedded in the script. It is not part of the offline test run.
+
+RELEASE CONTENTS
+ZIP integrity, source-byte matching and executable launcher permissions checked.
+No runtime database, provider-key file, workspace backup, model weights or
+Python cache files are included. Old release notes are historical records.

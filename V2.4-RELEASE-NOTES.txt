@@ -1,0 +1,39 @@
+MARKET DESK REBORN v2.4.0 — ROUNDED BLACK & BLUE
+
+An original visual redesign of v2.3.0: dark blue surfaces, soft rounded cards,
+blue primary controls, clearer system typography, quieter dividers and more
+space around chart controls. Both Signal and Professional editions are updated.
+
+CHARTS
+Overview now puts the main chart ahead of the market-pulse cards. Professional
+quote cards form one horizontal strip so the chart appears sooner on screen.
+Larger high-resolution canvases, clearer axis labels, lighter vertical guides,
+and a two-axis crosshair on Overview. Line joins remain rounded, but observed
+prices are not smoothed or interpolated. Recorded gaps remain gaps; isolated
+points remain dots. A new last-plotted-observation label includes its original
+time and explicitly avoids a live-price guarantee. Full-screen charts keep
+rounded corners. Custom chart sizes still work. Downward series remain red;
+blue upward lines, green/red changes and purple forecast estimates are distinct.
+
+PRESERVED
+All 17 workspaces, the local AI model interface, sources and drafts, price
+alerts, the 166-stock directory, Take-Two/Rockstar search, company comparisons,
+reports, notes, paper portfolio, indicators, valuation, model results, provider
+limits and private-data storage. No paid chart library or new provider plan.
+Live updates still depend on genuine Finnhub responses and your connection.
+This design does not expand market data coverage or monitor while the Mac is off.
+
+YOUR PREFERENCES
+On first launch, the old default Brass accent becomes Blue. Edition, layout,
+chart size, contrast, ticker and motion choices stay saved. Brass, Cyan, Mint
+and Violet are still available in Settings; choosing Brass afterwards persists.
+The Blue choice is included in research preference backups. Reduced-motion
+and high-contrast controls remain available. Small screens use a menu drawer
+and stacked panels; wide tables scroll within their panels.
+
+UPGRADE
+Stop the old Terminal window with Control+C, unzip this update, and open
+Start Market Desk.command. Keep the private ~/.marketdesk-reborn folder.
+Open Ollama to use local AI. The model does not need to be downloaded again.
+No keys, user database, test price records or model weights are in the ZIP.
+Read STORAGE-GUIDE.txt, DESIGN-ORIGINALITY.txt and V2.4-QA-REPORT.txt.

@@ -1,0 +1,56 @@
+MARKET DESK REBORN v2.5.0 — DISCOVER & SCREEN
+
+This resumes the earlier feature roadmap after the local AI work.
+
+NEW: STOCK SCREENER
+Open Markets > Stock Screener. Start with My watchlist, or choose the
+166-company directory. Additional valid watched symbols are also supported;
+this is not a whole-market scan. Filter by company/name, editorial browsing
+group, USD listing price, maximum positive trailing P/E, revenue growth,
+net profit margin and price change. Choose source-age limits and sort results.
+Missing and over-age values never pass an active numeric filter. Sort puts
+unavailable values last in either direction. Old values remain labelled in
+the table so their dates can be inspected.
+
+NEW: PRICE-CHANGE MAP
+Switch the screener to Price-change map. Equal-sized tiles show change from
+the previous close reported with each quote. Each tile displays its quote
+time and the map reports how many matching stocks have usable data. It is
+not a cap-weighted or exchange-wide heatmap, sector index, total-return chart
+or live-trade confirmation. Quotes can refer to different times and sessions.
+
+USEFUL RESEARCH WORKFLOW
+Select up to five stocks in the table, then refresh them. The app uses up to
+three existing Finnhub requests per stock: quote, company profile and basic
+financials. Existing caching, 48-request shared local budget and provider
+cooldowns apply. A restriction/rate/network failure stops the remaining batch.
+Stop after current stock prevents future requests; the current one may finish.
+No provider requests occur just from opening, filtering, sorting or map viewing.
+Reload saved data and periodic local reads do not request new market data.
+
+Source snapshots survive server restarts and preserve original fetch dates.
+They also give the local AI access to these saved, whitelisted financial fields
+when its in-memory company cache is absent. This is source retrieval, not new
+AI training. The statistical models and forecasting methods are unchanged.
+Open chart and Ask Intelligence reuse the existing research workflow. Actions
+for an unwatched stock say Add & ... and respect the 60-stock watchlist limit.
+
+SAVE AND EXPORT
+Save up to ten filter presets in this browser; download/import them as JSON.
+They are separate from the full research backup. Import asks before replacing
+an existing saved-filter bank. CSV export contains only the matching rows,
+filter definition, UTC dates, source links and eligibility flags. Source fields
+are whitelisted and CSV formula-leading strings are escaped.
+
+PRESERVED
+All previous 17 tools remain. Stock Screener is the eighteenth tool inside the
+existing Markets group; the sidebar still has six main entries. Rounded theme,
+all colour/accessibility preferences, price alerts, paper portfolio, models,
+AI, reports, notes, charts, provider limits and private-data location remain.
+No new model, paid AI API, remote font or chart library is required.
+
+UPGRADE
+Stop the old Terminal with Control+C, unzip this release and open
+Start Market Desk.command. Keep ~/.marketdesk-reborn. Existing keys are reused
+privately. Open Ollama as before for AI, but the screener works without AI.
+See SCREENER-GUIDE.txt, V2.5-METHODOLOGY.txt and DEVELOPMENT-ROADMAP.txt.

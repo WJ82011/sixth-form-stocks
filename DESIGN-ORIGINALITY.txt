@@ -1,0 +1,40 @@
+V2.6 ADDITION: original grouped heatmap layout, plain-English stock cards and
+interruptible navigation motion. Designed with AI coding assistance for Market
+Desk. No competitor assets, page layouts or chart-library code were imported.
+
+V2.5 ADDITION: the stock screener and equal-tile price map are custom code
+for this project, developed with AI coding assistance. No competitor assets,
+chart libraries, layouts or fonts were copied. The v2.4 design notes follow.
+
+MARKET DESK — DESIGN NOTES FOR v2.4
+
+Purpose: make the existing personal research application easier to read and
+use, while retaining honest source labels, data coverage and uncertainty.
+
+This is a custom design developed for Market Desk with AI coding assistance.
+The requested references were interpreted as broad qualities: clear charts,
+a dark blue palette, comfortable spacing and gently rounded controls. No
+TradingView or Apple page, layout, screenshot, logo, stylesheet, icon set,
+font file or chart-library code was copied or embedded for this update.
+No competitor assets were downloaded. The original Market Desk crest remains.
+
+Implementation: a local modern.css design layer on the existing application,
+plus small presentation changes to the existing native canvas renderer. The
+system font comes from the user's computer. No new remote fonts, images,
+visual dependencies or paid libraries are required. All existing source files
+are included for inspection. Historical project files remain in the package.
+
+Design decisions worth explaining in a project discussion:
+- Larger chart canvases and clearer labels make real observations inspectable.
+- Rounded surfaces and shared spacing make 17 workspaces feel consistent.
+- Blue identifies the new theme; financial changes and forecasts retain
+  separate colours and explicit words, so colour is not the only distinction.
+- Gaps, missing values and disconnected states stay visible rather than being
+  hidden for a more attractive graph.
+- The mobile chart moves ahead of the professional watchlist; no module is lost.
+- Preference migration preserves edition and accessibility choices, while
+  switching the old default accent to the requested Blue.
+
+For a sixth-form application, describe your own contribution and the AI
+assistance accurately. These notes document the work; they do not claim the
+student manually wrote every line or provide an external originality certificate.

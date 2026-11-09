@@ -1,0 +1,30 @@
+{
+  "release": "3.1.0",
+  "checkedAtUTC": "2026-11-05T22:06:09.732707+00:00",
+  "python": "3.12.5",
+  "requestedRounds": 3,
+  "completedRounds": 3,
+  "passed": true,
+  "totalSeconds": 23.967,
+  "runs": [
+    {
+      "round": 1,
+      "passed": true,
+      "tests": 349,
+      "seconds": 7.575
+    },
+    {
+      "round": 2,
+      "passed": true,
+      "tests": 349,
+      "seconds": 8.149
+    },
+    {
+      "round": 3,
+      "passed": true,
+      "tests": 349,
+      "seconds": 8.243
+    }
+  ],
+  "scope": "Isolated automated regression and failure injection, not proof of live-provider uptime, universal financial accuracy or AI semantic truth."
+}

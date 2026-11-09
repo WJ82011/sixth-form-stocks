@@ -1,0 +1,37 @@
+MARKET DESK 2.1.0 — EXPANDED STOCK DIRECTORY
+3 November 2026
+
+166 US-listed stocks across 14 browsing categories, including technology,
+chips, games, media, shops, travel, banking, healthcare, energy, industry,
+food, utilities, property, cars and materials (some share a category).
+
+Open Stock Browser to browse, filter by category or search a company name.
+Use Add to watchlist to track a stock, or Open stock if it is already saved.
+The directory works offline and does not fetch prices as you browse. Finnhub
+search remains available below it for companies outside the curated directory.
+Rockstar/GTA aliases still point to Take-Two Interactive (TTWO).
+
+Existing watchlists stay unchanged; the default list is not expanded to 166.
+The 60-stock watchlist cap, quote budget, polling batches and live-feed limit
+are unchanged. Only watched stocks are requested through the existing cycle.
+A larger watchlist takes longer to refresh. Provider access remains plan-based.
+
+All selected symbols were checked against Nasdaq's listing files at build time.
+Test symbols and ETFs were excluded. The dated catalogue includes company names,
+exchange, listing currency and categories; it does not bundle exchange prices.
+Some overseas companies use US-listed depositary shares. Categories are simple
+browsing groups, not official sector classifications. Listings can change.
+See STOCK-DIRECTORY-SOURCES.txt for sources and scope.
+
+US-listed directory prices use USD even when a company profile uses a different
+home-country reporting currency. Other financial figures keep their source units.
+
+VERIFICATION
+113 Python tests and 11 JavaScript suites passed. New directory tests cover
+166 unique entries, category filters, search aliases, exact ticker ranking,
+paging, existing watchlist preservation and US listing currencies.
+All website scripts passed syntax checks. Browser verified the directory count,
+14 category choices and the Games filter returning Take-Two, Roblox, Unity and
+Sony. Styling was visually checked in an isolated preview with no private keys.
+The ZIP was checked for integrity and the executable Mac launch command.
+No full live-provider entitlement check was performed for every listed company.

@@ -1,0 +1,72 @@
+MARKET DESK 3.0 — COVERAGE AND METHODS
+
+STATEMENTS
+SEC Company Facts supplies selected standard consolidated concepts, not every
+line, extension tag or footnote. US GAAP and IFRS, and their disclosed monetary
+currencies, are separate books. A disclosed presentation currency does not
+establish an issuer's functional currency. ADR prices, shares and statement
+currencies are not automatically converted. Check the filing itself.
+Quarter differences use matching concepts, currency and fiscal-year starts,
+with ordered filings and valid durations. TTM requires four contiguous
+quarters. Derived inputs are exposed. Historical facts use latest available
+filings and revisions; they are unsuitable for point-in-time model backtests.
+Manual/custom lines remain distinct and do not silently replace SEC facts.
+The original V2 financial-health panel retains its narrower US-GAAP/USD scope.
+The valuation source worksheet shows an operating cash minus PPE-purchases
+proxy only when windows/filings match. This is not unlevered free cash flow,
+a valuation recommendation or an automatic DCF/share-count/ADR conversion.
+
+PRACTICE ACCOUNTING
+USD base; Decimal FIFO lots; fees enter cost or sale proceeds as appropriate.
+Dividend deductions are explicit, deposits/withdrawals are external flows,
+splits change quantity without creating profit. Standalone fees reduce cash.
+Non-USD values require dated explicit USD-per-unit FX and a source. No implied
+parity or automatic historical FX. All entries are hypothetical, not orders.
+Manual zero prices are possible for explicitly sourced write-offs; missing
+marks are not zero. Marks older than seven calendar days withhold the current
+complete total. Checkpoints require same-date prices and FX for every holding,
+store captured inputs, and are checked against the ledger fingerprint.
+Modified Dietz estimates a return using end-of-day weighted external cash
+flows between valid checkpoints. This is an approximation, not exact daily
+time-weighted performance. Benchmark prices must exist on both endpoint dates.
+The benchmark is a price return excluding dividends, fees and FX; it is not a
+total-return or risk-matched outperformance claim. FIFO is not a tax report.
+
+EVENTS / DISCOVERY / MACRO
+SEC recent filing history is completed activity, not predicted earnings dates.
+Finnhub earnings access may be restricted. All provider dates are estimated;
+no exact release time is invented. Manual events have explicit IANA zones,
+status, sources and revision history. Ambiguous DST times must be clarified.
+The official SEC directory broadens listing search; saved-account screening
+is limited to loaded, comparable standardized annual accounts. It does not
+scan all listed stocks or guarantee third-party provider access.
+Cap-map areas use positive USD company profiles retrieved within 30 days;
+profile retrieval is not an exact valuation timestamp. Colour uses sufficiently
+recent saved quotes. Coverage is a subset, not an index or free-float weighting.
+Comparison rebases saved Massive closes to 100 on shared dates, without FX,
+fees or dividend adjustments; history/access gaps are stated, never filled.
+FRED observations are monthly/quarterly, may be revised, and are not release
+timestamps. CPI/GDP year changes require an actual matching year-ago period.
+
+AI AND DATA COST
+Existing local statistical training and chronological out-of-sample evaluation
+remain. Forecast coverage and uncertainty remain visible. Local Ollama answers
+can use expanded dated SEC evidence alongside existing company/chart/news
+packets. Numeric/citation checks can reject an answer; they do not prove every
+sentence correct. Treat model output as fallible research and inspect sources.
+No paid OpenAI is required. No extra model is downloaded. Training, updates,
+alerts and collection do not run while the Mac/app is off. No automatic new
+background scanning of thousands of symbols. Existing free-provider pacing,
+caches, plan restrictions and SEC request spacing remain in effect.
+
+PRIMARY SOURCES
+https://www.sec.gov/search-filings/edgar-application-programming-interfaces
+https://www.sec.gov/about/developer-resources
+https://fred.stlouisfed.org/series/UNRATE
+https://fred.stlouisfed.org/series/CPIAUCSL
+https://fred.stlouisfed.org/series/FEDFUNDS
+https://fred.stlouisfed.org/series/GDPC1
+
+Original Market Desk layout and implementation; no third-party site assets or
+animation code copied. AI assisted development. For an application or portfolio,
+explain your own design decisions, testing and understanding honestly.

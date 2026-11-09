@@ -1,0 +1,9 @@
+MARKET DESK REBORN v1.9.0 — THREE FOCUSED HIGH-FEASIBILITY FEATURES
+
+1. INDICATOR STUDIO — historical technical analysis: SMA(20), SMA(50), Bollinger(20,+/-2 population standard deviations), RSI(14) with Wilder smoothing. Honest coverage and provider labels. No invented stock prices; 20/50/14 historical sessions required for their respective indicators.
+2. VALUATION STUDIO — manual-input five-year discounted free cash flow model. Explicit user sources/periods, FCF, shares, net debt, growth, discount and terminal growth. Includes per-share scenario, year-by-year FCF present values, terminal value composition, and 3x3 growth/discount sensitivity grid; Markdown export preserves assumptions and warning.
+3. PAPER PORTFOLIO — private hypothetical USD cash ledger with BUY/SELL, cash and position safeguards, optional Finnhub observation autofill, explicit provenance/time on marks, unsourced marks shown as unavailable, CSV transaction export, private backup/restore and validation. Does not connect to a brokerage or trade money.
+
+PRESERVED FROM EARLIER RELEASES: Finnhub quote and WebSocket trade feed, Massive daily EOD history, purple forecast (evidence gated), Forecast Accuracy, Market Terminal, Company Comparison, Macro Intelligence, reports and Markdown/PDF reports, saved notes, Crest branding, appearance controls and existing security controls.
+
+DEFERRED ON PURPOSE: full financial statements ingestion from SEC XBRL, broad market stock screening, multi-asset portfolio mechanics/FX/dividends, analyst event calendar and further macro sources. These merit dedicated future releases rather than under-tested additions to v1.9.

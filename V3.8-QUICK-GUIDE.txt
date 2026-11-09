@@ -1,0 +1,39 @@
+MARKET DESK 3.8 — QUICK GUIDE
+
+OPEN ON YOUR MAC
+1. Stop the old version with Control+C in its Terminal window.
+2. Unzip MarketDesk-Reborn-v3.8.0-Mac.zip.
+3. Open Start Market Desk.command in the extracted folder.
+4. Keep Terminal open. If needed, visit http://127.0.0.1:8765.
+Keep ~/.marketdesk-reborn to carry forward your saved research, connections and
+prices. Python 3 is required. Use the normal macOS approval flow if prompted.
+
+BITCOIN AND ETHEREUM
+Open All tools → Crypto. Pick Bitcoin or Ethereum, then a chart period.
+Both are USD spot cryptocurrencies. Prices come from Coinbase Exchange.
+The public feed works with an internet connection and requires no account.
+The blue line shows completed candle closes. The green line shows recent
+streamed trades. The large price shows the exchange's most recent available
+trade, with its source and time. When the stream is quiet or disconnected,
+the app checks timestamped REST snapshots. Previously loaded chart ranges
+and snapshots can be read from the local cache while offline.
+Period change compares the first and last displayed candle closes.
+Blank intervals show missing observations. All chart times are in UTC.
+Crypto has its own workspace and its own cache for the two USD pairs.
+
+RESTORE A PAST EQUITY CHART
+1. Open a US company in Overview.
+2. Choose 1hr for the final recorded hour or 24hrs for the full provider date.
+3. Expand Understand this chart and click Load last available US date.
+The date is the latest eligible completed New York trading date from Massive.
+Any extended-hours bars on that date are included. Holidays and weekends
+use the supported equity calendar. The Massive Basic feed serves past New
+York dates after midnight ET. The restore uses your existing Massive key
+and shared request allowance. A previously saved date can be opened offline.
+Use Return to recorded prices or pick a chart range to switch back.
+Provider minutes stay separate from the current recorded stream and alerts.
+
+STORAGE
+The ZIP contains the app and guides. Your private data remains in the existing
+local database. The added caches hold two crypto pairs across five chart
+ranges and their latest snapshots, plus up to 30 saved equity minute series.

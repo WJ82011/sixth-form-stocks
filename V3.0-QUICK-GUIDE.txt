@@ -1,0 +1,43 @@
+MARKET DESK 3.0 — SIMPLE GUIDE
+
+Use Home to open charts, your practice portfolio, calendar or research.
+Arrange your home screen changes the card order and hides unwanted cards.
+All tools always opens the complete collection. Command+K also finds tools.
+
+COMPANY ACCOUNTS
+Open Company Overview, choose a company, then Update expanded SEC accounts.
+Scroll to Go deeper into the accounts. Select the reporting basis/currency,
+statement and period. Exact value & inputs reveals original concepts and
+filings. Calculated quarters and TTM are labelled calculations. Custom rows
+and CSV imports are separate, unverified research. Start sourced report saves
+a named report using the selected book; review it before sharing.
+
+PRACTICE PORTFOLIO
+Add a hypothetical deposit dated before your trades. Record buys, sells,
+fees, dividends and splits with their sources. Never enter real orders here.
+Use saved USD quotes uses existing dated records; it does not request prices.
+For other currencies enter the price, explicit USD conversion and FX source.
+Add marks dated on each checkpoint date to compare two snapshots. Missing
+or stale marks prevent a complete portfolio total. Editing old trades can
+invalidate checkpoints. The legacy importer assumes zero fees and requires
+an explicit starting cash date; your original V2 records remain available.
+
+CALENDAR AND ECONOMY
+SEC filing history records completed filings. Earnings requests depend on
+your Finnhub plan; provider dates are estimates. Add your own sourced event
+and revise it if dates change. Calendar export creates a local .ics file.
+FRED cards show observation periods, not live readings or predictions.
+
+DISCOVERY AND COMPARISON
+SEC listing search is a directory, not a promise of prices for every listing.
+Add a supported symbol to your watchlist, then load its data explicitly.
+Fundamental screening uses saved annual US-GAAP/USD records only.
+The new heatmap sizes boxes using eligible saved company market caps.
+Chart comparison needs saved Massive daily bars for the selected companies;
+only shared actual dates are used. Imported history remains in original tools.
+
+BACKUP
+Settings exports/imports the complete research workspace including V3 state.
+Keep a backup before upgrading or replacing records. Research JSON does not
+contain credentials, model weights, price databases or local AI excerpts.
+A private local workspace backup is also queued after saved changes.

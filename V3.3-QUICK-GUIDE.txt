@@ -1,0 +1,69 @@
+MARKET DESK REBORN 3.3 — WHAT CHANGED?
+
+OPEN IT
+Start Market Desk, then choose Home. The new What changed? section sits above
+your existing home modules. Overview's older Daily briefing remains available.
+
+START COMPARING
+The first briefing shows saved coverage without calling earlier records new.
+Choose Set my starting point after reading it. Later, Reload saved briefing
+compares loaded records with that point. Mark this snapshot reviewed replaces
+it explicitly. Reopening the app never silently clears the comparison.
+The saved point's time is the snapshot's read time, not an exchange timestamp.
+
+WHAT THE TABS MEAN
+Price records: changes between two actual saved Finnhub quote endpoints for
+the same symbol/currency. Both timestamps stay visible. This is a raw quote
+comparison, not a complete time-window return or a split/dividend-adjusted
+investment return. A quote newly loaded today can itself be older than your
+review; that is labelled. Missing/older quotes, equal-time revisions, unknown
+currencies and unsupported ratios are withheld, not turned into zero changes.
+Headlines: new to this saved comparison, not necessarily newly published.
+Publication and retrieval dates are separate. Company tags are provider feed
+scopes and are not independent relevance or causation checks. Links open the
+publisher; article bodies are not copied or generated.
+Filings: completed saved SEC filings, not forecast earnings dates. Date-only
+filing records never imply an exact filing time. An earlier filing loaded now
+is identified as earlier activity.
+Calendar: the next 14 calendar days plus changed details of previously saved
+nearby events. Confirmed/estimated/cancelled statuses remain explicit. Provider
+earnings remain estimates; date-only records stay date-only. A cancelled date
+can appear as a revision and is excluded from Upcoming.
+Coverage: actual quote times, headline retrieval dates, cached issuer coverage,
+missing sources and truncation warnings. No records does not mean no activity.
+
+WATCHLISTS
+Each set of company symbols has its own review point. Lists with identical
+companies share it, regardless of name/order. Up to eight most recently
+reviewed company sets are retained; older comparison points can expire from
+this small cache. Switching sets does not delete notes, projects or prices.
+
+UPDATING SOURCES
+Opening/reloading this briefing only reads saved local data. The normal app's
+existing price collection can still run while the app is open and connected.
+Update one company, inside the folded controls, explicitly uses the existing
+Finnhub quote/profile/news requests, shared pacing, caches and plan limits.
+A restriction/failure preserves saved data and does not mark it reviewed.
+It does not refresh SEC accounts. Use Company Overview's existing SEC update
+when needed. Missing news/calendar access is not bypassed with AI guesses.
+
+SAVE / OFFLINE / EXPORT
+Review points are part of the existing V3 private workspace and full research
+backup. They retain compact quote endpoints/source IDs/event details, not a
+complete market database or permanent read-history. Download briefing (.json)
+exports the currently loaded comparison for inspection. Settings' full research
+backup is the supported restore route; complete price databases/keys remain
+separate. Opening older versions can discard unknown new fields, so keep a
+3.3 backup and stop older servers before upgrading or downgrading.
+Saved briefings work without internet while the local server runs. New data
+needs connectivity/provider access. No monitoring, collection, training or
+continuous learning occurs while the Mac/app is off. No paid OpenAI or new
+AI model is required; this briefing does not use AI to invent explanations.
+
+LIMITS
+Up to 60 watched companies; 200 recent saved headline references, 200 saved
+filing references and 80 nearby event records enter a comparison. News retains
+the existing seven-day saved-headline window. The calendar uses saved records
+from a seven-day lookback through thirty days ahead; Upcoming is fourteen days.
+Warnings identify capped subsets. Review-point storage is bounded to 512 KB.
+Missing or disappearing records do not establish inactivity or cancellation.

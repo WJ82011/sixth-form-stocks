@@ -1,0 +1,15 @@
+MARKET DESK REBORN 3.6.0 — FINAL RELEASE
+
+Read V3.6-QUICK-GUIDE.txt for opening instructions and controls.
+Read V3.6-VERIFICATION.md for evidence and practical limits.
+
+Market values show their actual reporting period, as requested. The bundled
+US comparison is 30 June–30 September 2026, not a daily or live result.
+UK, euro-area, Japan and Hong Kong remain explicitly unavailable until
+comparable sourced observations are imported. This release does not supply
+an automatic worldwide daily capitalization feed. It never converts index
+percentages or a partial stock list into supposed market-wide dollars.
+
+All earlier V3.5 tools remain. No paid OpenAI requirement, model download or
+continuous-learning claim is added. Keep your existing private data folder.
+Credentials, personal research and preview databases are not in the ZIP.

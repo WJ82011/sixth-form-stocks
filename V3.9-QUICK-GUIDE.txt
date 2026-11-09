@@ -1,0 +1,41 @@
+MARKET DESK 3.9 — QUICK GUIDE
+
+OPEN ON YOUR MAC
+1. Stop the old version with Control+C in its Terminal window.
+2. Unzip MarketDesk-Reborn-v3.9.0-Mac.zip.
+3. Open Start Market Desk.command in the extracted folder.
+4. Keep Terminal open. If needed, visit http://127.0.0.1:8765.
+Keep ~/.marketdesk-reborn to carry forward your private research, data and
+connections. Python 3 is required. Use normal macOS approval if prompted.
+
+THE PURPLE LINE
+Open Overview and choose a company. Choose a daily range such as 1Y, enable
+Show research forecast and click Focus on purple line. The curve starts at
+the last observed close and uses a closer price scale. Choose Show full chart
+and range to see the price history and illustrative uncertainty band together.
+
+The centre uses recent and longer trends that fade at different speeds. When
+enough earlier periods resemble the current one, it also draws on what those
+periods did next. Sideways scenarios can be flat. Price Forecasts shows past
+tests against an unchanged-price baseline. The purple band is an illustrative
+range. Figures are scenarios and actual prices can move differently.
+
+LIVE TAPE
+1. Open All tools → Live Tape. Search for any of the 221 directory stocks.
+2. Choose Trade line, 1-minute candles or 5-minute candles.
+3. Choose a time window. The table can filter by minimum reported trade size.
+4. For past records, choose Review last recording, pick a Saved date (UTC),
+   and move Review time. You can also drag the chart to move along that date.
+5. Choose Back to live to return to the rolling window.
+
+Candles show the first, highest, lowest and last prices in each time bucket
+using the positive-size trades Finnhub sent and this Mac recorded. The bars
+below show captured size. The size filter applies to the table. Export saves
+the visible chart window. Replay shows the newest 4,000 retained records per
+loaded window, with dates listed from the retained local history.
+
+Pause display freezes the visible time and sample while the app can continue
+recording. Stock Browser still controls your watchlist. Opening a directory
+stock in Live Tape uses an available slot in the shared 30-symbol stream budget.
+Saved review works with a previously populated local database. The live tape
+needs Finnhub, an active connection and incoming trades to collect new prints.

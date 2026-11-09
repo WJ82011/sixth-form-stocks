@@ -1,0 +1,113 @@
+V3.3: briefing review points retain compact saved quote endpoints, source IDs
+and event comparison details for up to eight company groups, capped at 512 KB
+in the existing private V3 workspace. They are included in research backups.
+No new AI model, article bodies, visual library or market-data database copy
+is installed. Downloaded briefing exports and older releases use separate space.
+
+V3.2: the private research library is bounded to 750 KB, including frozen
+chart records. It is included in the existing V3 browser/server backup.
+No extra AI model or chart library is installed. Captures keep at most 600
+actual plotted prices per item. Markdown/JSON exports and downloaded backups
+use separate space; archiving alone does not free stored capacity.
+Read V3.2-QUICK-GUIDE.txt for archive/removal and recovery limits.
+
+V3.1: one previous valid workspace and one damaged evidence copy may be kept
+in the private data folder. At the 2.5 MB per-file limit, the two extra files
+can use about 5 MB. No extra model is installed. Test fixtures use temporary
+folders; repeat-test JSON reports are small. See V3.1-RELIABILITY-REPORT.md.
+
+V3.0 STORAGE
+Exact extracted and ZIP sizes are in PACKAGE-SIZES.txt and the release listing.
+No extra AI model, visual library, downloaded font or video is included.
+The existing optional Ollama model and application remain the large components;
+the older measurements below are historical, not a new disk scan.
+V3 stores compact selected statement books for at most 60 issuers, a directory,
+bounded macro/provider caches, and your explicit research/portfolio records.
+The private database grows with collection and imports. Backups and older ZIPs
+use separate space. Do not delete the private data folder when upgrading.
+
+V2.9: selected SEC facts are stored compactly for at most 60 issuers. Raw
+multi-megabyte Company Facts files are not retained. The directory cache is
+separate and reused for seven days. No model weights or visual libraries
+are added. Exact release sizes are in PACKAGE-SIZES.txt.
+
+V2.8: adds two small local design files and tests. No extra model, video,
+3D asset library, downloaded font or chart package. Exact release sizes are in
+PACKAGE-SIZES.txt. Existing saved data stays in the same private folder.
+
+V2.7: adds small local briefing and history-library code, with no new model,
+chart package or image library. Saved headline lists are bounded; small import metadata grows with the files
+you choose to import. See PACKAGE-SIZES.txt.
+
+V2.6.1: adds small chart/import code and documentation, with no new AI model.
+Imported daily-price files add to your private database only when you import
+them. Exact release sizes are in PACKAGE-SIZES.txt.
+
+V2.6 NOTE: the visual map and animation code reuse existing saved snapshots
+and the installed AI model. No chart package, visual asset library or extra
+model download is added. See PACKAGE-SIZES.txt for this release file total.
+
+MARKET DESK v2.6 — STORAGE / MEASURED 3 NOVEMBER 2026
+
+THE WEBSITE IS SMALL; OPTIONAL LOCAL AI IS THE LARGE PART.
+The extracted release files are about 1 MB (under 2 MB with ordinary filesystem
+allocation and generated Python cache). The compressed ZIP is about 0.35 MB.
+The final exact byte counts appear in PACKAGE-SIZES.txt. Screenshots delivered
+alongside the ZIP are separate and are not part of the installed application.
+
+Existing measured logical file sizes on this Mac:
+- Installed local AI model folder: 3,973,607,340 bytes, about 3.97 GB.
+- Ollama application: 872,907,855 bytes, about 873 MB.
+- Private Market Desk data folder: 17,458,100 bytes, about 17.5 MB at measurement.
+  This folder can change while the app is running.
+
+Together with the new app files, these are about 4.9 GB using decimal units.
+The model and Ollama are ALREADY INSTALLED. Updating the website does not
+install another model or duplicate the private data folder. The new source
+folder and ZIP together add under 2 MB, before future saved-data growth.
+Keeping v2.3 or older copies, screenshots and downloaded reports uses separate
+space. They are not included in the 4.9 GB estimate.
+
+V2.5 ADDITION
+The screener adds small source records to the existing private database, capped
+at 1,500 symbol/type snapshots. Saved filter files are small and browser-local.
+No extra model download or visual library is installed. The final extracted
+file total is in PACKAGE-SIZES.txt; archive size is about 0.37 MB.
+
+EXCLUSIONS AND GROWTH
+This is a file-size estimate, not an exact whole-computer disk-use total. It
+excludes Python, the browser, their caches, operating-system files, older app
+versions, backups/exports and future research data. Finder may report different
+allocated sizes, and APFS compression/clones can change physical disk use.
+A larger or additional local AI model would increase the total substantially.
+
+Saved data grows with followed companies, captured trades, excerpts and drafts.
+The app caps observations at 5,000 per stock, captured trade events at 18,000
+per stock and daily bars at 550 per stock. Local AI retains up to 100 source
+documents (20 per stock) and 100 accepted drafts across stocks. Other notes,
+alerts and downloaded/exported files can add more. SQLite may keep freed pages
+for reuse instead of immediately shrinking its file. There is no fixed total
+storage promise. Keep the private ~/.marketdesk-reborn folder on upgrade;
+it contains the saved data and settings the app needs.
+
+No key or private document contents were read to measure storage. Measurements
+used file sizes only. No model weights or private data are included in this ZIP.
+
+V3.4 ANALYST LAB
+No new model weights, database tables or external libraries. Up to 20 saved
+analyses, 30 evidence records each, with a 650 KB combined analyst-record limit.
+They are included in full research backups and count toward the existing
+workspace byte limit. Optional JSON downloads are separate user files. Price
+regression refits are transient and reuse saved daily prices. Existing local
+language-model storage is unchanged; model weights are not in the Mac ZIP.
+
+V3.5 RECOVERY AND JOURNAL
+Recovery copies support ten companies within about 400 KB of browser storage
+and a 450 KB normalized research-backup allowance. They join full research
+backups; completed analysis saves retain recovery copies separately.
+The forecast journal adds a bounded table to the private price database, with
+up to 200 original receipts and frozen assessments. Stored input windows can
+use several MB as the journal fills; exact size depends on coverage and SQLite
+overhead. No entries are automatically removed to make scores look better.
+Journal JSON downloads are audit copies, separate from research backups.
+No new model weights or third-party libraries are installed by this update.

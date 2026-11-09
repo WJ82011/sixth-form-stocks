@@ -1,0 +1,52 @@
+MARKET DESK AI — SIMPLE GUIDE / v2.3.0
+
+1. Stop the older Market Desk Terminal window with Control+C.
+2. Open Ollama. This Mac already has qwen3.5:4b installed.
+3. Unzip this update and open Start Market Desk.command. Keep Terminal open.
+4. Open Market Desk Intelligence. Choose a stock and press Check saved data.
+5. Check that Local AI ready appears. Ask a question or write a research report.
+6. Open the supporting excerpts and original references before using a draft.
+
+TO GIVE IT BETTER SOURCES
+Press Refresh company sources for company figures and news through Finnhub.
+Your existing free-plan budgets still apply. Missing or restricted data stays
+missing. Asking the AI does not automatically request new market data.
+Paste an excerpt from an annual report or earnings release in Add a company
+report excerpt. Add a title, date and original link, then save it for the stock.
+You can also load .txt or .md files. PDF parsing and web browsing are not included.
+Original links are references only: the app does not fetch them.
+
+COMPARE AND WRITE
+Choose another watched stock in Optional company comparison. Refresh company
+sources if needed, then ask about the differences. Check currencies and periods.
+Tick Use the previous draft for a follow-up. Previous AI text is conversation
+context, not independent evidence. Current source evidence still decides facts.
+Use Open in report editor to review, edit, save or print a research draft.
+Verification boxes remain unchecked. The stock must be on your watchlist.
+Download draft creates a readable Markdown copy with references.
+
+IF AI IS UNAVAILABLE
+Open Ollama and press Check AI setup. The local service must be running at
+http://127.0.0.1:11434 and have a local text model installed. No cloud model is
+used. The model is separate from this small ZIP. No model is auto-downloaded.
+On another Mac, install Ollama from https://ollama.com/download and use its
+model library to install a suitable local model. Larger models need more RAM.
+The checked model on this 16 GB Apple Silicon Mac was qwen3.5:4b (4 GB weights).
+Model responses can take a minute or longer. A draft can have one automatic
+correction attempt if its source references fail; checks are never relaxed.
+If no draft passes, ask a narrower question or improve the source excerpts.
+Do not start several drafts at once. Closing the browser does not cancel a
+running job while the server stays open. Check AI setup offers resume; accepted
+drafts remain in Saved AI drafts for that stock. Server shutdown stops jobs.
+Quick data questions, charts and the statistical model work without Ollama.
+
+YOUR DATA
+Sources and accepted drafts stay in the private ~/.marketdesk-reborn database.
+These are excluded from the research JSON backup. Keep that private folder
+when upgrading. Download important drafts separately. Saved drafts keep the
+original copied source snippets even after you remove the original excerpt.
+Delete a saved draft separately to remove its snapshot from the app.
+Up to 20 source documents per stock, 100 in total, and 100 accepted AI drafts
+in total are retained. The library shows the most recent 30 drafts per stock.
+The model does not retrain itself or learn while your Mac is off.
+AI drafts can be wrong even when references match. Review the source text.

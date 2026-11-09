@@ -1,0 +1,83 @@
+V4.0 DELIVERED
+Server-owned Finnhub stream, scheduled price and history capture, offline
+news reads, optional login startup and multi-horizon local forecast evaluation.
+
+V3.9 DELIVERED
+Forecast focus, historical pattern matching, observed tape candles, direct
+directory switching, saved dates with time scrubbing and a trade size filter.
+
+V3.8 DELIVERED
+A separate Crypto tool for Bitcoin and Ethereum with public Coinbase spot
+prices, completed candle history, live updates and local cache. Equity chart
+restore uses Massive minute history for a completed New York date.
+A same-day consolidated equity feed comparison still needs account access.
+
+V3.7 DELIVERED: completed-session heatmap periods, whole-directory grouped EOD
+history, direct company browsing without watchlist membership, matching-date
+chart handoff, optional following, pause/resume, period preferences and CSV.
+Read V3.7-VERIFICATION.md for data access and calendar boundaries.
+
+V2.9 DELIVERED: a bounded Financial Health first release — selected standard
+US-GAAP USD SEC facts, source-linked annual/direct-quarter charts, dated
+comparison, local cache, JSON export and Intelligence evidence. Complete
+statements, custom XBRL, IFRS, lease normalization, TTM and point-in-time
+history remain future work. Read FINANCIAL-HEALTH-METHODOLOGY.txt.
+
+V2.8 DELIVERED: integrated calm shell, short navigation and customisable motion.
+
+V2.7 COMPLETE: clearer company view, dated daily watchlist briefing, source
+coverage hints, saved-file review/download and offline saved daily charts.
+Detailed workspaces retained. Usability review is prepared but not yet run.
+
+V2.6 VISUAL UPDATE: dedicated Market Heatmap, simple stock explanation cards,
+smooth accessible navigation and more progressive disclosure, requested after
+v2.5. The SEC statements and portfolio/calendar roadmap below remains future
+work. No extra model or paid-data integration was added for this visual phase.
+
+MARKET DESK — RESUMED DEVELOPMENT ROADMAP / v2.5.0
+
+SOURCE OF THE PLAN
+Earlier discussion: Resend Market Desk Link (2), and the deferred list recorded
+in V1.9-RELEASE-NOTES.txt. This is a product plan, not a claim that every feature
+below is implemented or that a free provider guarantees all required fields.
+
+ALREADY DELIVERED
+Indicator Studio, manual-source Valuation Studio and Paper Portfolio (v1.9).
+Timestamped intraday overviews and the daily statistical-model lab (v2.0).
+Price Alerts (v2.2). Real local research AI (v2.3). Rounded original interface
+(v2.4) and six-entry grouped sidebar (v2.4.1).
+
+THIS RELEASE: v2.5
+Stock screening has begun with the 166-company directory plus watched symbols,
+explicit finite-value filters, age controls, saved criteria, source inspection
+and CSV export. Whole-market financial screening remains a later expansion.
+The proposed market-heatmap idea has begun as a clearly labelled, equal-tile
+price-change map of the available shortlist. This is not a sector or market-
+capitalisation-weighted heatmap. These are bounded, usable first versions.
+
+NEXT PRIORITY: FINANCIAL STATEMENTS LAB
+Income statement, balance sheet and cash flow from primary SEC filings for
+eligible US issuers. Must handle issuer/ticker mapping, units and currencies,
+fiscal periods, amendments/restatements, annual versus quarterly facts and
+source filing links before feeding figures into valuation or AI. No statement
+numbers should be invented or inferred from a company summary. This was
+explicitly postponed in v1.9 and has not been implemented in v2.5.
+
+THEN: RICHER PRACTICE PORTFOLIO ACCOUNTING
+Cost basis, realised/unrealised returns, concentration and comparison with a
+properly matched benchmark. Dividends, FX and multi-asset support need dated
+sources and accounting rules. The current USD hypothetical ledger remains;
+no real trading or brokerage connection is planned as part of this work.
+
+THEN: EVENTS AND ECONOMIC SOURCES
+Source-linked earnings/company events with timezones, confirmed/estimated
+status, revisions and missing-data handling. Data access must be checked rather
+than assuming paid calendar endpoints are free. Extend official macro sources
+with observation dates and frequencies; never use AI to invent an event date.
+
+LATER EXTENSIONS
+Broader screening only when licensed/free data coverage permits; verified
+market-cap currency/units; source-aware cap weighting; more chart comparisons;
+custom dashboard layouts. New tools should use the existing sidebar groups
+rather than restoring a long flat menu. Each release needs its own tests and
+clear limitations. No release dates or paid-data promises are implied here.

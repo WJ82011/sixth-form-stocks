@@ -1,0 +1,36 @@
+/* Original compact navigation for Market Desk's rounded black-and-blue theme. */
+.sidebar-navigation{gap:7px!important;padding:2px 3px 8px!important}
+.sidebar-group{border:0;background:transparent;border-radius:13px;min-width:0}
+.sidebar-group>summary{
+ display:flex;align-items:center;gap:11px;min-height:42px;padding:11px 12px;
+ border:1px solid transparent;border-radius:12px;list-style:none;cursor:pointer;
+ color:#adbed7;font:600 12px/1.4 var(--font);user-select:none;
+ transition:background .15s,border-color .15s,color .15s;
+}
+.sidebar-group>summary::-webkit-details-marker{display:none}
+.sidebar-group>summary::marker{content:''}
+.sidebar-group>summary:hover{background:#15253c;color:#edf5ff;border-color:#2c4465}
+.sidebar-group>summary:focus-visible{outline:2px solid #a5c8ff;outline-offset:2px}
+.sidebar-group>summary>.nav-icon{font-size:18px;line-height:1;color:#8facd2;width:20px;text-align:center}
+.sidebar-chevron{font:500 17px/1 var(--font);color:#819abc;margin-left:auto;transition:transform .15s}
+.sidebar-group[open]>summary{background:#12223a;border-color:#294362;color:#d5e6ff}
+.sidebar-group[open] .sidebar-chevron{transform:rotate(180deg)}
+.sidebar-group.is-current>summary{background:#173256;border-color:#31598c;color:#c7dcff}
+.sidebar-group.is-current>summary>.nav-icon{color:#a5c7ff}
+.sidebar-submenu{margin:5px 0 7px 21px;padding:3px 0 3px 10px;border-left:1px solid #304967;display:flex;flex-direction:column;gap:3px}
+body .sidebar-submenu .nav-btn,body[data-edition="professional"] .sidebar-submenu .nav-btn{
+ font:550 11px/1.45 var(--font);min-height:35px;padding:8px 10px;gap:8px;border-radius:10px!important;
+}
+.sidebar-submenu .nav-icon{font-size:14px!important;width:17px!important;color:#829cc0}
+.sidebar-submenu .nav-btn.active{color:#d5e8ff!important;background:#203f66!important}
+.sidebar-navigation>.nav-btn,body[data-edition="professional"] .sidebar-navigation>.nav-btn{min-height:42px;padding:11px 12px;font-size:12px}
+.sidebar-group-badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;margin-left:auto;border-radius:8px;background:#6c3146;color:#ffe2e9;font:700 10px var(--font)}
+.sidebar-group-badge[hidden]{display:none!important}
+.sidebar-group-badge:not([hidden])+.sidebar-chevron{margin-left:0}
+.sidebar-settings{padding:0 3px}
+.sidebar .side-label:first-of-type{margin-bottom:12px}
+.sidebar .side-later{margin-top:14px}
+body[data-density="compact"] .sidebar-navigation>.nav-btn,body[data-density="compact"] .sidebar-group>summary{min-height:38px;padding-top:9px;padding-bottom:9px}
+body[data-contrast="high"] .sidebar-group>summary{color:#d0dff5}
+body[data-contrast="high"] .sidebar-submenu{border-color:#6a83a5}
+@media(prefers-reduced-motion:reduce){.sidebar-chevron,.sidebar-group>summary{transition:none}}

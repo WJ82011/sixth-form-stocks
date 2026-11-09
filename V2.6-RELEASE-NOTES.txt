@@ -1,0 +1,58 @@
+MARKET DESK REBORN v2.6.0 — VISUAL MARKET & SMOOTH NAVIGATION
+
+A more visual way to understand the saved market data, with detailed tools
+still available. Original rounded black-and-blue styling; no competitor assets.
+
+MARKET HEATMAP
+Open Markets > Market Heatmap. Your watchlist appears as coloured company tiles,
+optionally grouped into browsing categories. Green is up, red is down, blue is
+unchanged and gray means data is missing, incomplete or outside your chosen
+age limit. Colour strength follows the size of the reported change. The quote
+time is visible on each priced tile. A short, count-based plain-English summary
+explains the available picture, with a coverage count and latest quote time.
+
+Choose the 166-company directory to explore more companies. Unknown changes
+stay gray rather than being filled in. These are editorial browsing groups,
+not official sectors. Tile area is layout only, not market capitalisation or
+index weight. This is a bounded saved-quote view, not an exchange-wide feed.
+The existing screener's filtered Price-change map also remains available.
+
+CLICK TO UNDERSTAND
+Click a stock for a simple explanation card: direction, recorded price, quote
+time and a short explanation of comparison with its provider previous close.
+Source details are expandable. Open its chart or ask Intelligence when you
+want deeper research. Unwatched stocks are clearly labelled Add & ... and the
+existing 60-stock watchlist limit is respected. Escape or the close button
+returns keyboard focus to the stock tile, including after a background update.
+
+LIGHTER, MORE GUIDED PAGES
+Screener filters now start tucked away; current criteria stay visible and the
+full controls still open with Show filters. Its summary labels are simpler.
+The longer Overview chart commentary is under Understand this chart. Source,
+coverage and forecast labels remain visible. Signal Overview has an Open
+heatmap shortcut. Both editions retain all existing tools and preferences.
+On phones, extra search/group controls sit under Map options to give the map
+more room. Applied search/group criteria remain visible when options close.
+
+SMOOTH MOTION
+Sidebar groups expand/collapse over 220 ms. Quick changes interrupt the prior
+animation without leaving a group stuck or clipped. Pages fade and move very
+slightly over 260 ms; stock cards have a short opening transition. These are
+interface effects only: price values are not animated into invented points.
+Both the saved motion preference and OS Reduce Motion are respected. Native
+keyboard disclosure behavior, current-page cues, parent alert counts and
+focus handling remain. Full-screen charts bypass page transforms so their
+viewport positioning and rounded corners remain correct in Professional mode.
+
+DATA AND COST
+Opening/filtering the map reads existing local snapshots. Explicit price
+refresh requests at most eight quotes, through the existing caches and shared
+provider budget. It does not bulk-download all 166 companies. No new model,
+paid AI service, chart library, remote font or visual dependency is installed.
+All original 18 tools remain; Heatmap is tool 19 within the same six-entry menu.
+
+UPGRADE
+Stop the older Terminal with Control+C, unzip this version and open
+Start Market Desk.command. Keep ~/.marketdesk-reborn. Existing keys, snapshots
+and saved research remain in that private folder. Ollama is used as before
+when you choose AI. See HEATMAP-GUIDE.txt and V2.6-QA-REPORT.txt.

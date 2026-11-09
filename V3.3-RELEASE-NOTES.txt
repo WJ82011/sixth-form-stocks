@@ -1,0 +1,14 @@
+MARKET DESK REBORN 3.3.0 — WHAT CHANGED?
+
+- Home briefing with price records, headlines, filings, calendar and coverage.
+- Explicit saved review points per company set; no silent clearing on reopening.
+- Original source dates and clear newly-loaded-versus-newly-published labels.
+- Comparable raw quote endpoints only; no invented prices or causes.
+- Saved event revisions and cancellation handling, preserving estimate labels.
+- Local-only reads, explicit bounded one-company updates and JSON export.
+- Review-point integration with the full research backup and existing safeguards.
+
+All 22 destinations, research projects, named watchlists and offline charts
+remain. No extra sidebar category, external visual library or model is added.
+396 Python tests passed three times; 29 JavaScript test files passed. Read
+V3.3-QUICK-GUIDE.txt, V3.3-VERIFICATION.md and the two V3.3 result JSON files.

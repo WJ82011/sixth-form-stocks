@@ -1,0 +1,36 @@
+MARKET DESK REBORN 2.8 — YOUR NEW DESK
+
+OPEN IT
+Stop the older version with Control+C in its Terminal window. Unzip this
+release and double-click Start Market Desk.command. Keep Terminal open.
+The app opens at http://127.0.0.1:8765. Do not open site/index.html directly.
+Your existing private data folder is reused; the download contains no keys.
+
+FIND YOUR WAY
+Overview: choose a company, a chart period and your preferred amount of detail.
+Companies: browse, search or manage your watchlist, including Take-Two (TTWO).
+Workspace: your research notes. All tools: all 19 research and settings pages.
+Daily briefing and Detailed workspace remain on Overview. Chart expansion,
+CSV imports, forecasts, reports, alerts, live tape and research are retained.
+The original sidebar and price strip are available with Original sidebar in
+Customise. The simple layout keeps the scrolling strip out of the way.
+
+MAKE IT YOURS
+Customise opens appearance and motion options:
+- Quiet, Balanced, Cinematic or Off.
+- Dark, light or system appearance; five accent colours.
+- Rounded surfaces, spacing and simple navigation or original sidebar.
+- Dissolve, glide or gentle depth; three speeds; glow, glass or no background.
+- Fine-tune strength, pointer response, hover, reveals and chart crossfade.
+Changes save automatically and travel with your full research JSON backup.
+Existing edition, chart size, contrast and price-strip controls remain in
+Settings. Screen animations there stays in sync with Enable animation here.
+
+ACCESSIBILITY AND DATA
+Your Mac's Reduce Motion setting overrides animation. Off stops background
+motion and makes navigation instant. Background animation pauses in hidden
+tabs. Only the chart's opacity can fade; recorded values are never animated
+into different prices. Missing records, source dates and uncertainty remain.
+A new design does not add data access or strengthen forecast reliability.
+The existing free data limits and optional local Ollama setup are unchanged.
+Nothing records or learns while this Mac is off. No paid OpenAI is required.

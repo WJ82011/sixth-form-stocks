@@ -1,0 +1,71 @@
+MARKET DESK AI — METHODS / v2.3.0
+
+LANGUAGE MODEL AND STATISTICAL MODEL ARE DIFFERENT
+The language model is an already trained local Ollama model. It is prompted
+with retrieved evidence, not fine-tuned on user material. No continuous training,
+web agent, paid AI API or commercial-research library is supplied. The existing
+statistical daily-return model remains separate: training coverage, expanding
+out-of-sample tests, baseline errors and uncertainty are described in
+INTELLIGENCE-METHODOLOGY.txt. No predictive improvement is asserted here.
+
+EVIDENCE
+A bounded snapshot contains local listing metadata, cached provider profile,
+whitelisted financial fields, up to three cached news summaries, partial one-hour
+and 24-hour observation summaries, statistical model results, and up to four
+keyword-ranked passages from this stock's saved documents. Profile/news refresh
+is explicit and uses existing Finnhub caching, budgets and backoff. No new
+quotes or history are silently fetched by an AI question. Provider dates and
+retrieval times are preserved. Local catalog metadata is editorial reference,
+not a live provider lookup. Company excerpts are user-supplied and unverified.
+
+At most 14 sources / 12,000 body characters enter a packet. Each body is capped
+at 2,400 characters. Truncation is disclosed. Comparisons prefix source IDs by
+company and share the budget. Document retrieval selects 1,050-character chunks
+with overlap; this is keyword retrieval, not a complete document review. Source
+selection may miss important facts. Sources, query and capture time receive a
+SHA-256 snapshot identifier for reproducibility, not authenticity certification.
+Dates, currencies and reporting periods require human review.
+
+MODEL CALL
+Only fixed loopback Ollama tags/chat endpoints are allowed. No environment
+proxy or redirects, no model downloads or tool execution. Installed GGUF and
+MLX safetensors models are allowed; cloud/remote descriptors are excluded.
+Structured JSON constrains citation keys to short source spans selected by
+keyword relevance. The model selects passage keys; the server copies their exact
+source text. This prevents quotation-copying errors and mismatched source IDs;
+it does not verify the meaning of their statements. Temperature zero and no
+thinking output are requested. Model
+support varies. Prompt treats source/question text as untrusted evidence.
+A 16,384-token context is requested to allow room for the bounded evidence,
+passage choices and one correction. Model support and memory use vary. Empty
+headings are discarded without adding or accepting any statements.
+One generation job runs at a time. One correction pass may follow a failed
+reference check using the same sources and same checks. A second failure is an
+error, not a fabricated replacement answer. Invalid/incomplete output is rejected.
+
+WHAT THE CHECKS DO — AND DO NOT DO
+Every fact/analysis statement needs an existing source ID and an exact copied
+excerpt, 8–280 characters and no more than 35 words. Numeric tokens in a statement
+must occur in its cited source bodies. Obvious direct trade instructions are
+rejected. HTML is displayed as escaped text. Source URLs allow HTTP(S), remove
+credential-like query fields and never execute code.
+These mechanical checks do NOT establish that a source supports the statement,
+that units/periods are right, that missing-data assertions are justified or that
+causation is established. A model can still misinterpret evidence or obey a
+malicious source despite the prompt. Every result is an AI draft requiring
+human review. No independent factual verification or commercial superiority is
+claimed. See original references and report verification checkboxes.
+
+STORAGE AND LIFETIME
+Accepted drafts are saved with immutable source snapshots in the private SQLite
+database, before being marked complete. Job polling is scoped to stock; stale
+browser responses are discarded. Running jobs are memory-only and stop with
+the server. Terminal jobs are bounded to 20, with old terminal jobs pruned on a new request after an hour; accepted
+saved drafts remain subject to the 100-run retention cap. Source text and draft
+snapshots are not part of research JSON backups. Local machine access can read
+local files; this is a personal loopback app, not a public multi-user service.
+
+Official engine references (accessed 3 November 2026):
+https://docs.ollama.com/api/chat
+https://docs.ollama.com/api/tags
+https://docs.ollama.com/capabilities/structured-outputs

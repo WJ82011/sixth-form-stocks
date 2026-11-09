@@ -1,0 +1,60 @@
+MARKET DESK REBORN v2.6.0 — QA / 3 NOVEMBER 2026
+
+206 Python checks passed. All prior behavior checks retained; expected version,
+38 essential assets and nineteen workspace anchors updated. Test runs used
+isolated temporary homes/databases with external network requests blocked.
+
+19 JavaScript suites passed: all 17 earlier suites plus heatmap math/UI suites.
+Navigation tests extended for height animation interruption, stale completion
+callbacks, inert closing contents, app motion-off settlement and OS-reduced-
+motion bypass. Heatmap cases include missing versus genuine zero, old/future
+quotes, signed colours, partial counts, bounded refresh, escaped names, stock
+card explanations, focus return after tile replacement, connection guard and
+explicit-only provider requests. All 18 website scripts parsed.
+
+BOUNDED REAL QUOTE CHECK
+The preview used sixteen genuine Finnhub quote responses through the existing
+connection, in two eight-stock batches. Both batches returned eight usable
+responses. Credentials were not printed, exported, bundled or loaded into the
+browser preview. Only a temporary database received these source snapshots;
+the original private research database was not modified. In-memory provider
+cache was cleared before browser testing. Quote dates were preserved on tiles.
+These response-path checks are not independent verification of market accuracy.
+
+BROWSER CHECKS
+Heatmap showed sixteen of sixteen watchlist stocks with eligible quote pairs.
+The 166-company directory showed sixteen eligible and 150 gray unavailable
+stocks. No missing percentage was invented. Six top-level sidebar entries
+remain, with nineteen tools. A tile opened a source-dated stock card with a
+plain-English explanation; Escape closed it and returned focus to the tile.
+
+Professional page transition computed as desk-page-enter, duration 0.26s.
+Turning the app motion preference off computed animation none. Restoring it
+restored normal motion. Native keyboard Return opened the mobile disclosure;
+Escape started its smooth close, then it settled closed with overflow cleared.
+Unit tests covered rapid interruption and OS-reduced-motion behavior.
+
+Full-screen chart geometry checked with motion enabled: viewport-relative
+left/top 20px, correct width and a 24px corner radius; active-view transform and
+animation were none during full-screen display. Page animations do not retain
+transformed containing blocks after completion. The original price/forecast
+renderers were not changed by the new motion effects.
+
+At 390px phone viewport, page width remained 390px and the map fit 360px.
+Map options revealed the search/group controls without overflow. A native stock
+card measured 358px wide and fit within the 844px viewport. Mobile options and
+stock cards, keyboard dismissal, source labels and the original rounded theme
+were reviewed. Detailed screener controls remain accessible behind Show filters.
+
+PRESERVED ENGINES
+Statistical and language-model engines, financial filters, provider budgets,
+snapshot validation, portfolio/valuation calculations, alert engine, report
+storage and source-date logic retained. No new model accuracy, investment-return
+or continuous-learning claim is made. All data-source and uncertainty limits
+from the previous release still apply.
+
+PACKAGING
+ZIP integrity, exact source-byte matching and executable Mac launcher checked.
+No keys, runtime database, preview quotes, saved workspace or model weights
+included. Generated Python cache files excluded. Earlier source folders and
+historical release reports retained unchanged.

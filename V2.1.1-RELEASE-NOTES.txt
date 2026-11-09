@@ -1,0 +1,54 @@
+MARKET DESK REBORN 2.1.1 — WATCHLIST & RELIABILITY
+3 November 2026
+
+WHAT CHANGED
+1. Stock Browser now opens on My watchlist. Explore stocks has its own tab
+   with the same 166-stock directory, categories, search and Take-Two shortcut.
+   Both tabs support keyboard navigation using Left, Right, Home and End.
+
+2. Each watched stock shows the recorded price time, whether the quote is old,
+   the last successful quote check in this session, and its next planned check.
+   A check can return saved provider data; that does not make the price new.
+   Quotes over 15 minutes old are labelled old, including during market closures.
+   Connection errors remain visible alongside the last available quote.
+
+3. Opening a stock goes to that stock's chart. Company details and Ask
+   Intelligence buttons use the same selected stock. The chart is scrolled into
+   view, with a shortcut back to My watchlist.
+
+4. Reliability fixes:
+   - Busy quote requests no longer advance the rotation past unchecked stocks.
+   - A 60-stock watchlist rotates through ten groups of six.
+   - Empty watchlists stay empty after reopening.
+   - Older backups do not merge removed stocks back into the local watchlist.
+     A newer server backup can still restore changes from another browser.
+   - A late result for a removed stock is ignored.
+   - An older quote cannot replace a later recorded quote.
+   - Invalid, missing and far-future quote results are shown as errors.
+   - A successful check clears an earlier failure message.
+   - Watchlist and directory controls are kept in place during price updates.
+   - A late chart result cannot replace a newly selected stock's chart.
+
+CHECK TIMING
+The app plans a group of up to six quote checks every 25 seconds. A full
+60-stock cycle takes about 250 seconds when requests complete normally.
+Larger lists take longer to revisit each stock. Timings are estimates: busy
+requests, provider limits, network failures, browser throttling and Mac sleep
+can delay them. After a missed deadline the interface says the check is delayed.
+No price monitoring, alerts or background collection are added for Mac-off time.
+WebSocket trade updates remain separate from the planned quote checks.
+
+COMPATIBILITY
+The directory, research tools, model calculations, portfolio, saved reports,
+settings, API request budgets and live-feed subscription limits are retained.
+No paid OpenAI service or new package installation is needed. No v2.2 price
+alerts are included in this release. Use the existing private data folder.
+
+UPGRADE
+Export a full research backup from the old app, then stop its Terminal with
+Control+C. Extract the new ZIP and open Start Market Desk.command. Keep its
+Terminal window open. Use the same browser and local port to keep browser data.
+The private data folder is ~/.marketdesk-reborn; do not delete it. Keys are
+not included in the ZIP or research exports.
+
+See V2.1.1-QA-REPORT.txt for checks and remaining verification limits.

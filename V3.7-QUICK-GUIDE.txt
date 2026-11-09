@@ -1,0 +1,86 @@
+MARKET DESK 3.7 — SIMPLE GUIDE
+
+OPEN
+1. Export a full research backup in your old version's Settings.
+2. Stop the old version's Terminal window with Control+C.
+3. Extract MarketDesk-Reborn-v3.7.0-Mac.zip.
+4. Open Start Market Desk.command inside the extracted folder.
+5. Keep Terminal open and visit http://127.0.0.1:8765.
+Keep ~/.marketdesk-reborn — your existing keys, research and prices live there.
+If needed, type python3 followed by a space in Terminal, drag the new server.py
+into Terminal and press Return. Python 3 is required. Do not open index.html
+directly. Use the normal macOS approval flow if it asks about the launcher.
+
+THE NEW HEATMAP
+Open All tools → Market Heatmap. Choose 1 day, 3 days or 1 week at the top.
+These mean 1, 3 or 5 COMPLETED US trading sessions, not rolling calendar days.
+Weekends and scheduled market holidays are skipped. The two exact comparison
+dates stay visible. The free feed excludes the current New York date, even
+after the close; its previous-day data becomes available after midnight ET.
+
+Your existing Massive connection is used automatically on opening the map.
+The first load needs six daily market files, usually about two minutes if no
+other requests are using the allowance. Each file covers the directory, so you
+do not have to request 221 companies individually. Follow the progress bar.
+The 1-day map becomes usable after the first two files, 3-day after four,
+and 1-week after six. Missing or invalid individual bars stay gray.
+If a connection is missing, open Data connections and save your free Massive
+key privately in Settings. Finnhub alone does not fill the new period map.
+
+Pause stops future requests; a request already in progress may finish.
+Load all company history resumes from the next missing file. Closing the app
+preserves progress. Reopening resumes unless you paused or a provider error
+stopped the update. A new New York date starts a new six-file generation so
+prices from different adjustment runs are not deliberately mixed. Older usable
+maps stay visible with their actual dates while a new set is being collected.
+An interrupted generation is only resumed within that same New York date.
+No data is collected while your Mac or server is off.
+
+COMPANIES OPEN DIRECTLY
+Click a tile to open its company chart with exactly the heatmap dates.
+No Add & open step, watchlist membership or free subscription slot is needed.
+A small price line and the closing price are already on each available tile.
+Select any other chart range to leave the fixed heatmap comparison. Older
+short histories may not cover longer ranges: use Update daily prices or your
+existing CSV import for those ranges. Intraday history still needs actual
+recorded timestamped observations; daily bars are not passed off as intraday.
+
+Stock Browser's primary button also opens directly. The company picker lists
+all directory companies. Follow this company is OPTIONAL: it adds only the
+companies you want to your personal watchlist. Its existing 60-stock limit and
+live-feed subscription limits remain. The open Overview chart takes one temporary
+live slot, including for an unfollowed company. Leave Overview to release it.
+Choose 1hr or 24hrs to see the recorded intraday feed. Fixed heatmap charts
+continue to display their completed-session dates.
+When Finnhub is connected, opening a company requests its profile, quote and
+news through the existing budget/cache, at most once per ten minutes per
+company in this browser session. Missing or restricted information is still
+labelled unavailable. Other tools retain their own explicit refresh controls.
+
+OTHER V3.7 IMPROVEMENTS
+Search companies, choose a browsing group, sort biggest rises/falls first,
+or focus on your own watchlist. Map options contains grouping and CSV export.
+Period, sorting, grouping and scope are remembered in this browser. They are
+not added to the full research backup. Search and group remain temporary.
+The CSV includes actual start/end dates, prices, returns, currency and source.
+The map is a defined shortlist, not the entire stock exchange. Tile area is
+layout only. Groups are editorial, not official financial sectors.
+
+PRESERVED FEATURES
+The earlier market-wide value cards, sourced observations import/export,
+notifications and company-size map are in expandable sections below the main
+map. Daily price notifications still use watched Finnhub quote crossings,
+not these end-of-day period returns. All 22 workspaces, research, local
+AI, forecasting, portfolios, recovery and previous source rules remain.
+No paid OpenAI service, new model download or continuous-learning claim.
+
+DATA AND STORAGE
+Provider prices are saved in the existing private database and are not bundled
+in the release ZIP. Their license/access depends on your account. The new
+heatmap store keeps three recent date generations, with six files each, and
+only directory companies plus up to 60 extra watched symbols. The existing
+chart store keeps at most 550 daily bars per company. No raw whole-market
+response archive is kept on disk. Existing saved data/models are separate
+from the small application ZIP. Keep your private data folder backed up too:
+full research JSON backups do not contain provider price caches. Heatmap CSV
+is a report export, not a way to restore its full six-file historical store.

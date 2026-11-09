@@ -1,0 +1,8 @@
+MARKET HEATMAP — V3.7
+
+Read V3.7-QUICK-GUIDE.txt for the current controls and source rules.
+The map now compares 1, 3 or 5 completed trading sessions using saved
+split-adjusted daily closing prices. Quote AGE is not the return period.
+Exact dates, missing coverage and the original provider stay visible.
+Click a company once to open its chart; following it is optional.
+All earlier market-value and size tools remain collapsed below the map.

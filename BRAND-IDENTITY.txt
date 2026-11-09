@@ -1,0 +1,19 @@
+MARKET DESK / CREST — BRAND IDENTITY v1.6.3
+===========================================
+DESIGN
+The Market Desk Crest is a custom, abstract, double rising-peak symbol.
+Read together, the two forms suggest an M; their shifting heights evoke
+price movement, evidence and the perspective needed for financial research.
+It is intentionally not an Apple, Samsung or other existing company logo.
+
+APPLICATION
+* White/ivory on deep navy; no gradient, shadow, framed tile or decoration.
+* Vector: site/brand-mark.svg (transparent backdrop, 56 x 56 viewBox).
+* Browser icon: site/favicon.svg; Home Screen icon: site/apple-touch-icon.png.
+* Repeats in Signal sidebar, Professional sidebar and terminal masthead.
+* It remains sharp when zoomed and when viewed on a Retina Mac display.
+
+NOTE
+The design was made for this project, but it has not received a formal
+trademark similarity search. Conduct an appropriate search before commercial
+brand registration or public deployment.

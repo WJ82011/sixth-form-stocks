@@ -1,0 +1,6 @@
+MARKET DESK REBORN 4.0.0 PACKAGE FILE SIZES
+Extracted release: 2,092,650 bytes across 291 files.
+Excludes keys, runtime databases/workspaces, caches, preview data and models.
+No new model or external visual library is needed. Selected SEC accounts are
+saved separately in the existing private database, with at most 60 issuers.
+Read STORAGE-GUIDE.txt and V4.0-QUICK-GUIDE.txt for limits. Archive CRC and source-byte comparison passed; launcher executable.

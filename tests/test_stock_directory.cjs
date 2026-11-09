@@ -1,0 +1,11 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict'),path=require('path');
+const nodes=new Map();function el(id){if(!nodes.has(id))nodes.set(id,{value:'',textContent:'',innerHTML:'',disabled:false,classList:{add(){},remove(){}}});return nodes.get(id);}
+const ctx={document:{readyState:'loading',addEventListener(){},getElementById:el},console,URL,Date,Math,Map,Set,JSON,Object,Number,String,Array,Promise};vm.createContext(ctx);vm.runInContext(fs.readFileSync(path.join(__dirname,'../site/app.js'),'utf8'),ctx);const run=s=>vm.runInContext(s,ctx);
+assert.equal(run('STOCK_DIRECTORY.length'),221);assert.equal(run('new Set(STOCK_DIRECTORY.map(x=>x.symbol)).size'),221);assert.equal(run('new Set(STOCK_DIRECTORY.map(x=>x.category)).size'),15);
+assert(run("STOCK_DIRECTORY.every(x=>safeSymbol(x.symbol)&&x.name&&x.listingName&&x.exchange&&x.currency==='USD'&&!('price' in x))"));
+assert.equal(run("directoryMatches('','Games').length"),4);assert.equal(run("directoryMatches('Rockstar','Games')[0].symbol"),'TTWO');assert.equal(run("directoryMatches('','Banking & finance').length"),18);assert.equal(run("directoryMatches('zzzxxyy').length"),0);assert.equal(run("localStockMatches('V')[0].symbol"),'V');assert.equal(run("localStockMatches('SONY')[0].symbol"),'SONY');
+run("E.watch=['AAPL'];E.fundamentals.set('SONY',{profile:{currency:'JPY'}})");assert.equal(run("fmtUnit('SONY',100)"),'$100.00');
+el('directory-category').value='All';run('renderStockDirectory()');assert.equal((el('directory-results').innerHTML.match(/class="directory-stock"/g)||[]).length,18);assert(el('directory-results').innerHTML.includes('Open chart'));assert.equal(el('directory-prev').disabled,true);assert.equal(el('directory-next').disabled,false);
+run('directoryPage=999;renderStockDirectory()');assert.equal(el('directory-next').disabled,true);assert.equal(el('directory-page').textContent,'Page 13 of 13');
+el('directory-search').value='Rockstar';run('directoryPage=0;renderStockDirectory()');assert(el('directory-results').innerHTML.includes('data-add="TTWO"'));assert.equal(run('JSON.stringify(E.watch)'),'["AAPL"]');assert.equal(run('DEFAULT_STOCKS.length'),16);
+console.log('Directory: 221 unique listings, 15 categories, filters, aliases, paging, watchlist preservation and US listing currencies PASS');

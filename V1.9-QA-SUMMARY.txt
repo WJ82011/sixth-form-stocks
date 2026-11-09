@@ -1,0 +1,18 @@
+MARKET DESK v1.9.0 — LOCAL RELEASE QA SUMMARY
+
+All tests on this system were offline/controlled. Test values are not shipped as real market figures.
+- 104 Python backend/unit/integration tests passed.
+- 8 Node.js suites passed: seven pre-existing and one dedicated v1.9 numerical model test.
+- 12 pre-existing browser workflow groups passed with no browser JavaScript errors.
+- 20 v1.7 Comparison/Reports checks passed.
+- 16 v1.8 Macro/Accuracy and deletion-regression checks passed.
+- 24 dedicated v1.9 browser checks passed: indicators/overlays, DCF validation/math/sensitivity/export, paper buy/sell/oversell/cash/reset/import/backup, mobile navigation, zero JavaScript exceptions.
+- Historical chart range and forecast tests passed.
+
+WHAT THIS DOES NOT CONFIRM
+- Your individual Finnhub/Massive credentials, API entitlements, rate limits, actual day-to-day market data or Market Desk running in Safari on your Mac were not exercised.
+- The paper portfolio's omitted dividends, FX, splits, fees and taxes mean it does not represent true investment returns.
+- The DCF is a user-controlled calculation. An academically sound valuation additionally needs independently verified financial statements and careful economic assumptions.
+- Indicators and previous forecast backtests cannot guarantee future accuracy.
+
+Before relying on this release, install on your Mac, check the three workspaces, then run Settings & Diagnostics. This is a personal research tool, not an execution platform.

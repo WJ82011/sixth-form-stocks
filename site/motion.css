@@ -1,0 +1,29 @@
+/* Short, original interface transitions; never animate market values or prices. */
+@keyframes desk-page-enter{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.page-scroll>.view.active,body[data-edition="professional"] .page-scroll>.view.active{animation:desk-page-enter .26s cubic-bezier(.22,.75,.2,1) backwards}
+.sidebar-submenu{transform-origin:top}
+.sidebar-group>summary{transition:background .18s,border-color .18s,color .18s}
+.sidebar-chevron{transition:transform .22s cubic-bezier(.22,.75,.2,1)}
+.chart-story{border-top:1px solid #2b4260;margin-top:16px;padding-top:14px}
+.chart-story>summary{color:#bcd3f3;font:600 11px/1.6 var(--font);cursor:pointer;list-style-position:inside}
+.chart-story .mdi-chart{margin-top:13px}
+.chart-story .chart-note{margin-top:12px}
+@media(prefers-reduced-motion:reduce){.page-scroll>.view.active{animation:none!important}.sidebar-chevron,.sidebar-group>summary{transition:none!important}}
+body[data-motion="off"] .page-scroll>.view.active{animation:none!important}
+body[data-motion="off"] .sidebar-chevron,body[data-motion="off"] .sidebar-group>summary{transition:none!important}
+@media print{.page-scroll>.view.active{animation:none!important}}
+
+/* Fixed full-screen charts must never inherit an animated containing block. */
+body.chart-modal-open .page-scroll>.view.active{animation:none!important;transform:none!important;opacity:1!important}
+#pro-chart-mount .main-chart-panel.is-expanded{background:#0e1826!important;border:1px solid #446c9e!important;border-radius:24px!important;overflow:auto}
+
+/* Long-range history controls share the existing rounded chart surface. */
+#overview-ranges{display:flex;flex-wrap:wrap;gap:5px;max-width:100%}
+#overview-ranges button{min-height:36px;min-width:38px}
+.history-import p{font-size:12px;line-height:1.7;color:var(--text-secondary,#a6b8cc);overflow-wrap:anywhere}
+#history-import-form{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+#history-import-form label{display:flex;flex-direction:column;gap:8px;font-size:12px;color:#bdcee1;min-width:0}
+#history-import-form input:not([type=checkbox]),#history-import-form select{width:100%;box-sizing:border-box;min-width:0;min-height:42px;padding:10px;border:1px solid #304964;border-radius:12px;background:#0d1a2c;color:#e4effb}
+#history-import-form .history-confirm{flex-direction:row;align-items:start;grid-column:1/-1;line-height:1.6}
+#history-import-form p,.history-import-actions{grid-column:1/-1}.history-import-actions{display:flex;gap:10px;flex-wrap:wrap}
+@media(max-width:600px){#history-import-form{grid-template-columns:1fr}#overview-ranges button{min-width:40px}}

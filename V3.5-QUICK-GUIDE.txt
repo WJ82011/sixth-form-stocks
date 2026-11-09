@@ -1,0 +1,108 @@
+MARKET DESK V3.5 — A CLEARER RESEARCH WORKFLOW
+
+OPEN THE UPDATE
+1. Export a full research backup from Settings in your current version.
+2. Stop its Terminal window with Control+C.
+3. Extract MarketDesk-Reborn-v3.5.0-Mac.zip.
+4. Open the extracted folder and double-click Start Market Desk.command.
+5. Keep Terminal open and visit http://127.0.0.1:8765.
+   If Terminal prints another address, use that address. Closing the older
+   app first lets you keep port 8765 and the same browser workspace.
+
+If the launcher does not run: type python3 and a space in Terminal, drag the
+new server.py into Terminal and press Return. Python 3 is available from
+python.org. You do not need Node.js to run Market Desk.
+Keep your existing ~/.marketdesk-reborn folder and local AI installation.
+The ZIP contains no keys, private research, recorded prices or model weights.
+
+FIND V3.5
+All tools → Market Desk Intelligence → Research Desk at the top.
+The section buttons jump to company evidence, what-ifs, the forecast journal
+and the existing local AI assistant. No extra sidebar entries are added.
+
+RESEARCH A COMPANY
+Enter a symbol such as TTWO and load saved accounts. Update SEC accounts
+explicitly if needed. The desk separates what is known, what to investigate
+and what is missing. Read the filing dates, saved quote time, matched headlines
+and upcoming events. Headline matching can miss relevant stories and include
+irrelevant ones. A calendar date is not a guaranteed announcement.
+
+TRY A WHAT-IF
+1. Complete the shared business assumptions and explain them. Use the existing
+   reference button to start three unchanged-business cases, then edit them.
+2. Open Build a what-if. Choose a business input, your hypothetical percentage
+   change and the case to explore. No numerical change is invented for you.
+3. Optional: ask the installed local AI to explain mechanisms, evidence and
+   risks. It uses the local model selected in Intelligence below. Accepted
+   drafts keep supporting excerpts; meaning still needs human review.
+4. Preview this what-if. Your analysis has not changed at this point.
+5. Apply reviewed what-if only if appropriate. The chosen case receives your
+   numerical assumption and an explicitly labelled assumption record.
+6. Compare all cases, review the chart and save a completed analysis.
+
+The new chart starts with reported operating profit/loss and shows mechanical
+contributions from prices, volume, costs and launches. Price is applied before
+volume; their interaction is assigned to volume. This is a model explanation,
+not proof that those factors caused an actual market move. Detailed valuation
+and launch figures remain available inside each case card.
+
+RECOVER UNFINISHED WORK
+Analyst forms save a recovery copy in this browser as you edit. This includes
+incomplete numbers, case inputs, unfinished source-entry text and what-if form
+inputs. Open Draft recovery and explicitly restore the company you want.
+Restoring a draft does not turn it into a saved analysis. Recalculate and review
+it before saving. Original annual source inputs are retained; changed current
+accounts require a fresh review before calculations are accepted.
+
+Saving a completed analysis keeps its recovery copy, including source text
+that you have not submitted yet. The two records serve different purposes.
+Recovery supports up to ten companies within a conservative storage budget of
+about 0.4 MB. Download drafts before removing older recovery copies. Recovery
+copies join your full research backup. Use the same browser and local address.
+Private backup writes are queued; the browser recovery copy is saved first.
+
+If browser storage fails, keep the page open and download the current form.
+If recovery data is damaged, its raw contents are retained for download; it is
+not silently replaced with an empty library. New private backups are refused
+rather than overwriting the last good backup with damaged recovery data.
+Standalone draft/recovery downloads are audit copies, not separate import
+formats. Restore through the normal full research-backup importer when needed.
+
+RECORD AND CHECK PRICE FORECASTS
+The prediction journal is separate from business scenarios and historical
+backtests. It records a freshly calculated five-session price estimate using
+saved provider closes. It needs at least 220 usable closes and the most recently
+completed scheduled session, retrieved at least 15 minutes after that close.
+Update daily history through the existing chart controls when needed.
+
+Recording is supported for Nasdaq/NYSE USD listings in the local directory.
+The bundled regular-session calendar covers 2026–2028, including published
+holidays and early closes. Unexpected closures are possible. A forecast is
+withheld when calendar coverage or sufficiently recent final data is missing.
+Only one forecast per company and starting session is allowed; it cannot be
+replaced with a better-looking result after another model run.
+
+Later, press Check saved outcomes. When all five specified future session
+closes are available, the journal shows actual return, model error and the
+unchanged-price error. Missing dates are not replaced by later dates. Revised
+prices can withhold scoring, including possible corporate-action adjustments.
+No outcomes are invented before they happen. Historical model tests and newly
+recorded future results are labelled separately.
+
+Archived journal entries remain in the scores. Both all scored records and a
+chronologically selected non-overlapping cohort are reported. Small samples
+and correlated companies do not establish an advantage. No fees, spreads,
+dividends, currency conversion or trade execution are modelled.
+
+IMPORTANT BACKUP DISTINCTION
+Recovery copies and saved business analyses join your full research JSON
+backup. Forecast journal receipts/outcomes are stored in the private price
+SQLite database, like other recorded market data. Download journal creates a
+separate audit copy; it is not a journal restore/import format. Preserve your
+private data folder when moving or upgrading the app. Up to 200 journal records
+are retained; none are automatically deleted to make room.
+
+Nothing collects prices, writes forecasts or learns while this local server
+or your Mac is off. On return, actual provider history can be loaded and used
+to check previously recorded forecasts. No paid OpenAI service, cloud fallback
+or new model download is added. Read V3.5-METHODOLOGY.md for technical details.

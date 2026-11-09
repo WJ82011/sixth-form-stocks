@@ -1,0 +1,410 @@
+LOCAL MODEL SMOKE CHECKS — FICTIONAL DATA ONLY
+3 November 2026 / qwen3.5:4b / local Ollama MLX / 16,384-token context
+
+This is a development smoke test, not a financial-performance benchmark or
+proof of factual accuracy. Exact passage/digit checks are mechanical. Human
+review is required. Source fixtures are in tests/evaluate_local_ai.py.
+
+{"question": "What revenue and operating profit are reported in the source?", "mode": "answer", "accepted": true, "seconds": 20.3}
+{"question": "What is the current share price? Do not guess if the source does not provide it.", "mode": "answer", "accepted": true, "seconds": 14.8}
+{"question": "Write a short balanced research report. Explain the figures and the missing evidence. Do not calculate new figures.", "mode": "report", "accepted": true, "seconds": 14.9}
+{"question": "Compare the reported revenue figures for Example Company and Other Company. Do not calculate a difference.", "mode": "answer", "accepted": true, "seconds": 12.7}
+[
+  {
+    "question": "What revenue and operating profit are reported in the source?",
+    "mode": "answer",
+    "accepted": true,
+    "seconds": 20.3,
+    "draft": {
+      "title": "Reported Financial Figures",
+      "sections": [
+        {
+          "heading": "Revenue and Operating Profit Values",
+          "bullets": [
+            {
+              "text": "The source reports revenue of 120 million USD and operating profit of 18 million USD.",
+              "kind": "fact",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "Example Company reported revenue of 120 million USD and operating profit of 18 million USD."
+                }
+              ]
+            },
+            {
+              "text": "These figures are explicitly stated as part of the example company's reported data.",
+              "kind": "analysis",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "Example Company reported revenue of 120 million USD and operating profit of 18 million USD."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Reporting Period Context",
+          "bullets": [
+            {
+              "text": "The reporting period for these figures ended in June 2026.",
+              "kind": "fact",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "Its reporting period ended in June 2026."
+                }
+              ]
+            },
+            {
+              "text": "The source clarifies that this data is fictional test data, not a market quote.",
+              "kind": "analysis",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "This is fictional test data, not a market quote."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Missing Information",
+          "bullets": [
+            {
+              "text": "The source does not report share price, product names, or future returns.",
+              "kind": "fact",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "The source does not report a share price, product names or future returns."
+                }
+              ]
+            },
+            {
+              "text": "No additional financial metrics beyond revenue and operating profit are available in the provided text.",
+              "kind": "analysis",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "The source does not report a share price, product names or future returns."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Missing Information",
+          "bullets": [
+            {
+              "text": "The source explicitly states it is fictional test data, not a real market quote.",
+              "kind": "analysis",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "This is fictional test data, not a market quote."
+                }
+              ]
+            },
+            {
+              "text": "No other financial data or future projections are reported in the source excerpts.",
+              "kind": "analysis",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "The source does not report a share price, product names or future returns."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "missing": [
+        "share price",
+        "product names",
+        "future returns",
+        "additional financial metrics"
+      ],
+      "checks": {
+        "sourceLinksMatched": 8,
+        "factualStatements": 3,
+        "numericCheck": "Digits in statements matched text in their cited sources. This does not establish meaning, units or truth.",
+        "semanticVerification": false
+      }
+    }
+  },
+  {
+    "question": "What is the current share price? Do not guess if the source does not provide it.",
+    "mode": "answer",
+    "accepted": true,
+    "seconds": 14.8,
+    "draft": {
+      "title": "Share Price Inquiry",
+      "sections": [
+        {
+          "heading": "Current Share Price",
+          "bullets": [
+            {
+              "text": "The provided source does not report a share price.",
+              "kind": "fact",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "The source does not report a share price, product names or future returns."
+                }
+              ]
+            },
+            {
+              "text": "The data is explicitly identified as fictional test data, not a market quote.",
+              "kind": "fact",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "This is fictional test data, not a market quote."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Missing Information",
+          "bullets": [
+            {
+              "text": "No share price or future returns are available in the evidence.",
+              "kind": "analysis",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "The source does not report a share price, product names or future returns."
+                }
+              ]
+            },
+            {
+              "text": "The source contains no financial data regarding product names or share valuation.",
+              "kind": "analysis",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "The source does not report a share price, product names or future returns."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Contextual Facts",
+          "bullets": [
+            {
+              "text": "The example company reported revenue of 120 million USD and operating profit of 18 million USD.",
+              "kind": "fact",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "Example Company reported revenue of 120 million USD and operating profit of 18 million USD."
+                }
+              ]
+            },
+            {
+              "text": "The reporting period for the example company ended in June 2026.",
+              "kind": "fact",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "Its reporting period ended in June 2026."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "missing": [
+        "share price value",
+        "current market quote",
+        "actual share valuation data"
+      ],
+      "checks": {
+        "sourceLinksMatched": 6,
+        "factualStatements": 4,
+        "numericCheck": "Digits in statements matched text in their cited sources. This does not establish meaning, units or truth.",
+        "semanticVerification": false
+      }
+    }
+  },
+  {
+    "question": "Write a short balanced research report. Explain the figures and the missing evidence. Do not calculate new figures.",
+    "mode": "report",
+    "accepted": true,
+    "seconds": 14.9,
+    "draft": {
+      "title": "Research Report on TEST",
+      "sections": [
+        {
+          "heading": "Reported Financial Figures",
+          "bullets": [
+            {
+              "text": "The source states Example Company reported revenue of 120 million USD and operating profit of 18 million USD.",
+              "kind": "fact",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "Example Company reported revenue of 120 million USD and operating profit of 18 million USD."
+                }
+              ]
+            },
+            {
+              "text": "The reporting period for these figures ended in June 2026.",
+              "kind": "fact",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "Its reporting period ended in June 2026."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Missing Information and Limitations",
+          "bullets": [
+            {
+              "text": "The source explicitly confirms this is fictional test data, not a real market quote.",
+              "kind": "analysis",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "This is fictional test data, not a market quote."
+                }
+              ]
+            },
+            {
+              "text": "No share price, product names, or future returns are reported in the available excerpt.",
+              "kind": "fact",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "The source does not report a share price, product names or future returns."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Data Reliability Assessment",
+          "bullets": [
+            {
+              "text": "The available evidence is limited to a single fictional test fixture with no external verification.",
+              "kind": "analysis",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "This is fictional test data, not a market quote."
+                }
+              ]
+            },
+            {
+              "text": "No additional sources exist to validate the financial figures or confirm their accuracy.",
+              "kind": "analysis",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "Example Company reported revenue of 120 million USD and operating profit of 18 million USD."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "checks": {
+        "sourceLinksMatched": 6,
+        "factualStatements": 3,
+        "numericCheck": "Digits in statements matched text in their cited sources. This does not establish meaning, units or truth.",
+        "semanticVerification": false
+      }
+    }
+  },
+  {
+    "question": "Compare the reported revenue figures for Example Company and Other Company. Do not calculate a difference.",
+    "mode": "answer",
+    "accepted": true,
+    "seconds": 12.7,
+    "draft": {
+      "title": "Revenue Comparison",
+      "sections": [
+        {
+          "heading": "Reported Revenue Figures",
+          "bullets": [
+            {
+              "text": "Example Company reported revenue of 120 million USD.",
+              "kind": "fact",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "Example Company reported revenue of 120 million USD and operating profit of 18 million USD."
+                }
+              ]
+            },
+            {
+              "text": "Other Company reported revenue of 80 million USD.",
+              "kind": "fact",
+              "evidence": [
+                {
+                  "id": "D2",
+                  "excerpt": "Other Company reported revenue of 80 million USD."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Data Reliability Context",
+          "bullets": [
+            {
+              "text": "The source explicitly states that Example Company's data is fictional test data, not a market quote.",
+              "kind": "analysis",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "This is fictional test data, not a market quote."
+                }
+              ]
+            },
+            {
+              "text": "The source explicitly states that Other Company's figures are fictional test figures, not market prices.",
+              "kind": "analysis",
+              "evidence": [
+                {
+                  "id": "D2",
+                  "excerpt": "These are fictional test figures, not market prices."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "heading": "Missing Information",
+          "bullets": [
+            {
+              "text": "No share price, product names, or future returns were reported for either company.",
+              "kind": "analysis",
+              "evidence": [
+                {
+                  "id": "D1",
+                  "excerpt": "The source does not report a share price, product names or future returns."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "missing": [],
+      "checks": {
+        "sourceLinksMatched": 5,
+        "factualStatements": 2,
+        "numericCheck": "Digits in statements matched text in their cited sources. This does not establish meaning, units or truth.",
+        "semanticVerification": false
+      }
+    }
+  }
+]
+Accepted 4 of 4 fictional-source tasks. This is not a comparison with commercial platforms.

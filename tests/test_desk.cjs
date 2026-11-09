@@ -1,0 +1,25 @@
+/* Synthetic fixtures only. No market data, network, or model is used here. */
+const assert=require('node:assert/strict'),path=require('node:path');
+const M=require(path.join(__dirname,'../site/desk.js')),now=1793790000000,DAY=86400000;
+const row=(symbol,price,previousClose=100,quoteTime=now-1000)=>({symbol,name:symbol,price,previousClose,quoteTime});
+assert.equal(M.quote(row('AAPL',100),now).change,0,'true zero is retained');
+for(const r of [row('AAPL',0),row('AAPL',100,0),row('AAPL',null),row('AAPL',NaN),row('AAPL',Infinity),row('AAPL',100,100,now+1),row('AAPL',100,100,now-4*DAY)])assert.equal(M.quote(r,now).usable,false);
+const b=M.briefing([row('AAPL',110),row('TTWO',80),row('MSFT',100),row('NVDA',null)],now);
+assert.equal(b.total,4);assert.equal(b.available,3);assert.equal(b.up,1);assert.equal(b.down,1);assert.equal(b.flat,1);assert.equal(b.missing,1);assert.equal(b.rise.row.symbol,'AAPL');assert.equal(b.fall.row.symbol,'TTWO');
+assert.equal(M.briefing([],now).rise,null);assert.equal(M.briefing([row('AAPL',90)],now).rise,null,'falling stock is not called a riser');
+assert.equal(M.rangeState('5Y',{},true,false,now).label,'Import needed');
+assert.equal(M.rangeState('1Y',{},true,false,now).label,'Can load daily data');
+assert.equal(M.rangeState('1H',{},true,true,now).label,'Recordings needed');
+const partial={first:now-365*DAY,last:now-DAY,count:250};
+assert.equal(M.rangeState('5Y',{daily:partial},true,true,now).label,'Partial saved data');
+assert.equal(M.rangeState('5Y',{imported:partial},true,true,now).label,'Partial file');
+const full={first:now-1830*DAY,last:now-DAY,count:1000};
+assert.equal(M.rangeState('5Y',{imported:full},false,false,now).label,'Saved file');
+assert.equal(M.rangeState('5Y',{imported:{...full,last:now-11*DAY}},false,false,now).label,'Old file');
+assert.equal(M.rangeState('1Y',{imported:{...full,last:now-800*DAY}},true,true,now).label,'File outside range');
+const news=(headline,url='https://example.com/a',datetime=now/1000-60)=>({headline,url,datetime,source:'Synthetic test publisher'});
+assert.equal(M.headlines([news('Test'),news('duplicate'),news('future','https://example.com/b',now/1000+1),news('unsafe','javascript:alert(1)'),news('credential','https://name:secret@example.com')],now).length,1);
+assert.equal(M.companyHeadlines([news('Red Rock Resorts report'),news('Take-Two reports results','https://example.com/b'),news('GTA VI report','https://example.com/c')],'TTWO','Take-Two Interactive',now).length,2);
+assert.equal(M.companyHeadlines([news('Education news')],'CAT','Caterpillar',now).length,0,'ticker must match a title token');
+assert.equal(M.companyHeadlines([news('What investors should do now')],'NOW','ServiceNow',now).length,0,'ordinary words are not uppercase ticker matches');
+console.log('v2.7 briefing, coverage, dates, missing-vs-zero, safe headlines and company matching PASS');

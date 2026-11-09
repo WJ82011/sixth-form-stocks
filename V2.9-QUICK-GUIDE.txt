@@ -1,0 +1,54 @@
+MARKET DESK REBORN 2.9 — UNDERSTAND THE BUSINESS
+
+OPEN THE UPDATE
+Export your research backup from the old version first. Stop its Terminal
+window with Control+C. Unzip this release and double-click Start Market
+Desk.command. Keep Terminal open. Your private saved data is reused.
+
+FINANCIAL HEALTH
+All tools > Company Overview. Choose a company, then Update SEC accounts.
+This uses free official SEC data, without a Finnhub or Massive key. It makes
+only a few paced requests, then saves selected facts locally. Saved responses
+are reused for 24 hours; their original retrieval dates stay visible.
+
+Read the short explanation and the sales, profit and cash-flow charts.
+Choose full financial years or directly reported quarters. Check every figure
+opens exact amounts, reporting dates, filing links and accounting definitions.
+Download accounts saves a separate JSON copy. Provider profiles and ratios
+remain in the expandable section below the new financial health panel.
+
+COMPARE COMPANIES
+All tools > Compare Companies. Choose two or three different companies, then
+Compare saved accounts. Update selected SEC accounts requests any missing or
+old accounts. It does not use Finnhub data limits. The app checks fiscal dates:
+if it finds a shared full-year window, it shows that window. Otherwise it shows
+latest saved periods with a clear warning and no like-for-like ranking.
+Companies with different industries or definitions still need careful reading.
+The older provider ratios and provider-comparison report remain available.
+
+INTELLIGENCE
+After updating a company's accounts, open Intelligence and select that stock.
+Check saved data, then choose Financial health under Quick data questions.
+These answers are factual summaries and work without a language model.
+The optional installed local AI also receives normalized SEC facts and filing
+links. Ask which period it is using. AI drafts still need your review; checks
+can reject them, and a valid citation does not establish the interpretation.
+Updating accounts does not train either the language model or price model.
+
+WHAT MAY BE MISSING
+This first release supports selected consolidated US-GAAP facts in USD from
+10-K and 10-Q filers. Foreign IFRS reporters, custom tags and some statement
+lines remain unavailable. A missing figure is never assumed to be zero.
+Debt means current plus non-current long-term debt only, with both portions
+in the same filing. It is not total debt. Other borrowings and leases are not
+silently added. Take-Two can show missing long-term debt when a required
+standard concept is absent, even though other financial lines are available.
+No health score or buy/sell rating is assigned.
+
+SAVED DATA AND PRIVACY
+Only selected facts are retained, up to 60 issuers. No new model is downloaded.
+The ordinary research backup does not contain the SEC cache; use Download
+accounts for its separate JSON copy. Provider keys never go to the SEC.
+Opening a view does not refresh SEC data. Nothing runs when the server is off.
+If SEC access fails, cached figures remain dated and missing figures remain
+missing. There is no proxy or access-restriction bypass.

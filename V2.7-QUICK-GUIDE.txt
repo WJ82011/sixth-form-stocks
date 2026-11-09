@@ -1,0 +1,44 @@
+MARKET DESK v2.7 — SIMPLE GUIDE
+
+1. Start the app and open Overview.
+2. Daily briefing shows your watchlist's recorded moves and dated headlines.
+   A price quote can be old. Read its time, especially outside trading hours.
+3. Choose any company card, or choose Company & chart. Read its short business
+   summary, then explore the chart. More company details opens the background
+   fields; Open full company research retains the detailed financial page.
+4. Read the small label under a chart period before selecting it. Saved daily
+   data means the dates reach that period's beginning/recent end; gaps can still
+   exist. Partial file/data means part of the period is missing. Import needed
+   means the current free source cannot provide the full requested years.
+5. Manage price history opens source dates, saved imports and the sourcing guide.
+   Add or replace opens the original daily-price CSV form for the selected ticker.
+   Download keeps a copy of that ticker's imported daily prices. Keep the original
+   source notes too. Use provider history removes the app's imported copy for that
+   stock, leaving your original CSV and saved provider bars intact.
+6. Read the headlines' publication and retrieval dates. Company headlines are
+   matched by company-name or ticker text in the title; this can miss relevant
+   articles and is not a verification of the article's claims.
+7. Detailed workspace returns to the earlier Signal or Professional layout.
+   Your edition preference and all sidebar tools remain available in Settings.
+
+Refresh up to 8 prices & headlines requests at most eight watchlist quotes and
+one general-news list. Repeated refreshes prioritise the oldest checked stocks.
+Update this company & news requests the selected quote, profile and news list.
+A request may reuse the provider cache. Neither button guarantees a live trade.
+Opening the briefing only rereads saved snapshots; the existing app-wide price
+cycle continues. No updates or model training happen while the Mac is off.
+
+WHAT YOU NEED
+Existing Finnhub connection for new quotes and headlines; Massive connection
+for new provider daily prices, subject to its free window. Saved Massive daily
+bars can be viewed offline. A suitable imported daily CSV can provide older
+history without a paid API. See LONG-TERM-PRICE-GUIDE.txt for file requirements.
+
+BACKUP
+Research JSON exports do not contain prices, imports, saved headlines, alerts,
+AI drafts or sources. Keep original CSVs. For a full local-data backup, stop the
+app, then copy ~/.marketdesk-reborn privately. Keep provider keys private.
+
+Company descriptions are general directory background, not automated analysis
+of why a price changed. A provider industry field is clearly dated when used.
+No AI-generated scores or invented facts are added to the daily briefing.

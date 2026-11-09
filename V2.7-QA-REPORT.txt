@@ -1,0 +1,68 @@
+MARKET DESK v2.8.0 — QA / 4 NOVEMBER 2026
+
+AUTOMATED
+226 Python tests passed. This includes 13 new saved-briefing, headline, import
+metadata, source migration, request-boundary and offline-history cases.
+21 JavaScript suites passed, including new briefing/coverage/headline logic.
+All 19 site scripts passed JavaScript syntax parsing; Python sources parsed.
+
+The tests cover missing vs true zero changes, per-watchlist counts and movers,
+old/future quote exclusion, partial/old/out-of-range file hints, title matching,
+unsafe/credential links, duplicate headlines and publication windows. Stored
+news keeps source retrieval dates and does not store article bodies or images.
+Snapshot reads make no external calls. Refresh input sizes, sequential request
+bounds, cooldown stopping, profile-only company refresh, concurrency locks,
+localhost-origin/local-request checks and source persistence were checked.
+
+The imported-file metadata upgrade is tested using an older stored file. Clearing
+an import removes its metadata consistently. Offline daily access returns only
+saved genuine provider bars with their source dates, or an explicit no-data
+state. It does not request an external source or fill missing prices.
+
+BROWSER / ACTUAL SOURCES
+Preview used a temporary private database, read-only copies of sanitized saved
+provider quote/profile snapshots and saved Massive bars for AAPL/TTWO, and two
+normal Finnhub headline requests (general and TTWO). No extra model download,
+model generation, financial-metric fetch, bulk market scan or fabricated preview
+price series was used. The user's existing database was not modified. Provider
+keys were removed from preview configuration before opening the browser.
+
+Checked Daily briefing, Take-Two's business description, original headline links,
+company/ticker title matching, company selection and 1Y/5Y source hints. The
+saved 1Y AAPL chart returned 249 displayed closes without provider credentials.
+A real 499-row source export was imported into the temporary preview, marked
+unverified as all user imports are, shown as Partial 5Y and listed with its real
+source/date span. The download button triggered its CSV action; browser status
+confirmed it. The downloaded file was not inspected at a standard Downloads
+path, so byte-level CSV download verification is not claimed. Use provider history
+then removed the temporary imported copy while retaining saved provider bars.
+
+Signal detailed layout restored the chart to its original dashboard. Professional
+detailed layout restored it to pro-chart-mount. Returning to Company & chart
+moved that same canvas to the new mount. Professional Edition's previous direct-
+child hide rule was moved to the retained legacy wrapper so new surfaces stay
+visible and original Signal-only content stays hidden in the Pro terminal.
+
+Desktop fullscreen: viewport 1280 x 720; panel left 20, top 20, right 1260,
+bottom 700; canvas left 44, top about 305, right 1236, bottom about 633.
+Phone: viewport 390 x 844; page width 390, company width 360, chart width 326.
+Expanded phone panel left 9, top 9, right 381, bottom 835; canvas left 27,
+top about 467, right 363, bottom about 739. No sideways page overflow.
+Temporary viewport override was reset. Desktop/phone screenshots were saved
+beside the release. Existing motion preferences and OS Reduce Motion remain.
+
+REGRESSION AND LIMITS
+Original AI/model, screener, heatmap, navigation, alert and research core files
+were compared with v2.6.1. Feature regression suites passed. Chart mounting,
+wrapper visibility and mobile fullscreen CSS were adapted for the new layout.
+No independent market-price audit or new-user usability session is claimed.
+Sixteen default companies have written background notes; other companies use
+saved industry/missing-description states. Title matches can miss relevant
+reports and do not verify publisher claims or establish price-move causation.
+Free provider history limits remain; no full 5Y/10Y feed is promised.
+
+PACKAGING
+ZIP CRC and every archived file were compared with source; command launcher
+executable bits retained. Runtime databases, keys, preview CSVs, caches and model
+weights excluded. Actual private key values were checked for absence without
+printing them. Source count and exact extracted bytes are in PACKAGE-SIZES.txt.

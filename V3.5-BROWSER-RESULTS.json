@@ -1,0 +1,244 @@
+{
+  "release": "3.5.0",
+  "checkedAtUTC": "2026-11-06T13:56:43.651Z",
+  "desktop": [
+    {
+      "name": "Home",
+      "view": "view-home"
+    },
+    {
+      "name": "Overview",
+      "view": "view-overview"
+    },
+    {
+      "name": "Market Heatmap",
+      "view": "view-heatmap"
+    },
+    {
+      "name": "Stock Screener",
+      "view": "view-screener"
+    },
+    {
+      "name": "Stock Browser",
+      "view": "view-markets"
+    },
+    {
+      "name": "Live Tape",
+      "view": "view-tape"
+    },
+    {
+      "name": "Market News",
+      "view": "view-news"
+    },
+    {
+      "name": "Economy Overview",
+      "view": "view-macro"
+    },
+    {
+      "name": "Market Desk Intelligence",
+      "view": "view-intelligence"
+    },
+    {
+      "name": "Company Overview",
+      "view": "view-company"
+    },
+    {
+      "name": "Compare Companies",
+      "view": "view-comparison"
+    },
+    {
+      "name": "Chart Indicators",
+      "view": "view-indicators"
+    },
+    {
+      "name": "Company Valuation",
+      "view": "view-valuation"
+    },
+    {
+      "name": "Price Forecasts",
+      "view": "view-forecast"
+    },
+    {
+      "name": "Forecast Results",
+      "view": "view-accuracy"
+    },
+    {
+      "name": "Company calendar",
+      "view": "view-calendar"
+    },
+    {
+      "name": "Price Alerts",
+      "view": "view-alerts"
+    },
+    {
+      "name": "Practice Portfolio",
+      "view": "view-portfolio"
+    },
+    {
+      "name": "Research projects",
+      "view": "view-research"
+    },
+    {
+      "name": "Research Reports",
+      "view": "view-reports"
+    },
+    {
+      "name": "Sources & health",
+      "view": "view-sources"
+    },
+    {
+      "name": "Settings & Checks",
+      "view": "view-settings"
+    }
+  ],
+  "phone": [
+    {
+      "name": "Home",
+      "scroll": 390,
+      "view": "view-home",
+      "width": 390
+    },
+    {
+      "name": "Overview",
+      "scroll": 390,
+      "view": "view-overview",
+      "width": 390
+    },
+    {
+      "name": "Market Heatmap",
+      "scroll": 390,
+      "view": "view-heatmap",
+      "width": 390
+    },
+    {
+      "name": "Stock Screener",
+      "scroll": 390,
+      "view": "view-screener",
+      "width": 390
+    },
+    {
+      "name": "Stock Browser",
+      "scroll": 390,
+      "view": "view-markets",
+      "width": 390
+    },
+    {
+      "name": "Live Tape",
+      "scroll": 390,
+      "view": "view-tape",
+      "width": 390
+    },
+    {
+      "name": "Market News",
+      "scroll": 390,
+      "view": "view-news",
+      "width": 390
+    },
+    {
+      "name": "Economy Overview",
+      "scroll": 390,
+      "view": "view-macro",
+      "width": 390
+    },
+    {
+      "name": "Market Desk Intelligence",
+      "scroll": 390,
+      "view": "view-intelligence",
+      "width": 390
+    },
+    {
+      "name": "Company Overview",
+      "scroll": 390,
+      "view": "view-company",
+      "width": 390
+    },
+    {
+      "name": "Compare Companies",
+      "scroll": 390,
+      "view": "view-comparison",
+      "width": 390
+    },
+    {
+      "name": "Chart Indicators",
+      "scroll": 390,
+      "view": "view-indicators",
+      "width": 390
+    },
+    {
+      "name": "Company Valuation",
+      "scroll": 390,
+      "view": "view-valuation",
+      "width": 390
+    },
+    {
+      "name": "Price Forecasts",
+      "scroll": 390,
+      "view": "view-forecast",
+      "width": 390
+    },
+    {
+      "name": "Forecast Results",
+      "scroll": 390,
+      "view": "view-accuracy",
+      "width": 390
+    },
+    {
+      "name": "Company calendar",
+      "scroll": 390,
+      "view": "view-calendar",
+      "width": 390
+    },
+    {
+      "name": "Price Alerts",
+      "scroll": 390,
+      "view": "view-alerts",
+      "width": 390
+    },
+    {
+      "name": "Practice Portfolio",
+      "scroll": 390,
+      "view": "view-portfolio",
+      "width": 390
+    },
+    {
+      "name": "Research projects",
+      "scroll": 390,
+      "view": "view-research",
+      "width": 390
+    },
+    {
+      "name": "Research Reports",
+      "scroll": 390,
+      "view": "view-reports",
+      "width": 390
+    },
+    {
+      "name": "Sources & health",
+      "scroll": 390,
+      "view": "view-sources",
+      "width": 390
+    },
+    {
+      "name": "Settings & Checks",
+      "scroll": 390,
+      "view": "view-settings",
+      "width": 390
+    }
+  ],
+  "phoneViewport": {
+    "width": 390,
+    "height": 844
+  },
+  "newFlows": [
+    "Partial draft recovered after reload and server restart",
+    "Separate company drafts",
+    "What-if preview before explicit application",
+    "Native profit bridge and text alternative",
+    "One accepted real local-AI explanation",
+    "Prospective forecast recorded as waiting; duplicate refused",
+    "Forecast archive and restore",
+    "Research backup and journal audit downloads inspected",
+    "Light and dark appearance inspected"
+  ],
+  "scope": "Temporary copied public-data preview; no personal workspace or keys. No future outcomes or live feed uptime claim."
+}

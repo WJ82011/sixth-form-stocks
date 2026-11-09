@@ -1,0 +1,28 @@
+MARKET DESK REBORN v2.6.1 — LONGER PRICE HISTORY
+
+Adds 6M, 2Y, 5Y and 10Y alongside existing 1Y and shorter chart ranges.
+Long-range requests are sized for the chosen range, cached by ticker/depth and
+kept within the existing free provider restrictions. A larger range does not
+claim access to older data. Earlier missing years remain empty on the chart.
+
+The chart reports its actual dates and percentage rise/fall between displayed
+prices. Longer axes include the year. Partial and imported coverage are visible
+without opening the explanation panel. Daily gaps are not bridged.
+
+Adds an optional local daily CSV import for longer histories without requiring
+a paid API. Imports keep source and adjustment labels; they do not alter live
+quotes, recorded intraday prices, provider models or AI training. Forecasts are
+withheld for imported chart data. Existing forecast and indicator workspaces
+explicitly continue requesting provider data.
+
+Imports are atomic, validated and stored separately in the existing private
+SQLite database. Source names are rendered as text, not executable markup.
+POST actions require the existing localhost-origin and local-request checks.
+
+All heatmap, motion, watchlist, company/news and research features retained.
+No paid OpenAI dependency or extra local model is added. Original source files
+remain available in the prior v2.6.0 folder. Stop the old app before launching
+Start Market Desk.command from this newly extracted folder.
+
+Read LONG-TERM-PRICE-GUIDE.txt for simple use, coverage and backup instructions.
+Read V2.6.1-QA-REPORT.txt for validation results.

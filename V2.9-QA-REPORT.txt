@@ -1,0 +1,53 @@
+MARKET DESK REBORN 2.9 — VALIDATION / 5 NOVEMBER 2026
+
+PASS: 262 Python tests, including the full existing suite and new financial,
+SEC-client and API checks. Tests use isolated data folders and synthetic
+fixtures; they do not call real providers or use personal configuration.
+PASS: 23 JavaScript suites, including new financial-health UI checks.
+PASS: all shipped site JavaScript parses.
+
+NEW AUTOMATED COVERAGE
+Exact fiscal windows; filing FY metadata versus actual periods; annual versus
+direct quarter and YTD cash flow; amendments and value differences; same-day
+conflicting filings; future/malformed facts; currency isolation; zero versus
+missing; debt-component consistency; issuer/ticker verification; offline reads;
+24-hour cache reuse without advancing source dates; failed-refresh preservation;
+request locking, fixed endpoints, redirects and 429 cooldown; local request
+origin/header checks; source links and AI evidence; source rendering and
+company/comparison races; readable exact evidence and unchanged number checks;
+targeted rejection of false missing-date/prior-year statements.
+
+LIVE SOURCE CHECKS
+Requested current public SEC submissions and Company Facts for TTWO, AAPL and
+MSFT. Each produced six annual windows and eight direct quarters. Reporting
+end dates were respectively 2026-03-31, 2026-09-26 and 2026-06-30. No issuer was
+guessed. Their combined normalized cached JSON was 150,854 bytes at measurement;
+raw multi-megabyte Company Facts responses were not retained.
+
+The different financial year-ends correctly produced an unmatched-window
+warning in comparison. Annual cash flow and direct quarters stayed separate.
+Take-Two's missing standard debt component remained unavailable, not zero.
+
+LOCAL AI CHECK
+Used installed qwen3.5:4b, with no model download or cloud fallback. Earlier
+runs exposed overstrict number/date presentation and false missing-information
+claims; these findings were fixed without weakening the existing citation or
+numeric checks. A fresh final answer passed citation, numeric and targeted SEC
+metadata checks, then was manually compared with the normalized Take-Two
+facts. It correctly reported the latest annual net loss and prior-year period.
+No draft in this QA run was saved into the user's personal research library.
+This does not establish model-wide accuracy; semantic review remains required.
+
+BROWSER CHECKS
+Real local app at 1280 x 900 and 390 x 844. Financial charts/cards, Take-Two
+negative profit, reporting and filing dates, quarterly mode, comparison warning,
+financial quick answers, all tool access, sources and export controls checked.
+After a phone-layout fix, document width was exactly 390 at viewport width 390.
+No browser console errors were observed during the checks. QA used a temporary
+copy of public saved provider snapshots and fetched SEC facts; no credentials
+or personal research were present in the browser's temporary server database.
+
+PACKAGING
+Release excludes keys, runtime databases/workspaces, model weights, caches and
+QA preview data. ZIP CRC, launcher execution permissions and byte-for-byte
+archive/source checks pass. Existing private data is not duplicated in the ZIP.

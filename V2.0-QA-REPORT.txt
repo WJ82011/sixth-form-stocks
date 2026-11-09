@@ -1,0 +1,38 @@
+MARKET DESK REBORN 2.0.0 — RELEASE VERIFICATION
+2 November 2026
+
+113 Python tests passed via python3 tests/run_all.py.
+9 JavaScript suites passed in Node's VM/CommonJS runtime.
+All 13 website JavaScript files passed syntax parsing.
+
+New checks cover intraday source isolation, time windows, invalid/future prices,
+deduplication, gaps, staleness, withholding on insufficient/invalid daily data,
+expanding-window errors against manual calculation, interval bounds, and a
+local-only Intelligence API. UI checks cover supported and unsupported topics,
+empty evidence, hour/day chart summaries and clearing data on ticker changes.
+
+Inherited tests cover local HTTP protections, keys/storage permissions, quotes,
+Massive history, reports, macro features, portfolio, valuation and indicators.
+Version/nav/asset-count assertions updated for the new release. The chart gap
+assertion now expects breaks at five minutes, for both intraday ranges.
+Regression runner uses a temporary home and blocks external network requests;
+localhost HTTP tests remain permitted. JavaScript fixtures are in tests only.
+
+Browser manually verified in an isolated no-key database:
+- New navigation and complete Intelligence workspace rendered.
+- Missing intraday records and daily-model prerequisites shown honestly.
+- Past-hour question returned insufficient-data answer.
+- Ticker change cleared previous evidence and new analysis used new ticker.
+- 1hr and 24hrs buttons selected their respective historical summaries.
+- Desktop layout visually inspected; coverage bars checked at zero.
+A preview screenshot is delivered beside the ZIP, from the no-key empty state.
+
+Limits: no systematic live-account entitlement test, no real Mac sleep/wake
+trial, no complete Safari matrix or notarised application build. This remains
+an extracted Python local website, launched with the executable Mac command.
+The statistical model is experimental. Test pass counts do not establish any
+real-world predictive advantage. Older QA files are historical records.
+
+Preservation: v1.9 assets and studios retained. No credentials, personal market
+database, browser state or research workspace is included in the ZIP. Runtime
+uses the existing private data folder; export research backup before upgrading.

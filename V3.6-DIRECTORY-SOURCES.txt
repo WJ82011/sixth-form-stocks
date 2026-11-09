@@ -1,0 +1,7 @@
+Directory additions checked 6 November 2026 against public Nasdaq Trader symbol directories.
+55 additional common/ordinary-share listings; 221 total.
+Symbols: ALAB, APLD, APP, ASTS, BMRN, CART, CELH, CIFR, CLSK, CORZ, CRDO, DUOL, GRAB, GTLB, HUT, IREN, LITE, MARA, MDB, MELI, MSTR, NBIS, NTNX, NTRA, RIOT, RKLB, RXRX, SMCI, SOFI, SOUN, TEAM, TEM, WING, WULF, BILL, BROS, CAVA, CLS, COHR, CPNG, DOCN, FICO, FIX, HIMS, IONQ, IOT, NU, OKLO, ONON, PL, RBRK, SMR, TOST, VRT, ZETA
+https://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt
+https://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt
+Test issues, ETFs and non-normal Nasdaq financial-status entries excluded.
+More US listings is an editorial browsing group, not an official sector. Directory membership does not guarantee live-feed access.

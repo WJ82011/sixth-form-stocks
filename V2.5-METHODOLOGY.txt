@@ -1,0 +1,80 @@
+STOCK SCREENER & CHANGE MAP — METHODS / v2.5.0
+
+UNIVERSE
+166 dated local directory entries plus up to 60 requested watched symbols,
+deduplicated. At most 226 rows. No claim of full-exchange or whole-market
+coverage. Browsing categories are editorial. Directory USD listing currency
+is separate from profile currency, which Finnhub defines as the currency used
+in company filings. Unknown listing currencies are never assumed to be USD.
+No new market-cap filter or FX conversion was introduced: reliable unit and
+currency mapping merits a separate addition.
+
+SNAPSHOTS
+Private SQLite screen_snapshots stores at most 1,500 symbol/kind records. Each
+stock has quote, profile and metrics kinds. Only selected fields are accepted;
+credentials, arbitrary URLs and unrecognised fields are discarded. Original
+cache-fetch timestamps are retained when known. Unknown cached fetch times
+are not replaced with the current time. Older retrievals cannot replace newer
+snapshots; older provider quote times cannot replace newer quote pairs. Empty
+or invalid results leave earlier snapshots with their earlier timestamps.
+Profile/metric symbol mismatches, non-finite numbers, boolean-as-number values,
+invalid/future timestamps and impossible quote prices are rejected. A corrupt
+or failed auxiliary capture must not break the existing quote/company API.
+The existing private database permissions apply. These snapshots are not part
+of research JSON backups. SQLite can retain freed pages for reuse.
+
+DATA FIELDS
+Price and previous close come from the SAME Finnhub quote response. Change is
+computed from their ratio, ignoring a separate dp field to avoid inconsistency.
+No valid previous close means no change value. The quote timestamp remains the
+provider timestamp. Retrieval time is recorded separately. Profiles retain
+name, ticker, filing currency, exchange and industry. Financials retain peTTM,
+peBasicExclExtraTTM, revenueGrowthTTMYoy and netProfitMarginTTM. Trailing P/E
+prefers peTTM, with peBasicExclExtraTTM as fallback; the actual key is disclosed.
+A snapshot retrieval date is not an issuer reporting period; periods are
+explicitly unknown. Provider figures are not independently audited.
+
+FILTERS AND SORTING
+All numeric comparisons are inclusive. Active numeric filters require a finite
+value within the chosen age limit. Missing is never coerced to zero. The maximum
+positive P/E criterion also requires a ratio above zero. Known USD listing
+currency is required for USD price filters. Quote age uses provider time;
+financial age uses source retrieval time. Future timestamps outside the allowed
+clock tolerance are ineligible. Old/unavailable sort values go last ascending
+or descending, with symbol tie-breaks. Controls use validated decimal values;
+invalid ranges produce an error and no matches. Presets are normalized and
+validated, capped at ten, and limited to 50 KB on JSON import.
+
+NETWORK
+Opening/filtering/sorting the screener and local snapshot polling make no
+market-provider calls. Explicit refresh is limited to five selected stocks
+in the UI and is serial. Each stock calls the existing quote and company APIs,
+up to three provider calls, sharing existing caches, budgets and cooldowns.
+One stock refresh can run at a time across browser windows. Permission, rate
+or network restrictions stop the remaining batch; partial financial failures
+also stop it. User stop affects requests not yet started. In-flight requests
+may finish and save results. Existing quote/company requests also capture
+snapshots, so this does not add an automatic market polling loop.
+
+AI INTEGRATION
+The local assistant can reuse the latest saved whitelisted profile/metrics
+snapshot if its memory cache is absent. The same source timestamp follows it
+into the AI evidence pack. The language model is not retrained by screening.
+No model score, ranking prediction, causal inference or investment rating is
+created. Existing statistical forecasts and out-of-sample tests are unchanged.
+
+VISUAL AND EXPORT INTEGRITY
+Map uses the same filtered shortlist, with only eligible price-change values.
+Equal tile areas, source times, coverage count and explicit wording prevent
+representing this as a whole-market, cap-weighted or sector heatmap. No missing
+tiles are fabricated. CSV contains matching rows, UTC times, source links,
+criterion JSON and eligibility flags. Formula-leading string cells receive an
+apostrophe; true negative numeric fields remain numeric. Model text and source
+names are escaped in the UI. The app never exports provider keys.
+
+PRIMARY PROVIDER REFERENCES (checked 3 November 2026)
+https://finnhub.io/docs/api/quote
+https://finnhub.io/docs/api/company-profile2
+https://finnhub.io/docs/api/company-basic-financials
+https://github.com/Finnhub-Stock-API/finnhub-go/blob/master/docs/CompanyProfile2.md
+https://github.com/Finnhub-Stock-API/finnhub-go/blob/master/docs/Quote.md

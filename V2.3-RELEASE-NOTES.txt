@@ -1,0 +1,20 @@
+MARKET DESK REBORN v2.3.0 — LOCAL AI RESEARCH
+
+A real local language model now joins the existing evidence-based charts and
+statistical model. Ask questions, write short research reports, compare two
+watched companies, supply source excerpts, ask follow-ups, reopen saved drafts,
+download Markdown and move a draft into the existing report editor.
+
+The redesigned Intelligence panel shows local model readiness, progress,
+reference excerpts, source dates, immutable snapshots and missing evidence.
+Accepted draft statements undergo source ID, exact excerpt and digit checks.
+One bounded correction attempt can fix failed references; unresolved failures
+remain errors. These are mechanical checks, not independent fact verification.
+
+All v2.2 workspaces remain, including price alerts, 166-company directory,
+Take-Two/Rockstar search, charts, recorded intraday overviews, indicator and
+valuation tools, comparison, paper portfolio, reports and private backups.
+Your previous folder is unchanged. Existing private data is reused on upgrade.
+No keys, personal database, runtime workspace, model weights or paid AI service
+are included in this ZIP. Ollama is optional; the other app tools still work.
+Read AI-START-HERE.txt, AI-METHODOLOGY.txt and V2.3-QA-REPORT.txt.

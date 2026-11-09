@@ -1,0 +1,62 @@
+V2.3 UPDATE: Real local language-model questions and research drafts are now
+available alongside the older statistical summaries. Read AI-START-HERE.txt
+and AI-METHODOLOGY.txt for the new feature and its limits. The methods below
+describe the preserved earlier tools.
+
+MARKET DESK INTELLIGENCE 2.0 — METHODS
+
+Historical overview
+Uses only source-labelled local Finnhub observations with finite positive
+prices and provider timestamps no later than analysis time. Filters to the
+last wall-clock hour or 24 hours; sorts and deduplicates timestamps. Daily
+bars and future points are rejected. Reports first/last timestamps, endpoint
+percentage change, observed extrema and timestamps, occupied one-minute slots,
+internal gaps >5 minutes and staleness >5 minutes. Completeness always false.
+No interpolation, annualisation or claim of exchange-wide extrema. Local
+retention is at most 5000 points per symbol. Missing window edges are evident
+from first/last times; internal gaps do not include missing window edges.
+Closed markets are not classified as recording failures: gaps can have many
+causes. Intraday charts break connecting lines after gaps over five minutes.
+
+Learning lab
+Only stored Massive split-adjusted daily closes are fitted. Finnhub daily
+charts remain supported by existing features but are not model training data
+in this lab. Up to 500 closes; minimum 90; adjacent bars must be 20 hours to
+5 days apart. No future data. One-lag ridge autoregression on daily log returns:
+y = intercept + coefficient * previous log return, penalty 0.01 on slope only.
+Penalty is fixed before testing; intercept unpenalised. Learned parameters
+are recalculated from available history per request and exported as evidence.
+There is no persistent optimiser, cloud training or background learning.
+
+Expanding-window tests start with 60 predictor/target pairs. At test i only
+pairs before i are fitted. Target is the next observed trading-session log
+return. Each target appears once. Model and unchanged-price benchmark errors
+are abs(predicted close / actual close - 1), averaged and shown as percentages.
+Directional accuracy includes all targets; zero is classified as non-positive.
+No fee-adjusted trading return is claimed. Split-adjusted closes are not total
+returns and corporate actions/dividends may affect comparability.
+
+Empirical band
+First two-thirds of chronological OOS residuals calibrate the 90th percentile
+of absolute log errors (minimum 10 calibration points). The remaining errors
+measure later held-out coverage; their targets were never used to calibrate
+that radius. Subsequent expanding-window fits may use earlier evaluation
+returns, as an online forecaster would. Final estimate uses all available
+pairs; band applies calibration radius around it in log space. This is an
+empirical error band, not a calibrated guarantee or conformal claim. Effective
+samples may be small and regime changes can destroy coverage. Stale histories
+are flagged; extreme test returns/predictions or invalid spacing withhold output.
+
+Questions and news
+A local keyword/topic router selects evidence templates; it is not an LLM or
+open-ended company analyst. Supported topics can be combined. It cannot answer
+all possible questions and says so. Company/news load only on request via the
+existing Finnhub cache, request budget and backoff. Profile/metric retrieval
+and article publication times are separate. News text is escaped and never
+executed or used as model instructions. Only http/https article links are shown.
+No fabricated headlines, causal explanations or fresh quote claims.
+
+Provider policy checked 2 November 2026:
+https://massive.com/pricing?product=stocks (Stocks Basic: 5 calls/min, EOD)
+https://finnhub.io/docs/api (endpoint entitlement is account-dependent)
+This update introduces no new paid API or intraday-history entitlement needs.

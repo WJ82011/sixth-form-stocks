@@ -1,0 +1,57 @@
+MARKET DESK 2.1.1 — RELEASE VERIFICATION
+3 November 2026
+
+RESULTS
+113 Python regression tests passed via tests/run_all.py.
+12 JavaScript suites passed, including 25 new reliability checks.
+All 13 website JavaScript files passed syntax parsing.
+The Mac ZIP was checked for file integrity and executable launcher permissions.
+
+The Python runner uses a temporary home and blocks outside network requests.
+Local HTTP tests are allowed. Private user keys and market data are not part
+of the release bundle. JavaScript tests use fake prices and a fake clock only
+inside the test files; no example prices are added to the production website.
+
+NEW RELIABILITY CHECKS (tests/test_release_v211.cjs)
+1. Empty saved watchlist is retained.
+2. Invalid and duplicate stock symbols are cleaned.
+3. My watchlist opens first.
+4. Explore stocks switches the visible panel.
+5. Keyboard tab navigation selects and focuses the correct tab.
+6. Planned check times reflect a 60-stock rotation.
+7. A missed scheduled check is labelled delayed after a simulated pause.
+8. Busy requests do not advance the rotation.
+9. Sixty stocks are checked once across ten six-stock batches.
+10. Old cached prices remain labelled old after a new check.
+11. A failed check keeps the recorded price and displays a warning.
+12. Success clears the earlier failure.
+13. An older response cannot overwrite a later quote.
+14. An invalid price cannot overwrite a valid quote.
+15. Missing provider results are reported without leaving a busy state.
+16. An ahead-of-clock timestamp is explained honestly.
+17. A far-future timestamp is rejected.
+18. Unchanged directory updates keep controls in place.
+19. A late response for a removed stock is ignored.
+20. Watchlist refresh keeps row controls in place.
+21. Open stock selects its chart directly.
+22. Company research uses the selected stock.
+23. Reopening preserves an empty list despite an older nonempty backup.
+24. Older backups do not resurrect locally removed stocks.
+25. A late chart response cannot replace a newly selected stock's chart.
+
+BROWSER CHECKS
+Isolated local preview with no keys:
+- My watchlist shown first, with the directory hidden.
+- Explore stocks showed the directory separately, with categories and search.
+- Watchlist displayed missing-price and connection information clearly.
+- Opening Microsoft selected its chart and showed the research shortcuts.
+- Ask Intelligence opened with MSFT, not the previous stock.
+- Final watchlist layout and text size visually inspected.
+A no-key preview image is delivered beside the ZIP.
+
+LIMITS
+These checks do not prove live access for every stock on a user's provider
+plan. Real Mac sleep/wake, long unattended use, and a complete Safari/browser
+matrix were not exercised. Clock pauses and stale data were tested with
+controlled fixtures. Planned refresh times remain estimates, not guarantees.
+Older QA files in the source folder describe earlier releases only.

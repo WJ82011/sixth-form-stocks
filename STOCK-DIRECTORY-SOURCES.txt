@@ -1,0 +1,16 @@
+MARKET DESK STOCK DIRECTORY
+Checked 3 November 2026. 166 selected listings across 14 browsing categories.
+
+Sources:
+https://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt
+https://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt
+https://www.nasdaqtrader.com/Trader.aspx?id=symbollookup
+
+Each selected symbol was present, not a test issue and not an ETF at build time.
+Names may be shortened for readability; original listing names are also stored.
+Categories are editorial browsing groups. They are not formal industry codes.
+This is a dated reference list, not an automatically refreshed security master.
+Only selected company metadata is bundled, no exchange prices or full directory.
+No promise of provider entitlement, price freshness or investment performance.
+
+V3.6 expands the total to 221 listings in 15 groups. See V3.6-DIRECTORY-SOURCES.txt for the 55 additions checked 6 November 2026.

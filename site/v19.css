@@ -1,0 +1,39 @@
+/* v1.9 / measured, compact research workspaces */
+.v19-panel{margin:18px 0;padding:22px;border:1px solid #304550}
+.v19-panel h3{font-size:15px;color:#e3f0f1;margin:23px 0 10px}
+.v19-panel label{display:grid;gap:8px;color:#9ab3be;font-size:10px;font-weight:800;letter-spacing:.6px}
+.v19-panel input:not([type=checkbox]),.v19-panel select{background:#0c1b23;color:#e8eff1;border:1px solid #39515b;border-radius:5px;padding:11px 13px;min-height:40px;font-family:inherit;font-size:13px;max-width:100%;width:100%;box-sizing:border-box}
+.v19-panel input:focus-visible,.v19-panel select:focus-visible{outline:2px solid #8bd9d3;outline-offset:2px}
+.v19-controls{display:flex;flex-wrap:wrap;align-items:end;gap:13px;margin-top:14px}
+.v19-controls>label{min-width:170px;max-width:380px;flex:1}
+.v19-controls button{min-height:42px}
+.v19-checks{border-top:1px solid #2f424a;padding-top:16px;gap:17px}
+.v19-checks label{display:flex;align-items:center;gap:8px;flex:unset;min-width:unset;color:#c2d7db;white-space:normal;text-transform:none;font-size:12px;letter-spacing:0}
+.v19-checks input{accent-color:#9c8bd5;min-width:16px;min-height:16px}
+.v19-status{font-size:12px;margin:18px 0 4px;color:#a5c2ca;line-height:1.75;border-left:2px solid #7ccdc0;padding:8px 12px;background:#0e2229;overflow-wrap:anywhere}
+.v19-muted{font-size:12px;color:#9ab0b9;line-height:1.85;overflow-wrap:anywhere}
+.v19-chart{max-width:100%;margin-top:18px;min-height:60px}
+.v19-chart svg{display:block;width:100%;height:auto;max-height:410px}
+.v19-legend{display:flex;flex-wrap:wrap;gap:17px;font-size:11px;color:#b8cad0;margin-bottom:7px}
+.v19-legend span{display:flex;gap:6px;align-items:center}
+.v19-legend i{display:block;width:19px;height:3px;background:#8bd9d3}.v19-legend i.c-amber{background:#eac18b}.v19-legend i.c-purple{background:#b39af2}.v19-legend i.c-grey{background:#a7a6d9}
+.v19-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin:18px 0 21px}
+.v19-metrics article{padding:19px 14px;border:1px solid #354b54;background:#10212a;min-width:0;display:grid;gap:12px}
+.v19-metrics small{font-size:10px;line-height:1.5;letter-spacing:.8px;color:#9cafba;font-weight:700}
+.v19-metrics strong{font-size:clamp(17px,2vw,28px);font-weight:800;color:#e6f0f1;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.v19-rsi{padding:14px;background:#122630;border-radius:5px;margin-bottom:18px;display:grid;gap:9px;color:#bfd0d6;font-size:12px}
+.v19-rsi small{font-size:10px;color:#94abb7}.v19-rsi-track{height:10px;border-radius:8px;background:linear-gradient(to right,#735c86 0 30%,#314b53 30% 70%,#735c86 70%);overflow:hidden}.v19-rsi-track i{display:block;height:100%;border-right:4px solid #f1ede1;box-sizing:border-box}
+.v19-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px;margin:19px 0}
+.v19-cols{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.v19-table{overflow:auto;max-width:100%;border:1px solid #334752;border-radius:4px;margin:12px 0 20px}
+.v19-table table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:11px;white-space:nowrap}
+.v19-table th,.v19-table td{padding:11px 13px;text-align:left;border-bottom:1px solid #273c45}
+.v19-table thead th{font-size:9px;letter-spacing:.7px;color:#9fbac4;background:#122831}
+.v19-table tbody tr:last-child td,.v19-table tbody tr:last-child th{border-bottom:0}
+.v19-table tbody th{color:#d6edf1}
+.v19-panel .primary-btn,.v19-panel .ghost-btn{white-space:normal}
+@media(max-width:950px){.v19-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.v19-cols{grid-template-columns:1fr}}
+@media(max-width:620px){.v19-form-grid{grid-template-columns:1fr}.v19-panel{padding:14px}.v19-metrics{grid-template-columns:1fr 1fr}.v19-metrics article{padding:12px}.v19-metrics strong{font-size:17px}.v19-controls button{width:100%}}
+
+.v19-rsi-progress{width:100%;height:12px;appearance:none;display:block;border:0;border-radius:5px;background:#314b53;overflow:hidden}
+.v19-rsi-progress::-webkit-progress-bar{background:#314b53}.v19-rsi-progress::-webkit-progress-value{background:#b59ef2}.v19-rsi-progress::-moz-progress-bar{background:#b59ef2}

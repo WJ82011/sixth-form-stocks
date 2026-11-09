@@ -1,0 +1,26 @@
+MARKET DESK REBORN V1.8.0 — RELEASE QA (2 NOVEMBER 2026)
+
+TESTED
+- Python unit/integration: 100 tests passed, including new backend World Bank parsing, TLS request construction, report tombstone preservation, server provider provenance.
+- JavaScript Node: 7 test suites passed.
+- Main offline Chromium flows: 12 workflow groups passed.
+- Comparison Studio / Research Reports offline Chromium flows: 20 checks passed.
+- New v1.8 browser regression: 16 checks passed, including immediate report deletion + stale server restoration, cached timestamps, five macro metrics, annual charts, 5/20-session accuracy, mobile nav, zero browser errors.
+- Historical chart, Massive browser, sleep-gap, live tape browser regression: passed with synthetic fixtures.
+- Server MIME allowlist and local integrity audit: tested.
+
+NOT VERIFIED
+- Direct live World Bank API response from the user's Mac, despite validating documented World Bank API query shape, parser and a mocked TLS/HTTP success response.
+- Real Finnhub / Massive plan entitlements or user's private keys.
+- Real Mac Safari behaviour after sleep and wake; Mac-specific report print dialog.
+- Prediction accuracy on actual future market outcomes. Historical MAPE is not a guarantee.
+
+RELIABILITY FIXES
+R1: Report deletion saved immediately as a tombstone. Merges from stale backups cannot resurrect reports. Storage allows up to 40 active reports and 80 recent deletion records.
+R2: Comparison shows original data retrieval time and distinguishes fresh provider, server-cache, browser-cache, and stale-cache data. Server tracks actual provider-fetch timestamp for profile/metrics.
+
+DATA POLICY
+- No sample market prices used in the production UI or provider fallbacks.
+- World Bank annual indicator years shown. Central-bank policy rates are not simulated or substituted with lending rates.
+- Model compares against unchanged-price baseline, including negative findings.
+- All API keys remain private in ~/.marketdesk-reborn; no credentials shipped with the ZIP.

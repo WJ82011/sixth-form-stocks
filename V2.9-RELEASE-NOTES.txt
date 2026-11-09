@@ -1,0 +1,24 @@
+MARKET DESK REBORN 2.9.0 — 5 NOVEMBER 2026
+
+Added Company financial health inside Company Overview, preserving the v2.8
+calm shell, custom motion and all 19 tool destinations. Real SEC accounts
+supply dated sales/profit/cash-flow charts, cash and long-term debt coverage,
+exact values, filing links, annual/direct-quarter controls and JSON export.
+The existing provider profile/ratios remain in an expandable section.
+
+Added independent SEC-account comparison for two or three companies, with
+shared-period checks and explicit unmatched fiscal-year warnings. Existing
+Finnhub ratios and report tools remain. Expanded Intelligence's saved evidence
+with filing-specific financial facts and a financial quick-answer topic.
+No paid OpenAI, new model or extra Finnhub/Massive requests are needed for
+SEC accounts. This does not turn the existing statistical model into a
+financial-fundamentals model or claim that the language model is trained.
+
+Coverage is deliberately bounded to selected US-GAAP USD 10-K/10-Q facts.
+Missing concepts and debt portions remain unavailable. No overall score,
+credit rating, price target, fabricated statement line or inferred quarter
+has been added. Read FINANCIAL-HEALTH-METHODOLOGY.txt before interpreting
+comparisons or using the figures in research.
+
+AI assisted implementation and testing. Source files, synthetic tests and
+methodology are included for an honest, explainable application portfolio.

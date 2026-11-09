@@ -1,0 +1,62 @@
+MARKET DESK 3.6 — QUICK GUIDE
+
+OPEN
+1. In the old version, export a full research backup from Settings.
+2. Stop the old version's Terminal window with Control+C.
+3. Extract MarketDesk-Reborn-v3.6.0-Mac.zip.
+4. Open Start Market Desk.command inside the extracted folder.
+5. Keep Terminal open and visit http://127.0.0.1:8765.
+If macOS asks about the launcher, use Finder's Open action and the normal
+macOS approval flow. If needed, type python3 followed by a space in Terminal,
+drag the new server.py into the window and press Return. Python 3 is required.
+Do not open site/index.html directly. Do not delete ~/.marketdesk-reborn:
+this is where existing keys, saved prices, research and local data live.
+
+MARKET VALUES
+All tools → Market Heatmap. Each available card shows its two reporting dates,
+currency, scope and original source. US data currently compare the latest two
+public quarterly endpoints checked on 6 November 2026. These are a bundled
+snapshot, not an automatically updating subscription. A quoted-value change
+is not the amount of cash paid into or withdrawn from the market.
+Other countries show unavailable until you import comparable data.
+
+Under Add sourced market-value observations, download the CSV as a template.
+Use market,currency,date,capitalization,unit,scope,source columns. Supported
+markets/currencies: US equities/USD, UK equities/GBP, Euro-area equities/EUR,
+Japan equities/JPY, Hong Kong equities/HKD. Units: millions/billions/trillions.
+Use at least two past dates, identical coverage text and the same currency
+for each market. Public source URLs must use HTTPS without a query or login.
+Confirm that the endpoints are comparable and that you may use the data.
+Import replaces custom capitalization observations only, after validation.
+At most 1,000 observations and 500 KB per file. User-provided claims are not
+independently verified. Comparisons use the latest two supplied dates.
+Save this CSV separately: the full research JSON backup does not include
+this new dataset. It also remains in your existing private database folder.
+
+NOTIFICATIONS
+In Market Heatmap, expand Price-move notifications and wider stock coverage.
+Enable the checkbox. Fresh watched quotes crossing +5% or -5% versus an
+unchanged provider previous close can appear at the top right. There is one
+alert per company/session/direction, no initial-record replay, and no alerts
+from stale observations. These are recorded quotes, not confirmed live trades.
+New matching publisher headlines have dates and links; relevance and claims
+are not independently verified. The selected watched company's news is
+checked at most once every two minutes while enabled, through existing quota
+and cache controls. Other companies use cached news. Toggle resets off on
+reload. Keep the app open. No notifications or learning while Mac is off.
+
+CHARTS
+The latest quote, selected chart range and saved completed-session comparison
+can cover different dates. Each is labelled separately. A rising intraday
+slice can still be below yesterday's close. Matching-session intraday charts
+show a previous-close reference where available. Longer ranges retain their
+actual range return. Use Update daily prices for actual missing provider
+bars; access still depends on your free plan. No prices are interpolated to
+pretend to cover an unobserved hour. No graph is reversed to match a headline.
+
+STOCKS AND RESEARCH
+Stock Browser and heatmap now include 221 listings. Directory membership does
+not guarantee quote/history access. Gray tiles mean missing usable prices.
+Add companies to your watchlist for tape and notifications; existing watchlist,
+quote-request and stream subscription limits remain. Company-specific research
+question starters complement the earlier V3.5 research and forecasting tools.

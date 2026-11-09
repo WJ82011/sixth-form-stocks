@@ -1,0 +1,36 @@
+V3.0 RELEASE VALIDATION — 5 NOVEMBER 2026
+
+321 isolated Python tests passed. 24 JavaScript test files passed; all site
+scripts parsed. Existing V2 regression coverage is retained. New cases include
+FIFO/FX/fees/splits, cash guards, missing/stale/zero marks, checkpoint tampering,
+exact benchmark dates, cash-flow return adjustment, atomic imports, statement
+windows/currencies/derived quarters, calendar/DST/ICS and macro observation gaps.
+
+Browser checks at 1280x900 and phone 390x844:
+- Home, company statements, practice portfolio and calendar fit the page width;
+  large tables scroll within their containers.
+- Original 19 tools plus 3 new destinations available through All tools.
+- Dark and light home screens inspected; no browser console errors observed.
+- Hypothetical deposit/buy/quote mark/checkpoints persisted through reload.
+  Oversized sale rejected; missing marks withheld totals. Exact-date AAPL
+  benchmark and Modified Dietz results displayed with the comparison limits.
+- TSM IFRS USD/TWD books remained separate. Take-Two calculated-quarter/TTM
+  views expose unsupported cash-flow windows as missing. Sourced report
+  handoff populated a draft with the selected company's annual facts.
+- Manual test event saved and revised; previous date retained in history.
+  Completed SEC filing history remained distinct from future events.
+- Cap map used 3 eligible saved profiles; excluded uncovered companies.
+  Four genuine dated FRED series displayed. Chart comparison with insufficient
+  shared history declined to draw a line rather than creating prices.
+
+Local AI smoke check used the already installed qwen3.5:4b with public saved
+Take-Two evidence. It returned sourced latest operating cash and PPE purchases,
+actual fiscal dates and USD. Prompt improved to reduce irrelevant missing-data
+commentary. A model may still add unnecessary sections or use a weak excerpt;
+source matching/numeric checks do not establish semantic truth. No claim of
+universal correctness, better-than-paid AI or new language-model training.
+
+No preview fixtures, browser test ledger, keys, runtime databases or AI model
+weights are included in the release. The original user database was unchanged
+by the isolated preview. Archive verification is recorded in PACKAGE-SIZES.txt
+and its SHA256 companion beside the ZIP.

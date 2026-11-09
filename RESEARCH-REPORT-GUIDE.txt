@@ -1,0 +1,28 @@
+MARKET DESK v1.7 RESEARCH REPORT GUIDE
+==================================
+
+Start with Apple (AAPL) or another company that you already follow.
+Collect evidence from the company's recent annual report (investor relations),
+quarterly reports, official filings and source-linked Finnhub profile metrics.
+Write what you think, not what the software thinks.
+
+A HIGH-QUALITY SIXTH-FORM PORTFOLIO REPORT SHOULD CONTAIN
+1. A single clear economic or business question.
+2. How the company earns revenue and what drives demand.
+3. Real financial figures with exact fiscal period, source and currency.
+4. At least one comparison with a genuine peer.
+5. A reasonable alternative thesis and risk factors.
+6. What new evidence would change your view.
+7. A conclusion that distinguishes established facts from judgments.
+
+HOW TO EXPORT A PRINTABLE PDF
+Open Research Reports > select and load a report > Print / Save PDF.
+In the macOS browser print dialog choose PDF > Save as PDF. The PDF is
+generated locally by your browser; Market Desk does not send research
+to an external PDF service. Also export Markdown for an editable copy.
+
+WHAT TO AVOID
+- Do not claim a provider P/E/ratio is dated today unless verified.
+- Do not imply that a price snapshot is a verified streaming tick.
+- Do not interpret purple Research Forecast scenarios as certain prices.
+- Do not include private API keys in source citations or exported reports.

@@ -1,0 +1,45 @@
+/* Reliability checks use fake prices and a fake clock only inside this test. */
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict'),path=require('path');
+const src=fs.readFileSync(path.join(__dirname,'../site/app.js'),'utf8');
+let checks=0;const ok=(test,label)=>{assert.ok(test,label);checks++};
+function fixture(){
+ const nodes=new Map(),storage=new Map();const make=id=>({id,value:'',textContent:'',_html:'',writes:0,hidden:false,tabIndex:0,dataset:{},events:{},attributes:{},children:[],classList:{add(){},remove(){},toggle(){}},get innerHTML(){return this._html},set innerHTML(v){this._html=v;this.writes++},setAttribute(k,v){this.attributes[k]=v},addEventListener(k,f){this.events[k]=f},focus(){this.focused=true},replaceChildren(){this.children=[]},appendChild(n){this.children.push(n)},querySelector(){return null},scrollIntoView(){this.scrolled=true}});
+ const el=id=>{if(!nodes.has(id))nodes.set(id,make(id));return nodes.get(id)};
+ for(const tab of ['watch','explore'])el('market-tab-'+tab).dataset.marketTab=tab;
+ let clock=1793696400000;class Clock extends Date{constructor(...args){super(...(args.length?args:[clock]))}static now(){return clock}}
+ const ctx={Date:Clock,Math,JSON,Map,Set,Object,Array,String,Number,Promise,URL,console,Event:class{constructor(t){this.type=t}},window:{scrollTo(){},dispatchEvent(){},addEventListener(){}},navigator:{onLine:true},document:{readyState:'loading',addEventListener(){},getElementById:el,createElement:()=>make('new'),querySelectorAll:s=>s==='[data-market-tab]'?[el('market-tab-watch'),el('market-tab-explore')]:[]},localStorage:{getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v)},setTimeout(){return 1},clearTimeout(){},setInterval(){return 1},clearInterval(){},ChartResearch:require('../site/chart-research.js')};
+ vm.createContext(ctx);vm.runInContext(src,ctx);const run=s=>vm.runInContext(s,ctx);run('globalThis.realLoadChart=loadChart;renderAll=()=>{};renderOverview=()=>{};drawChart=()=>{};renderNotes=()=>{};alertBanner=()=>{};forecastStatus=()=>{};loadChart=async()=>{};mergeReportArchives=(a,b)=>a||b||[];setupTokenStatus=async()=>{};attachEvents=()=>{};resubscribe=()=>{}');
+ return {ctx,run,el,storage,tick:ms=>{clock+=ms},now:()=>clock};
+}
+globalThis.md211TestResult=(async()=>{
+ let f=fixture(),{run,ctx,el}=f;
+ ok(run('normaliseWatchlist([]).length===0'),'empty saved list stays empty');ok(run("JSON.stringify(normaliseWatchlist(['aapl','AAPL','bad/ticker','MSFT']))")==='["AAPL","MSFT"]','watchlist sanitises and deduplicates');
+ run('setupMarketTabs()');ok(el('market-panel-explore').hidden&&!el('market-panel-watch').hidden,'watchlist opens first');
+ el('market-tab-explore').events.click();ok(!el('market-panel-explore').hidden&&el('market-panel-watch').hidden,'Explore tab switches panels');
+ el('market-tab-explore').events.keydown({key:'Home',preventDefault(){}});ok(el('market-tab-watch').attributes['aria-selected']==='true'&&el('market-tab-watch').focused,'keyboard tab navigation works');
+ run("E.configured=true;E.watch=Array.from({length:60},(_,i)=>'S'+i);nextQuoteCycleAt=nowMs()+25000;E.refreshStep=0");
+ ok(run("nextQuoteCheck('S0').includes('25s')&&nextQuoteCheck('S59').includes('250s')"),'planned checks reflect large watchlist rotation');
+ f.tick(50000);ok(run("nextQuoteCheck('S0').includes('delayed')"),'sleep gap does not show an on-time countdown');
+ run('E.fetching=true;E.refreshStep=7');await run('autoQuoteCycle()');ok(run('E.refreshStep===7'),'busy request does not skip rotation');run('E.fetching=false;E.refreshStep=0');
+ ctx.requests=[];ctx.api=async p=>{const syms=new URL('http://local'+p).searchParams.get('symbols').split(',');ctx.requests.push(syms);return {items:syms.map(symbol=>({symbol,quote:{c:100,t:Math.floor(f.now()/1000),dp:0},cached:false}))}};
+ for(let j=0;j<10;j++)await run('autoQuoteCycle()');ok(ctx.requests.length===10&&new Set(ctx.requests.flat()).size===60&&ctx.requests.every(x=>x.length===6),'all 60 stocks checked once in ten batches');
+ run("E.watch=['AAPL'];E.quotes.clear();E.quoteChecks.clear();E.quoteFailures.clear()");ctx.api=async()=>({items:[{symbol:'AAPL',quote:{c:100,t:Math.floor(f.now()/1000)-1200},cached:true}]});await run("loadQuotes(['AAPL'])");ok(run("freshnessInfo('AAPL').label.includes('Old price')&&freshnessInfo('AAPL').checked.includes('saved data')"),'new check keeps cached old price labelled old');
+ ctx.api=async()=>{throw Error('Provider cooldown')};await run("loadQuotes(['AAPL'])");ok(run("E.quotes.get('AAPL').quote.c===100&&freshnessInfo('AAPL').warning==='Provider cooldown'"),'failed check keeps recorded price and shows warning');
+ ctx.api=async()=>({items:[{symbol:'AAPL',quote:{c:105,t:Math.floor(f.now()/1000)},cached:false}]});await run("loadQuotes(['AAPL'])");ok(run("!E.quoteFailures.has('AAPL')&&!freshnessInfo('AAPL').warning"),'success clears previous failure');
+ ctx.api=async()=>({items:[{symbol:'AAPL',quote:{c:90,t:Math.floor(f.now()/1000)-600}}]});await run("loadQuotes(['AAPL'])");ok(run("E.quotes.get('AAPL').quote.c===105&&freshnessInfo('AAPL').warning.includes('older quote')"),'older quote cannot overwrite later price');
+ ctx.api=async()=>({items:[{symbol:'AAPL',quote:{c:0,t:Math.floor(f.now()/1000)}}]});await run("loadQuotes(['AAPL'])");ok(run("E.quotes.get('AAPL').quote.c===105&&E.quoteFailures.has('AAPL')"),'invalid response cannot overwrite price');
+ run("E.watch=['AAPL','MSFT']");ctx.api=async()=>({items:[]});await run("loadQuotes(['AAPL','MSFT'])");ok(run("E.quoteFailures.has('MSFT')&&!E.quoteChecks.get('MSFT').busy"),'missing result is reported and no busy state left behind');
+
+ ctx.api=async()=>({items:[{symbol:'AAPL',quote:{c:110,t:Math.floor(f.now()/1000)+30}}]});await run("loadQuotes(['AAPL'])");ok(run("freshnessInfo('AAPL').recorded.includes('ahead of this Mac')"),'clock difference is shown, not labelled as a price from the past');
+ ctx.api=async()=>({items:[{symbol:'AAPL',quote:{c:120,t:Math.floor(f.now()/1000)+120}}]});await run("loadQuotes(['AAPL'])");ok(run("E.quotes.get('AAPL').quote.c===110"),'far-future provider timestamp is rejected');
+ const beforeDir=el('directory-results').writes;run('renderStockDirectory()');const renderedDir=el('directory-results').writes;run('renderStockDirectory()');ok(el('directory-results').writes===renderedDir&&renderedDir>=beforeDir,'unchanged directory refresh preserves focused add buttons');
+ run('E.quotes.clear()');let release;ctx.api=()=>new Promise(r=>release=r);const pending=run("loadQuotes(['AAPL'])");run("E.watch=['MSFT']");release({items:[{symbol:'AAPL',quote:{c:100,t:Math.floor(f.now()/1000)}}]});await pending;ok(run("!E.quotes.has('AAPL')&&!E.quoteChecks.has('AAPL')"),'removed stock is ignored when slow response arrives');
+ run("E.watch=['MSFT'];marketRowsKey='';renderMarkets()");const writes=el('markets-table').writes;run('renderMarkets()');ok(el('markets-table').writes===writes,'price refresh keeps watchlist row controls in place');
+ ctx.visits=[];run("changeView=view=>visits.push(view);E.watch=['MSFT'];openStock('MSFT')");ok(run("E.selected==='MSFT'")&&ctx.visits.at(-1)==='overview','open stock goes straight to selected chart');run("openStockResearch('company')");ok(el('company-select').value==='MSFT'&&ctx.visits.at(-1)==='company','company research uses selected stock');
+ f=fixture();f.storage.set('md-reborn-watch','[]');f.ctx.api=async()=>({snapshot:{watch:['AAPL'],names:{},notes:[],reports:[],portfolio:{capital:10000,trades:[]}},updated_at:10});await f.run('init()');ok(f.run("E.watch.length===0&&E.selected===''")&&f.storage.get('md-reborn-watch')==='[]','reopening keeps an empty local list even with an older nonempty backup');
+ f=fixture();f.storage.set('md-reborn-watch','["MSFT"]');f.ctx.api=async()=>({snapshot:{watch:['AAPL','MSFT'],notes:[],reports:[]},updated_at:10});await f.run('restoreWorkspace()');ok(f.storage.get('md-reborn-watch')==='["MSFT"]','old backup does not resurrect removed stocks');
+
+ f=fixture();f.ctx.emptyImport={size:100,text:async()=>JSON.stringify({format:'MarketDesk-Research-Backup',version:1,snapshot:{watch:[],notes:[]}})};await f.run('importWorkspace(emptyImport)');ok(f.run("E.watch.length===0&&E.selected===''")&&f.storage.get('md-reborn-watch')==='[]','importing an empty research backup keeps an empty selection');
+ f=fixture();f.ctx.ChartResearch=require('../site/chart-research.js');f.run("E.selected='AAPL';E.range='1H';E.configured=false;E.forecastEnabled=false;E.quotes.clear();E.trades.clear()");const waits={};f.ctx.api=p=>new Promise(resolve=>waits[new URL('http://local'+p).searchParams.get('symbol')]=resolve);const old=f.run('realLoadChart()');f.run("E.selected='MSFT'");const recent=f.run('realLoadChart()');waits.MSFT({points:[{t:f.now()-1000,p:200,source:'finnhub_quote'}]});await recent;waits.AAPL({points:[{t:f.now()-1000,p:50,source:'finnhub_quote'}]});await old;ok(f.run('E.chartPoints.length===1&&E.chartPoints[0].p===200'),'late chart response cannot replace newly selected stock');
+ console.log('v2.1.1 reliability: '+checks+' checks PASS');return checks;
+})();

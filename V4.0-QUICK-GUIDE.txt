@@ -1,0 +1,53 @@
+MARKET DESK 4.0 — QUICK GUIDE
+
+1. Stop any older Market Desk server with Control+C in its Terminal window.
+2. Unzip MarketDesk-Reborn-v4.0.0-Mac.zip. Keep your ~/.marketdesk-reborn folder.
+3. Open Start Market Desk.command. The local address is http://127.0.0.1:8765.
+4. Use All tools → Learning & offline for collection and forecast checks.
+
+KEEPING DATA UP TO DATE
+You can close the browser tab and leave the Market Desk Terminal running.
+To run without that Terminal, stop it first and open Enable Background at
+Login.command in the extracted folder. This registers a per-user macOS
+service. Keep the folder in place. Use Disable Background at Login.command
+before moving the folder or upgrading. The launcher uses your existing Python.
+
+The Mac needs to be awake and online to collect live data. The server resumes
+provider requests when the connection returns. A sleeping or powered-off Mac
+cannot collect live trades. During an outage you can reopen saved charts,
+tape, news and research at the local address while the server is running.
+Downloaded historical bars can recover supported periods after reconnecting.
+Any missing live trades remain gaps.
+
+Finnhub trades stream for up to 30 subscribed stocks. Quotes rotate across
+the watchlist within the provider budget. The collector also refreshes
+company and market news, Bitcoin and Ethereum snapshots and 24-hour history,
+Massive daily closes and heatmap files. Exact coverage depends on your saved
+provider connections and plan. Financial statements and other research
+sources still use their own refresh controls.
+
+THE LEARNING LAB
+Choose a directory company and train from saved prices. If you need more
+history, use Update daily prices & train with an active Massive connection.
+The report uses consecutive split-adjusted closes and tests 1-, 5- and
+20-session outcomes. The model uses close returns, momentum, volatility and
+drawdown. The longer horizon needs more history to produce enough test cases.
+
+Each past fit sees only outcomes available at that date. The lab compares
+the learned model against an unchanged price in an earlier calibration block
+and a later test block. A learned scenario needs to win both checks.
+Otherwise it shows the unchanged-price baseline or asks for more data.
+The illustrative range reflects earlier errors and has no guaranteed odds.
+The original purple chart remains a separate research scenario.
+
+The collector evaluates watched companies in rotation when the server is
+running, including from saved data during an outage. When the data revision
+stays the same, the report reuses its saved training result. It trains on
+daily price history. Headlines and economic events are shown separately
+because a historical record of what was known on each date is needed to
+test their predictive value.
+
+DATA
+The ZIP contains source and guides. Existing saved data and credentials
+remain in your private local folder. A backup of that folder preserves the
+database. Quit the server before making a manual copy of the whole folder.

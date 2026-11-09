@@ -1,0 +1,41 @@
+MARKET DESK 2.2.0 — RELEASE VERIFICATION
+3 November 2026
+
+144 Python tests passed, including 31 new alert-engine and integration tests.
+13 JavaScript suites passed, including the alert-interface suite and the expanded
+watchlist reliability suite. All 14 website JavaScript files passed syntax checks.
+The final ZIP was checked for integrity, matching source files and executable
+Mac launcher permissions. Prior release QA files are historical records.
+
+ALERT ENGINE CHECKS
+At/above and at/below equality, first-match semantics, non-matching observations,
+one trigger per arming, duplicate observations, re-arming with a new price,
+pausing, pause-after-trigger races, idempotent re-arm, editing, immutable history,
+deleting while keeping history, stale data, before-arming data, future timestamps,
+out-of-order prices, daily bars, zero-size stream updates, positive-size trades,
+other symbols, persistence after reopening storage, simulated eight-hour gaps,
+invalid targets/symbols, invalid updates, limits and duplicate-create retries,
+concurrent requests, bounded history, monotonic state revisions, quote-endpoint
+integration, malformed boolean prices/stream fields, local storage diagnostics,
+and required local-request headers on HTTP mutations.
+
+INTERFACE CHECKS
+Target validation, escaped company names, local-only alert requests, correct
+observed-price history labels, one message per new event, ignoring older snapshots,
+no-data and offline states, missing-watchlist status and 25-record history paging.
+The earlier stock, forecast, directory, research and portfolio tests are retained.
+
+BROWSER CHECKS (ISOLATED, NO KEYS)
+Opened Price Alerts. Saved a sample Take-Two target, paused it, edited and re-armed
+it, reloaded the page and confirmed the saved edited target remained. The page
+correctly reported no data connection and no triggered prices. Layout and help
+text were visually inspected. The delivered screenshot is from this isolated
+preview, not a live account. The sample target is not bundled in the app.
+
+TEST ISOLATION & LIMITS
+The Python regression runner uses a temporary home and blocks outside network
+requests while allowing localhost HTTP tests. Test prices are fixtures only.
+No live user keys or personal price data are included in the release.
+Actual live entitlement, long unattended use, real Mac sleep/wake and a complete
+Safari/browser matrix were not verified. These checks do not guarantee that an
+alert will catch every market move. Provider freshness rules may withhold triggers.

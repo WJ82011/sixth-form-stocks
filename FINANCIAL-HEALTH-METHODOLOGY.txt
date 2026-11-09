@@ -1,0 +1,84 @@
+MARKET DESK 2.9 — FINANCIAL HEALTH METHODOLOGY
+
+PRIMARY SOURCES, CHECKED 5 NOVEMBER 2026
+https://www.sec.gov/search-filings/edgar-application-programming-interfaces
+https://www.sec.gov/search-filings/edgar-search-assistance/accessing-edgar-data
+https://www.sec.gov/about/developer-resources
+
+IDENTITY AND ACCESS
+Resolve a ticker through the cached official company_tickers.json directory.
+Four bootstrap candidates (AAPL, MSFT, NVDA, TTWO) can avoid a directory fetch,
+but they are not accepted on that basis: each refresh verifies the requested
+ticker against the current SEC submissions issuer record and checks the
+companyfacts CIK. Dot/dash share-class notation is normalized. Same-issuer
+listings cannot be treated as independent companies in SEC comparison.
+
+Requests use an identified MarketDeskReborn educational research User-Agent,
+fixed HTTPS SEC endpoints, existing verified macOS CA roots and no redirects.
+No key or personal research is transmitted. An advanced user may set their
+own declared application/contact header with MARKETDESK_SEC_USER_AGENT;
+if supplied, that header goes only to SEC requests. No contact address is
+invented. SEC may restrict access independently of these controls.
+
+One refresh runs at a time, at most about one request per second. No automatic
+SEC polling, no retries and no alternate-host bypass. HTTP 403/429 starts a
+five-minute shared cooldown. Issuer results are reused for 24 hours, ticker
+mapping for seven days. A response is limited to 20 MiB. Only normalized
+selected facts are stored, not whole multi-megabyte raw Company Facts files.
+
+SUPPORTED FACTS
+Only standard us-gaap consolidated facts in USD, from 10-K/10-K/A and
+10-Q/10-Q/A. Annual durations are 330–400 inclusive days and must come from a
+10-K variant. Direct quarters are 75–105 days. This excludes nine-month and
+six-month year-to-date cash flow. Quarter four is not synthesized, and no
+trailing-twelve-month aggregate is inferred. Instant facts must match the
+reporting period's exact end date. Future filings/dates, invalid accessions,
+non-finite values and boolean amounts are rejected. Filing FY labels are not
+used to assign the fact's year: actual start/end dates determine the window.
+
+Revenue concepts are prioritized: RevenueFromContractWithCustomerExcluding-
+AssessedTax, Revenues, SalesRevenueNet. Goods-only or service-only figures
+are not substituted for total sales. Other concepts are explicit in the UI:
+NetIncomeLoss, NetCashProvidedByUsedInOperatingActivities, CashAndCashEquiv-
+alentsAtCarryingValue, Assets, Liabilities, LongTermDebtCurrent and
+LongTermDebtNoncurrent. Restricted cash and lease-inclusive debt are not
+substituted. No absent debt portion is inferred to be zero.
+
+VERSION AND CALCULATION RULES
+For each exact fact window use the latest filed eligible concept, with
+concept preference breaking ties. Ambiguous same-concept/same-filing values
+are withheld. Amendments and differing values across filings are disclosed;
+differing values alone are not called a proven restatement. Historical
+series use latest-filed comparative versions, not a point-in-time dataset.
+
+Net margin needs positive revenue and profit from the same window and
+accession. Long-term debt needs both portions from the same filing/end date.
+Annual revenue growth needs the same revenue concept and USD unit, a positive
+base, consecutive periods and comparable durations (within 14 days). Missing
+periods and concept changes withhold growth. All displayed percentages are
+explicit calculations; they are not reported quotes or investment forecasts.
+
+COMPARISON
+Use the most recent common annual window, allowing start/end dates within
+seven days and durations within 14 days for ordinary fiscal calendar shifts.
+Actual dates remain visible. Without a common window, label the latest annual
+figures as unmatched and do not rank or calculate like-for-like differences.
+Matching windows do not resolve all accounting-definition or industry issues.
+No FX conversion or financial health score is invented.
+
+INTELLIGENCE AND LIMITATIONS
+Quick financial questions use deterministic summaries of the selected saved
+facts. Optional local AI uses normalized fact records grouped by source
+filing, with precise periods, units and original filing-index links. Exact
+million-USD conversions are labelled as Market Desk's normalized presentation,
+not verbatim quotations from filings. Citation and numeric checks remain
+unchanged. A targeted SEC consistency check also rejects known false claims
+that supplied filing dates or prior-year records are missing. This is not
+full semantic verification; a person must review each AI draft.
+Neither accounts nor an AI summary enter the existing price-model training
+or backtests. Existing price-only model uncertainty and limits remain.
+
+This is a deliberately bounded first financial-statements feature. Custom
+XBRL extensions, IFRS, complete financial statements, segment reporting,
+lease normalization, TTM construction and point-in-time backtests remain
+future work. Do not treat missing coverage as an absence of business risk.

@@ -1,0 +1,41 @@
+MARKET DESK v2.6.1 — VALIDATION / 3 NOVEMBER 2026
+
+213 Python tests passed, including seven new imported-history test cases.
+20 JavaScript suites passed, including long-range chart/source isolation tests.
+All 18 browser scripts passed JavaScript syntax parsing.
+
+New checks cover positive finite closes, invalid/future/malformed/duplicate
+session dates, optional ticker matching, adjusted-column preference, atomic
+replacement, per-ticker removal, source and confirmation validation, BOM/quoted
+CSV, source persistence and no provider calls on import. HTTP tests check
+same-origin/local-request enforcement plus import/read round trip.
+
+JavaScript checks cover 5Y/10Y durations, retaining more than 700 daily prices,
+daily-gap segmentation, longer request dates, per-depth caching, imported vs
+provider paths, keeping chart source separate from provider research, refusing
+imported forecasts, and showing partial coverage outside expandable detail.
+
+Browser checks: clicked 5Y and 10Y, imported a clearly labelled SYNTHETIC TEST
+FIXTURE in a temporary database with no keys, verified source, endpoint dates,
+change calculation and forecast withholding. Verified 10Y partial coverage,
+then removed the temporary imported copy through Use provider history. No test
+prices are included in the release or written to the user's private database.
+
+Phone 390 x 844: document width 390, range controls width 312 with wrapping,
+import form width 312; no horizontal page overflow. Desktop controls and import
+form operated successfully. Temporary viewport override was reset.
+The browser connection became unavailable during final screenshot capture;
+there is no new screenshot artifact. Earlier interaction checks completed.
+Final source hardening is covered by the automated tests above.
+
+The unchanged prior heatmap/navigation/AI/alert/research cores were compared
+byte-for-byte with v2.6.0. Indicator Studio and Price Forecasts explicitly use
+provider-only history so imported files are never relabelled as provider data.
+No external data calls or local model generation were needed for this release's
+checks. Genuine 5Y provider access is not claimed: Massive Basic remains limited
+to its free history window. Full 5Y/10Y charts need suitable CSV imports.
+
+Archive checks: ZIP CRC test, every archived byte matches source, no keys,
+private databases, preview CSVs, Python caches or model weights, and Mac command
+launcher executable permissions preserved. Source count and extracted bytes
+are recorded in PACKAGE-SIZES.txt.

@@ -1,0 +1,16 @@
+const fs=require('fs'),vm=require('vm'),path=require('path'),assert=require('assert/strict');
+const context={document:{},Number,Set,Date,Math,Array,Object,JSON};vm.createContext(context);vm.runInContext(fs.readFileSync(path.join(__dirname,'../site/screener.js'),'utf8')+'\nglobalThis.filters=ScreenFilters;',context);const f=context.filters,now=1793720000000;
+const row={symbol:'AAPL',name:'Example',category:'Technology',inDirectory:true,listingCurrency:'USD',price:100,change:0,pe:20,growth:0,margin:-5,quoteTime:now,financialsFetchedAt:now};
+const make=extra=>({...row,...extra}),filter=(rows,extra={})=>f.filter(rows,{...f.defaults,...extra},['AAPL','TTWO'],now);
+assert.equal(filter([row],{minGrowth:'0'}).length,1,'Zero is an observed number');assert.equal(filter([make({growth:null})],{minGrowth:'0'}).length,0,'Missing is never zero');
+assert.equal(filter([make({pe:-2})],{maxPE:'25'}).length,0);assert.equal(filter([make({pe:0})],{maxPE:'25'}).length,0);assert.equal(filter([row],{maxPE:'25'}).length,1);
+assert.equal(filter([make({quoteTime:now-4*86400000})],{maxPrice:'200'}).length,0);assert.equal(filter([make({quoteTime:now-2*86400000})],{maxPrice:'200'}).length,1);assert.equal(filter([make({financialsFetchedAt:now-8*86400000})],{maxPE:'25'}).length,0);
+assert.equal(filter([make({listingCurrency:''})],{maxPrice:'200'}).length,0,'No USD assumption for an unknown listing');assert.equal(filter([make({quoteTime:now+100000})],{minPrice:'1'}).length,0,'Future quote rejected');
+assert.equal(filter([row],{minPrice:'200',maxPrice:'100'}).length,0);assert(f.validate({...f.defaults,minGrowth:'Infinity'}));assert(f.validate({...f.defaults,maxPE:'0'}));
+assert.equal(filter([make({symbol:'TTWO',name:'Take-Two'})],{search:'Rockstar'}).length,1);assert.equal(filter([make({symbol:'OTHER',inDirectory:false})],{scope:'directory'}).length,0);
+let sorted=filter([make({symbol:'TTWO',pe:null}),row],{sort:'pe',order:'desc'});assert.equal(sorted[0].symbol,'AAPL');assert.equal(sorted[1].symbol,'TTWO','Missing sorts last in either direction');
+assert.equal(f.csvCell('=HYPERLINK("x")').slice(0,2),'"\'');assert.equal(f.csvCell(-5),'"-5"');assert.equal(f.csvCell('Company, Inc.'),'"Company, Inc."');
+assert.equal(f.presets([{name:'Research',filters:{...f.defaults,maxPE:'25'}}])[0].filters.maxPE,'25');for(const invalid of [[{name:'x',filters:null}],[{name:'x',filters:{scope:'unknown'}}],[{name:'x',filters:{maxPE:'-1'}}],new Array(11).fill({name:'x',filters:{}})])assert.throws(()=>f.presets(invalid));
+assert.equal(f.presets([{name:'Decimal',filters:{maxPE:'50.00'}}])[0].filters.maxPE,'50');assert(f.validate({...f.defaults,minPrice:'0x50'}));
+assert.equal(f.normalise({__proto__:{bad:1}}).bad,undefined);
+console.log('Screener: missing/zero, positive P/E, source age, UTC bounds, currency, alias search, missing-last sort, CSV and saved filters PASS');

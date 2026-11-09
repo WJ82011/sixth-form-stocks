@@ -1,0 +1,2 @@
+Current release: 2.9.0. Read V2.9-QA-REPORT.txt and FINANCIAL-HEALTH-METHODOLOGY.txt.
+Earlier per-version reports remain as the development record.

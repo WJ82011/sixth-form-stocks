@@ -1,0 +1,6 @@
+Market Desk Reborn 3.0.1
+
+Fixes saved-chart visibility after sleep/restart. Read OFFLINE-CHARTS-GUIDE.txt
+for behavior, tests, startup instructions and data-backup limits.
+All V3.0 tools and source/forecast safeguards remain. Historical V3.0 QA and
+release notes document that earlier baseline, not this patch test count.
