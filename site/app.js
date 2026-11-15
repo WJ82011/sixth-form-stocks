@@ -9,7 +9,7 @@ const STOCK_DIRECTORY = Object.freeze([{"symbol":"AAPL","name":"Apple","category
 const DIRECTORY_BY_SYMBOL = Object.freeze(Object.fromEntries(STOCK_DIRECTORY.map(x=>[x.symbol,x])));
 Object.assign(STOCK_NAMES,Object.fromEntries(STOCK_DIRECTORY.map(x=>[x.symbol,x.name])));
 
-const E = {quotes:new Map(), quoteFailures:new Map(), quoteChecks:new Map(), trades:new Map(), subscribed:new Set(), names:{...STOCK_NAMES}, watch:[], view:'overview',selected:'AAPL',range:'1D',chartPoints:[],chartSource:'',chartDomain:null,savedSession:false,chartForecast:null,forecastEnabled:true,forecastNews:new Map(),chartHover:null, ws:null,wsOpen:false, verifiedAt:0, wsRetry:0, wsRetryTimer:null, wsManualClose:false, key:'', configured:false, massiveConfigured:false, news:null, fundamentals:new Map(), candles:new Map(), notes:[], refreshStep:0, busy:false, fetching:false, lastQuoteError:'', lastHistoryStatus:'', lastCandleError:'', tooltip:'', probe:null, probing:false, wsError:'', lastGoodQuoteAt:0,storageError:'',workspaceWarning:'',droppedTicks:0};
+const E = {quotes:new Map(), quoteFailures:new Map(), quoteChecks:new Map(), trades:new Map(), subscribed:new Set(), names:{...STOCK_NAMES}, watch:[], view:'overview',selected:'AAPL',range:'1D',chartPoints:[],chartSource:'',chartDomain:null,savedSession:false,chartForecast:null,forecastEnabled:true,forecastNews:new Map(),chartHover:null, ws:null,wsOpen:false, verifiedAt:0, wsRetry:0, wsRetryTimer:null, wsManualClose:false, key:'', configured:false, massiveConfigured:false, news:null, fundamentals:new Map(), candles:new Map(), notes:[], refreshStep:0, busy:false, fetching:false, lastQuoteError:'', lastHistoryStatus:'', lastCandleError:'', tooltip:'', probe:null, probing:false, wsError:'', lastGoodQuoteAt:0,storageError:'',workspaceWarning:'',droppedTicks:0,demoMode:Boolean(typeof MarketDeskHost!=='undefined'&&MarketDeskHost.demoMode)};
 // Company aliases identify the listed parent; they are not separate securities.
 const STOCK_ALIASES = {TTWO:['Take Two','Take-Two','Take Two Interactive','Rockstar','Rockstar Games','GTA','GTA VI','GTA 6','Grand Theft Auto','Grand Theft Auto VI','Grand Theft Auto 6']};
 function localStockMatches(query){
@@ -168,7 +168,7 @@ async function restoreWorkspace(){
   }
 }
 
-async function api(path, options={}){const resp=await fetch(path,{cache:'no-store',...options});let data;try{data=await resp.json()}catch{throw new Error('Invalid response from the local server.')}if(!resp.ok)throw new Error(data.error||'Request failed (HTTP '+resp.status+').');return data}
+async function api(path, options={}){const resp=await fetch(path,{cache:'no-store',...options});let data;try{data=await resp.json()}catch{throw new Error(E.demoMode?'Demo data could not be read for '+path+'.':'Invalid response from the local server.')}if(!resp.ok)throw new Error(data.error||'Request failed (HTTP '+resp.status+').');return data}
 async function post(path, data){return api(path,{method:'POST',headers:{'Content-Type':'application/json','X-MD-Request':'1'},body:JSON.stringify(data)})}
 let toastTimer;function toast(msg){const el=$('toast');el.textContent=msg;el.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.add('hidden'),5000)}
 function alertBanner(msg){const el=$('global-alert');if(!msg){el.classList.add('hidden');return;}el.textContent=msg;el.classList.remove('hidden')}
@@ -184,8 +184,21 @@ function quoteFor(sym){
   }
   return null;
 }
-function currentMode(){if(E.wsOpen&&E.verifiedAt && nowMs()-E.verifiedAt<180000)return 'live';if(E.lastGoodQuoteAt && nowMs()-E.lastGoodQuoteAt<180000)return 'quotes';if(E.wsOpen)return 'waiting';return E.configured?'error':'offline'}
+function currentMode(){if(E.demoMode)return 'quotes';if(E.wsOpen&&E.verifiedAt && nowMs()-E.verifiedAt<180000)return 'live';if(E.lastGoodQuoteAt && nowMs()-E.lastGoodQuoteAt<180000)return 'quotes';if(E.wsOpen)return 'waiting';return E.configured?'error':'offline'}
 function syncConnectionUI(){
+  if(E.demoMode){
+    for(const id of ['connection-dot','top-dot']){const el=$(id);if(el)el.className='status-dot amber'}
+    $('top-status').textContent='DEMO DATA';
+    $('connection-label').textContent='Portfolio demo data';
+    $('connection-sub').textContent='Bundled snapshot · not live Finnhub';
+    $('diag-server').textContent='Static portfolio host';
+    $('diag-probe').textContent='✓ Demo bundle';
+    $('diag-message').textContent='Public admissions demo. Run the Mac server for Finnhub, SEC accounts and live research.';
+    $('diag-message').className='diag-result good';
+    $('key-state').textContent='NOT ON THIS HOST';
+    $('massive-key-state').textContent='NOT ON THIS HOST';
+    return;
+  }
   const mode=currentMode();
   const captions={live:'VERIFIED TRADE FEED',quotes:'QUOTE SNAPSHOTS',waiting:'STREAM OPEN · NO CONFIRMED TRADE',error:'QUOTES UNAVAILABLE',offline:'FEED OFFLINE'};
   const colors={live:'green',quotes:'amber',waiting:'amber',error:'red',offline:'red'};
@@ -341,7 +354,7 @@ async function autoQuoteCycle(){
  E.refreshStep=(start+batch.length)%visible.length;await loadQuotes(batch);
 }
 
-async function setupTokenStatus(){try{if(location.port&&location.port!=='8765')alertBanner('Market Desk is on a different local port ('+location.port+'). If earlier notes appear missing, close older Market Desk Terminal windows and relaunch on port 8765 before importing/migrating.');const status=await api('/api/status');E.configured=Boolean(status.configured);E.massiveConfigured=Boolean(status.massive_configured);if(E.massiveConfigured&&E.forecastEnabled&&['1H','1D'].includes(E.range)){E.range='1Y';document.querySelectorAll('#overview-ranges button').forEach(b=>b.classList.toggle('active',b.dataset.range==='1Y'));}$('diag-budget').textContent=status.api_used_last_60s+' / '+status.api_budget;E.backgroundCollector=Boolean(status.backgroundCollector);syncConnectionUI();if(E.configured){connectWS();await autoQuoteCycle();loadNews();loadChart();}else if(E.massiveConfigured){loadChart();toast('Massive history is ready; Finnhub live quotes are not connected.');}else{alertBanner('Welcome to Market Desk Reborn. Use All tools → Settings to connect market prices. Local research, SEC accounts and practice tools can be used separately.')}}catch(e){alertBanner('Local server error: '+e.message)}}
+async function setupTokenStatus(){try{if(E.demoMode){const status=await api('/api/status');E.configured=Boolean(status.configured);E.massiveConfigured=Boolean(status.massive_configured);$('diag-budget').textContent='0 / 48';syncConnectionUI();await autoQuoteCycle();loadNews();loadChart();return}if(location.port&&location.port!=='8765')alertBanner('Market Desk is on a different local port ('+location.port+'). If earlier notes appear missing, close older Market Desk Terminal windows and relaunch on port 8765 before importing/migrating.');const status=await api('/api/status');E.configured=Boolean(status.configured);E.massiveConfigured=Boolean(status.massive_configured);if(E.massiveConfigured&&E.forecastEnabled&&['1H','1D'].includes(E.range)){E.range='1Y';document.querySelectorAll('#overview-ranges button').forEach(b=>b.classList.toggle('active',b.dataset.range==='1Y'));}$('diag-budget').textContent=status.api_used_last_60s+' / '+status.api_budget;E.backgroundCollector=Boolean(status.backgroundCollector);syncConnectionUI();if(E.configured){connectWS();await autoQuoteCycle();loadNews();loadChart();}else if(E.massiveConfigured){loadChart();toast('Massive history is ready; Finnhub live quotes are not connected.');}else{alertBanner('Welcome to Market Desk Reborn. Use All tools → Settings to connect market prices. Local research, SEC accounts and practice tools can be used separately.')}}catch(e){alertBanner('Local server error: '+e.message)}}
 let tradeDisplayTimer=null, tradeChartTimer=null;
 function appendRecordedTrade(){
   if(!['1H','1D'].includes(E.range))return;
@@ -398,7 +411,7 @@ function acceptCollectorPacket(packet){
 }
 function connectWS(){
   stopWS();
-  if(!E.configured)return;
+  if(E.demoMode||!E.configured)return;
   const generation=streamGeneration;
   let cursor=0,epoch='';
   async function poll(){
