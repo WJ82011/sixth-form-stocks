@@ -185,6 +185,6 @@ const V3=(()=>{
   $('v3-chart-compare').addEventListener('click',chartCompare);$('v3-cap-read').addEventListener('click',capMap);
  }
  function setup(){mount();bind();ready=loadState();window.addEventListener('marketdesk:workspace-restored',()=>{ready=loadState()});window.addEventListener('storage',e=>{if(e.key===KEY&&!busy)ready=loadState().then(()=>window.dispatchEvent(new Event('marketdesk:v3-saved')))});setInterval(()=>{if(document.visibilityState==='visible'&&E.view==='home'&&!busy)home()},30000)}
- document.addEventListener('DOMContentLoaded',setup,{once:true});
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});else setup();
  return {open,readStatements,renderStatements,renderPortfolio,whenReady:()=>ready,workspace:()=>state?JSON.parse(JSON.stringify(state)):null,update:action};
 })();

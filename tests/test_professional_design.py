@@ -24,8 +24,12 @@ class ProfessionalDesignTests(unittest.TestCase):
     def test_existing_features_and_assets_preserved(self):
         required={'tape-quick-search','tape-canvas','company-select','forecast-select','save-note','diagnostic-refresh','api-key','overview-chart','markets-table','ticker-track','command-overlay'}
         self.assertTrue(required<=set(self.inspector.ids))
-        self.assertTrue({'/market-hours.js','/chart-research.js','/app.js','/tape.js','/signal.js','/pro.js','/terminal.js','/compare.js','/reports.js'} <= set(self.inspector.scripts))
-        self.assertTrue({'/styles.css','/tape.css','/signal.css','/pro.css','/terminal.css','/research-v17.css'} <= set(self.inspector.styles))
+        loader=(SITE/'view-loader.js').read_text()
+        for script in ('/market-hours.js','/chart-research.js','/app.js','/tape.js','/signal.js','/pro.js','/terminal.js','/compare.js','/reports.js'):
+            self.assertIn(script,loader)
+        self.assertIn('/view-loader.js',self.inspector.scripts)
+        self.assertTrue({'/styles.css','/signal.css','/pro.css','/terminal.css'} <= set(self.inspector.styles))
+        self.assertIn('/tape.css',loader)
     def test_local_server_serves_new_files(self):
         server=(ROOT/'server.py').read_text()
         for file in ['pro.js','pro.css']:

@@ -193,6 +193,6 @@ const Desk=(()=>{
   });
   setMode('stock');reload();setInterval(()=>{if(document.visibilityState==='visible'&&E.view==='overview'){if(Date.now()-lastLoad>25000)reload();else memory()}},10000);
  }
- document.addEventListener('DOMContentLoaded',setup,{once:true});
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});else setup();
  return {open,memory,selected,reload,historyChanged,chartMount,revealSelected:()=>safeScroll(mode==='advanced'?$('main-chart-panel'):$('desk-company-name'))};
 })();

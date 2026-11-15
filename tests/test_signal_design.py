@@ -28,10 +28,14 @@ class SignalDesignTests(unittest.TestCase):
             self.assertIn(n,self.dom.ids)
         self.assertEqual(len(self.dom.ids),len(set(self.dom.ids)),'Duplicate IDs can break stock selection')
     def test_additive_design_resources_are_local(self):
-        self.assertTrue({'/signal.css','/tape.css','/styles.css'}<=set(self.dom.styles))
-        self.assertTrue({'/signal.js','/market-hours.js','/app.js','/tape.js'}<=set(self.dom.scripts))
+        loader=(SITE/'view-loader.js').read_text()
+        self.assertTrue({'/signal.css','/styles.css'}<=set(self.dom.styles))
+        self.assertIn('/tape.css',loader)
+        for script in ('/signal.js','/market-hours.js','/app.js','/tape.js'):
+            self.assertIn(script,loader)
+        self.assertIn('/view-loader.js',self.dom.scripts)
         for path in self.dom.styles+self.dom.scripts:
-            self.assertTrue((SITE/path.lstrip('/')).exists(),path)
+            self.assertTrue((SITE/path.lstrip('/').split('?',1)[0]).exists(),path)
     def test_private_storage_strings_not_changed(self):
         server=(ROOT/'server.py').read_text()
         self.assertIn('.marketdesk-reborn',server)

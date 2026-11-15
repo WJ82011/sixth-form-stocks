@@ -8,11 +8,7 @@ APP = (ROOT / 'site' / 'app.js').read_text()
 LOOK = (ROOT / 'site' / 'look43.js').read_text()
 
 def directory():
-    start = APP.index('const STOCK_DIRECTORY = Object.freeze(')
-    body = APP[start:]
-    end = body.index(']);')
-    payload = body[body.index('['):end + 1]
-    return json.loads(payload)
+    return json.loads((ROOT / 'site' / 'stock-directory.json').read_text())
 
 def destinations(symbol):
     '''The same ticker is the only identifier these screens are allowed to use.'''

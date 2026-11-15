@@ -17,7 +17,10 @@ class TerminalEditionTests(unittest.TestCase):
         self.assertEqual(len(inspector.ids),len(set(inspector.ids)))
         wanted={'pro-console','pro-chart-mount','pro-ops-watch','pro-cross-body','pro-quote-strip','pro-focus-fields','pro-research-wire','pro-focus-source','edition-pro','edition-signal','main-chart-panel','tape-quick-search','forecast-select','company-select','save-note','diagnostic-refresh'}
         self.assertLessEqual(wanted,set(inspector.ids))
-        self.assertTrue({'/terminal.css','/terminal.js'}<=set(inspector.files))
+        loader=(site/'view-loader.js').read_text()
+        self.assertIn('/terminal.js',loader)
+        self.assertIn('/view-loader.js',inspector.files)
+        self.assertIn('/terminal.css',inspector.files)
     def test_rendered_resources_are_local_only(self):
         s=(root/'server.py').read_text()
         for file in ['terminal.css','terminal.js']:

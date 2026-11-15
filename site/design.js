@@ -121,7 +121,7 @@ let syncing=false;
  return {setup,page,chart,company,toggleTheme,detailOpen,detailClose,normalise,flush,current:()=>({...prefs})};
 })();
 
- document.addEventListener('DOMContentLoaded',()=>{
+ const boot=()=>{
   AppDesign.setup();
   window.Desk68?.regroup();
   const tools=document.getElementById('focus-tools-dialog'),grid=document.getElementById('focus-tools-grid');let opener;
@@ -145,4 +145,5 @@ let syncing=false;
   const sync=()=>document.querySelectorAll('[data-focus-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.focusView===E.view)));
   new MutationObserver(sync).observe(document.getElementById('nav'),{subtree:true,attributes:true,attributeFilter:['class']});sync();
   document.getElementById('overview-ranges')?.addEventListener('click',()=>AppDesign.chart());
- });
+ };
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
