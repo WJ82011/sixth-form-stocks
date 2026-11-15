@@ -24,6 +24,9 @@ class IdentityTests(unittest.TestCase):
         self.assertIn('href="/apple-touch-icon.png"',html)
         self.assertNotIn('class="brand-slash"',html)
         self.assertIn('SIGNAL / PRO <span class="brand-version">6.8.0',html)
+        self.assertIn('data-md-version',html)
+        self.assertNotIn('Market Desk<span>4.3</span>',html)
+        self.assertTrue((SITE/'release.js').exists())
     def test_local_server_serves_icons_safely(self):
         server=(ROOT/'server.py').read_text()
         for file,ctype in [('brand-mark.svg','image/svg+xml'),('favicon.svg','image/svg+xml'),('apple-touch-icon.png','image/png')]:
