@@ -1,7 +1,7 @@
 /* Crypto Forecast Lab. Historical tests stay separate from issued forecasts. */
 const Crypto57=(()=>{
   const money=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'});
-  const products=['BTC-USD','ETH-USD','SOL-USD','XRP-USD','DOGE-USD','ADA-USD','LINK-USD','AVAX-USD','LTC-USD'];
+  const products=['BTC-USD','ETH-USD','SOL-USD','XRP-USD','DOGE-USD','ADA-USD','LINK-USD','AVAX-USD','LTC-USD','BCH-USD','DOT-USD','ATOM-USD','UNI-USD','AAVE-USD','NEAR-USD','SUI-USD','ARB-USD','OP-USD','SHIB-USD','PEPE-USD','RENDER-USD','APT-USD','XLM-USD'];
   let product='BTC-USD',seq=0;
 
   function host(){

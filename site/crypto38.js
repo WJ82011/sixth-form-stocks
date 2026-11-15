@@ -1,6 +1,6 @@
 /* Public spot trades and closed candles stay separate from the equity workspace. */
 const Crypto38=(()=>{
-  const names={'BTC-USD':'Bitcoin','ETH-USD':'Ethereum','SOL-USD':'Solana','XRP-USD':'XRP','DOGE-USD':'Dogecoin','ADA-USD':'Cardano','LINK-USD':'Chainlink','AVAX-USD':'Avalanche','LTC-USD':'Litecoin'};
+  const names={'BTC-USD':'Bitcoin','ETH-USD':'Ethereum','SOL-USD':'Solana','XRP-USD':'XRP','DOGE-USD':'Dogecoin','ADA-USD':'Cardano','LINK-USD':'Chainlink','AVAX-USD':'Avalanche','LTC-USD':'Litecoin','BCH-USD':'Bitcoin Cash','DOT-USD':'Polkadot','ATOM-USD':'Cosmos','UNI-USD':'Uniswap','AAVE-USD':'Aave','NEAR-USD':'NEAR','SUI-USD':'Sui','HBAR-USD':'Hedera','ICP-USD':'Internet Computer','FIL-USD':'Filecoin','INJ-USD':'Injective','ARB-USD':'Arbitrum','OP-USD':'Optimism','SEI-USD':'Sei','TIA-USD':'Celestia','FET-USD':'Fetch.ai','RENDER-USD':'Render','APT-USD':'Aptos','ENA-USD':'Ethena','POL-USD':'Polygon','SHIB-USD':'Shiba Inu','PEPE-USD':'Pepe','WIF-USD':'dogwifhat','BONK-USD':'Bonk','XLM-USD':'Stellar'};
   const labels={'1H':'1 hour','1D':'24 hours','1W':'1 week','1M':'30 days','1Y':'1 year'};
   const money=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'});
   const date=new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short',timeZone:'UTC'});

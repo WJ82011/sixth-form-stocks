@@ -15,17 +15,15 @@ class CryptoTests(unittest.TestCase):
     setUp = fixture.V3APITests.setUp
 
     def test_supported_markets_and_rejected_identifiers(self):
-        expected = {
-            'BTC-USD': 'BTC', 'ETH-USD': 'ETH', 'SOL-USD': 'SOL', 'XRP-USD': 'XRP',
-            'DOGE-USD': 'DOGE', 'ADA-USD': 'ADA', 'LINK-USD': 'LINK',
-            'AVAX-USD': 'AVAX', 'LTC-USD': 'LTC',
-        }
-        for product, base in expected.items():
+        self.assertGreaterEqual(len(crypto.PRODUCTS), 24)
+        for product, name in crypto.PRODUCTS.items():
+            base = product.split('-')[0]
             self.assertEqual(crypto.MARKETS[product]['base'], base)
             self.assertEqual(crypto.MARKETS[product]['quote'], 'USD')
             self.assertEqual(crypto.MARKETS[product]['providerName'], product)
+            self.assertTrue(name)
         self.assertEqual(crypto.UNAVAILABLE, [])
-        for symbol in ('BTC', 'AAPL', '../ETH-USD', 'BTC-USDT', 'SHIB-USD'):
+        for symbol in ('BTC', 'AAPL', '../ETH-USD', 'BTC-USDT', 'FAKE-USD'):
             with self.assertRaises(ValueError):
                 crypto.packet(vars(s), symbol, 'quote')
 
