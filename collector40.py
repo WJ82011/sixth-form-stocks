@@ -12,7 +12,9 @@ import threading
 import time
 from urllib.parse import quote
 
+import coverage41
 import crypto38
+import crypto57
 import learning40
 import market37
 
@@ -117,6 +119,7 @@ class Collector:
         self.indices={}
         self.watch=list(DEFAULTS)
         self.watch_until=0
+        self.started=False
 
     def set_status(self, key, message):
         with self.lock:self.status[key]=message
@@ -140,8 +143,27 @@ class Collector:
                     'symbols':self.symbols[:],'status':dict(self.status),'lastTrade':self.last_trade}
 
     def start(self):
+        if self.started:
+            return False
+        self.started=True
+        self._launch()
+        return True
+
+    def _launch(self):
+        self.gap_queue=[]
+        try:
+            self.gap_queue=coverage41.priority(self.g,self.watchlist())
+            if self.gap_queue:
+                self.set_status('history','Restart will request free daily gaps for '+', '.join(self.gap_queue[:6]))
+            else:
+                self.set_status('history','No fillable daily gaps in the free window. Unfilled gaps stay visible.')
+        except Exception:
+            self.gap_queue=[]
+        self.scheduled=True
         for job in (self.stream_loop,self.poll_loop):
             threading.Thread(target=job,daemon=True,name=job.__name__).start()
+        import overnight51
+        threading.Thread(target=overnight51.loop,args=(self.g,self.stop),daemon=True,name='overnight51').start()
 
     def desired(self):
         with self.lock:
@@ -213,7 +235,7 @@ class Collector:
 
     def poll_loop(self):
         due={}
-        intervals={'quotes':25,'crypto':45,'cryptoHistory':180,'news':180,'marketNews':420,'heatmap':75,'history':180,'model':55}
+        intervals={'quotes':25,'crypto':45,'cryptoHistory':180,'cryptoForecast':600,'news':180,'marketNews':420,'heatmap':75,'history':180,'model':55}
         while not self.stop.is_set():
             for task,interval in intervals.items():
                 if self.stop.is_set():return
@@ -228,8 +250,18 @@ class Collector:
         g=self.g
         watch=self.watchlist()
         equities=[sym for sym in watch if g['ai_catalog_entry'](sym)]
+        if getattr(self,'scheduled',False) and task in ('history','model'):
+            self.set_status(task,'Handled by the research schedule.')
+            return
+        gate='ok'
+        if getattr(self,'scheduled',False):
+            import overnight51
+            gate=overnight51.gate(g)
+        if gate=='quiet' and task in ('news','marketNews','heatmap'):
+            self.set_status(task,'Quiet mode is leaving this update for the research schedule.')
+            return
         if task=='quotes' and watch and g['get_key']():
-            symbols=self.choose(task,watch,3)
+            symbols=self.choose(task,watch,1 if gate=='quiet' else 3)
             result=g['handle_api']('/api/quotes',{'symbols':[','.join(symbols)]})
             count=sum(row['status']=='ok' for row in result['items'])
             self.set_status(task,f'{count} of {len(symbols)} snapshots usable')
@@ -239,16 +271,32 @@ class Collector:
             g['handle_api']('/api/news',query)
             self.set_status(task,'Saved feed checked')
         elif task in ('crypto','cryptoHistory'):
-            kind='quote' if task=='crypto' else '1D'
-            results=[crypto38.packet(g,sym,kind)['status'] for sym in crypto38.PRODUCTS]
-            self.set_status(task,', '.join(results))
+            order=crypto38.rotation(g)
+            kind='quote' if task=='crypto' else ('1W' if self.indices.get('cryptoWeek',0)%4==3 else '1D')
+            if task=='cryptoHistory':
+                self.indices['cryptoWeek']=self.indices.get('cryptoWeek',0)+1
+            product=self.choose(task, order, 1)[0]
+            result=crypto38.packet(g, product, kind)
+            self.set_status(task, product+' · '+kind+' · '+result['status'])
+        elif task=='cryptoForecast':
+            result=crypto57.scheduled(g)
+            self.set_status(task, result['product']+' · '+', '.join(result['statuses']))
         elif task=='heatmap' and g['get_massive_key']():
             self.set_status(task,market37.step(g,{'symbols':watch})['status'])
-        elif task=='history' and g['get_massive_key']() and equities:
-            sym=self.choose(task,equities)[0]
+        elif task=='history' and g['get_massive_key']() and (getattr(self,'gap_queue',[]) or equities):
+            queue=getattr(self,'gap_queue',[])
+            if queue:
+                sym=queue.pop(0)
+                self.gap_queue=queue
+                purpose='gap fill'
+            else:
+                sym=self.choose(task,equities)[0]
+                purpose='routine'
             end=int(time.time())
             result=g['massive_daily_candles'](sym,end-731*86400,end)
-            self.set_status(task,sym+' · '+result['status'])
+            self.set_status(task,sym+' · '+purpose+' · '+result['status'])
+        elif task=='history':
+            self.set_status(task,'Free daily history is not connected. Trading gaps stay visible.')
         elif task=='model' and equities:
             sym=self.choose(task,equities)[0]
             result=learning40.report(g,sym)

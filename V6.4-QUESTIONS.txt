@@ -1,0 +1,10 @@
+Questions to try
+Why did this company match my scan?
+Which holding contributed most to this portfolio change?
+How did these results differ from my saved scenario?
+Has this forecast model beaten its baseline?
+What changed since I saved this investigation?
+How much did the stock move in the dates shown?
+What changed in these results?
+
+If a saved scan, stress test, scenario or investigation is not attached, the answer says so. It does not fill the gap.

@@ -8,7 +8,7 @@ ROOT=Path(__file__).resolve().parents[1]
 class Release19(unittest.TestCase):
  def test_app_navigation_and_version(self):
   html=(s.SITE/'index.html').read_text()
-  self.assertEqual(s.VERSION,'4.0.0')
+  self.assertEqual(s.VERSION,'6.8.0')
   for name in ('indicators','valuation','portfolio'):
    self.assertIn('data-view="'+name+'"',html)
    self.assertIn('id="view-'+name+'"',html)

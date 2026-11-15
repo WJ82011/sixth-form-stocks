@@ -1,0 +1,18 @@
+MARKET DESK REBORN 6.5.0
+Research change tracker. Checked 15 November 2026.
+
+CONTROLLED EXAMPLES
+These figures are test inputs, not Take-Two’s accounts. Take-Two has no saved SEC statement on this Mac, and none was invented.
+
+Following TTWO with no statement records one missing-data item: no revenue or profit was invented. A second check adds nothing.
+A new annual period shows revenue 1000. The same period revised to 1100 shows original 1000 and updated 1100. A quarter is stored as its own period and is not subtracted from the year. A euro figure for that period is not converted or subtracted.
+A graded forecast shows 200 then 210. An assumption of 20 against a 10 percent comparable change is listed to revisit. The original thesis and open judgement are unchanged by acknowledgement.
+A check an hour after the follow, with no overnight heartbeat, is marked as found after a recording gap. Backup and restore bring the follow and the review back.
+
+IN THE APP
+Research, Take-Two. What changed says no supported SEC statement is saved. Intelligence answers: TTWO no saved statement, not saved then still not saved, and the judgement was not changed. Open chart selects TTWO. There is no Take-Two entry in the research journal, so the follow is the company rather than a journal thesis.
+The panel is on the research page in Professional and after returning to Standard.
+Since your last visit has Open what changed.
+
+RELIABILITY
+667 tests passed, three times. The runs used disposable data and did not call a market provider.

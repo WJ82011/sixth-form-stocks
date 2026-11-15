@@ -6,5 +6,16 @@
 @media(prefers-reduced-motion:reduce){.v3-stock{transition:none}.v3-stock:hover{transform:none}}
 :root[data-motion=off] .v3-stock{transition:none}:root[data-motion=off] .v3-stock:hover{transform:none}
 
+.p46-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;align-items:center;margin:8px 0}
+.p46-row i{grid-column:1 / -1;display:block;height:8px;border-radius:999px;background:#1d4ed8}
+.p46-large i{background:#f2c14e}
+.p46-large span{color:#f2c14e}
+#v3-p-insights{display:grid;gap:16px;margin:16px 0}
+#v3-p-insights ul{margin:8px 0 0;padding-left:18px}
+.lab45-note{display:flex;gap:16px;align-items:center;margin:8px 0 12px}
+.lab45-note p{margin:0}
+.lab45-block{margin-top:18px}
+.lab45-block button,.v3-table-wrap button{border:0;border-radius:999px;background:#1d4ed8;color:#fff;padding:4px 10px}
+
 /* V3.1: keep the forecast action inside narrow screens. */
 @media(max-width:760px){#view-forecast .instrument-picker{flex-wrap:wrap;gap:12px}#view-forecast .instrument-picker select{min-width:0;max-width:100%;flex:1 1 180px}#view-forecast #forecast-calculate{max-width:100%;white-space:normal}}

@@ -38,7 +38,7 @@ class ResearchV17Tests(unittest.TestCase):
    self.assertIn("'"+asset+"'",source)
  def test_version_and_nav(self):
   html=(ROOT/'site/index.html').read_text()
-  self.assertIn('4.0.0',html)
+  self.assertIn('6.8.0',html)
   for view in ['comparison','reports']:
    self.assertIn('data-view="'+view+'"',html)
    self.assertIn('id="view-'+view+'"',html)

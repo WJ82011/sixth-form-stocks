@@ -1,0 +1,18 @@
+FIVE THINGS TO TRY IN MARKET DESK 6.0
+
+A new person has not done these yet. The notes below are from the developer’s own pass. Difficulties found in that pass were fixed where the records allowed it.
+
+1. Find Take-Two
+Type Take-Two in the search box, or choose Gaming companies in the workspace menu. The chart should show TTWO.
+
+2. Compare two companies
+Open Comparison. Choose two companies and two dates, then Compare saved records. Save the comparison if you want it in a research pack.
+
+3. Create an alert
+Open Price Alerts. Pick one company, one rule and one level. This step was not submitted during the developer pass, so it is still pending as a real alert.
+
+4. Investigate a move
+Open Stock Screener, run or reopen a saved scan, and click a company. Home should open on that company with Review this move under the chart. A missing SPY close is stated. It is not filled in.
+
+5. Reopen saved research
+Open Research Reports and reopen the saved edition. The page should say it was not rebuilt. The journal entry keeps the prices from the day it was saved.

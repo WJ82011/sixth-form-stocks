@@ -35,6 +35,21 @@
     for(let i=1;i<segments.length;i++)gaps.push({from:segments[i-1].at(-1).t,to:segments[i][0].t});
     return gaps;
   }
+  function describeCoverage(packet){
+    if(!packet||typeof packet!=='object')return '';
+    const freshness={live:'Live',delayed:'Delayed',saved:'Saved'}[packet.freshness]||'Saved';
+    const complete=packet.complete?'complete':'incomplete';
+    const when=Number.isFinite(packet.asOf)?new Date(packet.asOf).toLocaleString('en-GB'):'timestamp unavailable';
+    const gaps=Number(packet.tradingGapCount)||0;
+    const closures=Number(packet.closureCount)||0;
+    const parts=[freshness,complete,packet.source||'Source not labelled','latest '+when];
+    parts.push(gaps?gaps+' trading-hour gap'+(gaps===1?'':'s'):'no trading-hour gaps');
+    if(closures)parts.push(closures+' scheduled closure'+(closures===1?'':'s'));
+    if(packet.splitNote)parts.push(packet.splitNote);
+    if(gaps&&packet.fillable===false)parts.push('Free feed cannot fill these gaps');
+    if(gaps&&packet.fillable)parts.push('Restart asks the free daily feed for supported gaps first');
+    return parts.filter(Boolean).join(' · ');
+  }
   function coverage(points,from,to){
     const sorted=points.filter(x=>x.t>=from&&x.t<=to).sort((a,b)=>a.t-b.t);
     const span=sorted.length>1?sorted[sorted.length-1].t-sorted[0].t:0;
@@ -174,7 +189,7 @@
       directionAccuracy:directions.length?100*directions.reduce((a,b)=>a+b,0)/directions.length:null,
       beatBaseline:mean(errors)<mean(baseline),newsTested:false};
   }
-  const API={normaliseDaily,coverage,chartSegments,chartGaps,headlineSignal,model,walkForward};
+  const API={normaliseDaily,coverage,describeCoverage,chartSegments,chartGaps,headlineSignal,model,walkForward};
   if(typeof module!=='undefined'&&module.exports)module.exports=API;
   root.ChartResearch=API;
 })(typeof window!=='undefined'?window:globalThis);

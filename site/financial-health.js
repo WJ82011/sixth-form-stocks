@@ -41,7 +41,7 @@ const FinancialHealth=(()=>{
  }
  async function load(sym=selected()){
   current=sym;const id=++seq;report=null;$('fh-output').textContent='Reading the accounts saved on this Mac…';$('fh-export').disabled=true;$('fh-status').textContent=sym+' · reading saved accounts only.';
-  try{const d=await get('/api/financials?symbol='+encodeURIComponent(sym));if(id!==seq||sym!==current)return;report=d;render();$('fh-status').textContent=d.fetchedAt?'Saved accounts retrieved '+new Date(d.fetchedAt).toLocaleString('en-GB')+'. Check reporting dates below.':d.notice}catch(e){if(id===seq){$('fh-status').textContent=e.message;$('fh-output').textContent='No figures are shown for this company.'}}
+  try{const d=await get('/api/financials?symbol='+encodeURIComponent(sym));if(id!==seq||sym!==current)return;report=d;render();$('fh-status').textContent=d.fetchedAt?'Saved accounts retrieved '+new Date(d.fetchedAt).toLocaleString('en-GB')+'. Check reporting dates below.':d.notice}catch(e){if(id===seq&&sym===current){$('fh-status').textContent=e.message;$('fh-output').textContent='No figures are shown for this company.'}}
  }
  async function update(){
   if(busy)return;const sym=current||selected(),id=++seq;busy=true;$('fh-update').disabled=true;$('fh-status').textContent='Requesting '+sym+' accounts from the SEC. This can take a few seconds…';

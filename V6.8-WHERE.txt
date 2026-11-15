@@ -1,0 +1,38 @@
+WHERE THE TOOLS ARE IN 6.8
+The main destinations are My Desk, Explore, Investigate and My Research. All tools still opens every previous screen, and the search box matches the old menu name.
+
+MY DESK
+Followed companies, the chart, recorded prices and since-your-last-visit updates. Home and Overview used to be separate entries. Both still open. Price alerts, the practice portfolio and Live Tape are in this group.
+
+EXPLORE
+Companies, the heatmap, crypto, the screener, comparisons, indicators, news and the economy overview. These used to be split between Markets and Research tools.
+
+INVESTIGATE
+Company events, supported financials, the calendar, Forecast Lab, Forecast Results, company valuation and Intelligence. Forecast Lab and Forecast Results stay separate: Lab checks a model against an unchanged price, and Results keeps issued forecasts that were already saved.
+
+MY RESEARCH
+Saved investigations, the journal, reports and the offline learning page.
+
+ADVANCED
+Anything that did not fit the four activities remains in All tools under Advanced. Settings stays on the rail.
+
+FROM THE COMPANY CHART
+Investigate this move, Compare a company, Supported financials and Save evidence use the company already selected. The dates come from the chart that is open.
+
+NOT FROM A TESTER
+No new person has tried these five tasks. The times below are from one walk on this Mac, not a usability study. The five older tester tasks are still unanswered.
+
+SAME FIVE TASKS, BEFORE AND AFTER
+Finding Take-Two and seeing its chart stayed one search. Both walks took 420 ms and showed TTWO at 227.82.
+
+Comparing it with AMD took four actions before: All tools, Compare Companies, the second symbol, then draw. The draw itself was 869 ms. After, Compare a company is on the chart, then the second symbol and draw. The draw was 918 ms. The navigation is one action shorter. The drawing time is not faster.
+
+Investigating the move took the Company destination and Read saved events before, 615 ms. After, Investigate this move is one action on the chart, 721 ms, and it keeps the chart dates.
+
+Opening Forecast Lab took All tools and then Price Forecasts before, 216 ms. After, it is under Investigate. The page now says the line is drawn only when the model beats an unchanged price. That explanation was not on the page before.
+
+Saving an investigation and opening the same id again took 16 ms before and 13 ms after. The id was the saved record. Save evidence on the chart writes the journal, which is separate from that investigation.
+
+The rail buttons can be reached from the keyboard. At a 390-point width the page did not scroll sideways. Standard was restored after Professional. Switching AMD and Take-Two kept the company on the chart.
+
+671 tests passed, three times.

@@ -1,0 +1,49 @@
+/* Market Desk 4.3 visual system. Motion follows the existing Reduce Motion controls. */
+body.v43{background:#070b12;color:#e7eef8}
+body.v43 .surface,body.v43 .fh-panel,body.v43 .pro-ops-panel,body.v43 .settings-card,body.v43 .empty-state{
+  border:1px solid #24344c;border-radius:22px;background:#101826}
+body.v43 .page-title h1,body.v43 .fh-head h2,body.v43 .pro-ops-heading h1{letter-spacing:-.04em}
+body.v43 .ghost-btn,body.v43 .primary-btn,body.v43 .range-switch button,body.v43 .v43-mode button,body.v43 .chart43-tools button,body.v43 .replay43-controls button{
+  border-radius:999px}
+body.v43 .primary-btn,body.v43 .v43-mode button[aria-pressed=true],body.v43 .range-switch button.active{background:#1d4e93;color:#f4f8ff;border-color:#7eb6ff}
+body.v43 .source-tag,body.v43 .chart-data-coverage,body.v43 #chart43-status,body.v43 #replay43-status{color:#9eb6d6}
+body.v43 .focus-top,body.v43 .focus-actions{flex-wrap:wrap}
+.v43-mode{display:flex;gap:4px;padding:3px;border:1px solid #24344c;border-radius:999px;background:#0c121c;flex:0 0 auto;margin-left:8px}
+.v43-mode button{border:0;background:transparent;color:#9eb6d6;padding:7px 10px;font-size:11px}
+.v43-layout{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:8px 0 12px}
+.v43-tabs{display:none;gap:6px}
+.v43-collapse{display:flex;gap:8px;flex-wrap:wrap}
+.chart43-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.chart43-tools button,.replay43-controls button{border:1px solid #24344c;background:#0c121c;color:#e7eef8;padding:7px 12px}
+#overview-chart{touch-action:none;outline:none}
+#overview-chart:focus-visible{outline:2px solid #7eb6ff;outline-offset:3px}
+.replay43{margin-top:18px;padding:18px;border:1px solid #24344c;border-radius:22px;background:#101826}
+.replay43-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin:12px 0}
+.replay43-controls select{background:#0c121c;color:#e7eef8;border:1px solid #24344c;border-radius:10px;padding:7px}
+#replay43-readout ul{margin:4px 0 10px;padding-left:18px;color:#c5d4e8}
+body.desk-v27[data-edition=professional] #view-overview > #desk-start,
+body.desk-v27[data-edition=professional] #view-overview > #desk-briefing,
+body.desk-v27[data-edition=professional] #view-overview > #desk-stock{display:none!important}
+body[data-edition=professional] #view-overview > #desk-legacy,
+body[data-edition=professional] #pro-console{display:block!important;height:auto!important}
+body[data-edition=professional][data-v43-hide~=watch] .pro-watch-column{display:none}
+body[data-edition=professional][data-v43-hide~=side] .pro-data-column{display:none}
+body.v43 .page-scroll>.view.active{animation:v43-enter var(--motion-duration,280ms) cubic-bezier(.16,1,.3,1)}
+body.v43 .v43-collapse button,body.v43 .pro-ops-panel{transition:opacity var(--motion-duration,280ms),transform var(--motion-duration,280ms)}
+@keyframes v43-enter{from{opacity:.01;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(max-width:860px){
+  .v43-tabs{display:flex}
+  body[data-edition=professional] .pro-ops-grid{display:block}
+  body[data-edition=professional][data-v43-tab=chart] .pro-watch-column,
+  body[data-edition=professional][data-v43-tab=chart] .pro-data-column,
+  body[data-edition=professional][data-v43-tab=watch] .pro-chart-column,
+  body[data-edition=professional][data-v43-tab=watch] .pro-data-column,
+  body[data-edition=professional][data-v43-tab=side] .pro-chart-column,
+  body[data-edition=professional][data-v43-tab=side] .pro-watch-column{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  body.v43 .page-scroll>.view.active,body.v43 .v43-collapse button,body.v43 .pro-ops-panel{animation:none!important;transition:none!important}
+}
+body[data-motion=off].v43 .page-scroll>.view.active,body[data-motion=off].v43 .v43-collapse button,body[data-motion=off].v43 .pro-ops-panel{animation:none!important;transition:none!important}
+html[data-theme=light] body.v43{background:#f4f7fb;color:#172033}
+html[data-theme=light] body.v43 .surface,html[data-theme=light] body.v43 .replay43{background:#fff;border-color:#d5deea}

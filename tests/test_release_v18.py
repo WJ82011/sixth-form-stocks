@@ -10,7 +10,7 @@ import server as s
 class Release18Tests(unittest.TestCase):
  def test_version_and_navigation(self):
   doc=(s.SITE/'index.html').read_text()
-  self.assertEqual(s.VERSION,'4.0.0')
+  self.assertEqual(s.VERSION,'6.8.0')
   for target in ('macro','accuracy'):
    self.assertIn('data-view="'+target+'"',doc)
    self.assertIn('id="view-'+target+'"',doc)

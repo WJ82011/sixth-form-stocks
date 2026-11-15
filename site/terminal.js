@@ -24,7 +24,9 @@
     const panel=byId('main-chart-panel');
     if(!panel)return;
     if(!anchor){anchor=document.createComment('overview-chart-original-position');panel.parentNode.insertBefore(anchor,panel)}
-    const goal=(typeof Desk!=='undefined'&&Desk.chartMount())||(current()?byId('pro-chart-mount'):anchor.parentNode);
+    const slotted=window.Shell43?.chartSlot();
+    const goal=slotted||(current()?byId('pro-chart-mount'):((typeof Desk!=='undefined'&&Desk.chartMount())||anchor.parentNode));
+    if(slotted&&panel.parentNode===slotted)return;
     if(!goal)return;
     if(!current() && panel.classList.contains('is-expanded') && typeof toggleExpandedChart==='function')toggleExpandedChart(false);
     if(panel.parentNode!==goal){
@@ -73,16 +75,18 @@
     const pct=prior&&ob?.p?(ob.p-prior)/prior*100:null;
     const sess=sessionLabel(sym);
     byId('pro-focus-name').innerHTML=safe(sym)+' <small>'+safe(E.names[sym]||sym)+'</small>';
-    byId('pro-focus-last').textContent=price(sym,ob?.p);
-    byId('pro-focus-move').textContent=pct===null?'CHANGE UNAVAILABLE':signed(pct)+' VS PREVIOUS CLOSE';
+    const replayPrice=window.Replay43?.active?Replay43.prices().at(-1)?.p:null;
+    byId('pro-focus-last').textContent=price(sym,replayPrice??ob?.p);
+    byId('pro-focus-move').textContent=window.Replay43?.active?'Revealed prices only':pct===null?'CHANGE UNAVAILABLE':signed(pct)+' VS PREVIOUS CLOSE';
     byId('pro-focus-move').className=deltaClass(pct);
     byId('pro-focus-source').textContent=getLabel(ob,executed);
     byId('pro-focus-session').textContent=sess.toUpperCase();
     byId('pro-feed-state').textContent=feedLabel();
     byId('pro-session-state').textContent='US EQUITIES / '+sessionLabel('AAPL').toUpperCase();
+    const replay=window.Replay43?.active?Replay43.frame():null;
     const items=[
-      ['OPEN',price(sym,quoteField(record,'o'))],['SESSION HIGH',price(sym,quoteField(record,'h'))],
-      ['SESSION LOW',price(sym,quoteField(record,'l'))],['PREVIOUS CLOSE',price(sym,prior)],
+      ['OPEN',price(sym,replay?replay.prices[0]?.p:quoteField(record,'o'))],['SESSION HIGH',price(sym,replay?replay.high:quoteField(record,'h'))],
+      ['SESSION LOW',price(sym,replay?replay.low:quoteField(record,'l'))],['PREVIOUS CLOSE',replay?'Hidden until replay ends':price(sym,prior)],
       ['FINNHUB QUOTE AT',timestamp(quoteField(record,'t')?Number(record.t)*1000:null)],
       ['OBSERVED AT',timestamp(ob?.t)],['OBSERVATION TYPE',getLabel(ob,executed)]
     ];
@@ -99,7 +103,8 @@
     }).join('')||'<tr><td colspan="8">No prices yet. Add stocks in Stock Browser.</td></tr>';
   }
   function researchWire(){
-    const news=Array.isArray(E.news)?E.news.slice(0,5):[];
+    const cursor=window.Replay43?.active?Replay43.cursor:Infinity;
+    const news=(Array.isArray(E.news)?E.news:[]).filter(item=>!Number.isFinite(cursor)||!Number(item.datetime)||Number(item.datetime)*1000<=cursor).slice(0,5);
     byId('pro-research-wire').innerHTML=news.map(item=>{
       const href=validHttpLink(item.url);
       const time=Number(item.datetime)>0?timestamp(item.datetime*1000):'—';
@@ -109,7 +114,7 @@
     }).join('')||'<div class="pro-empty">No sourced headlines loaded. Visit Market News to refresh the feed.</div>';
   }
   function render(){
-    if(!current()||typeof E==='undefined'||E.view!=='overview')return;
+    if(!current()||typeof E==='undefined'||!['overview','home','company'].includes(E.view))return;
     const quoteState=E.watch.map(s=>{
       const q=E.quotes.get(s),t=E.trades.get(s);return `${s}:${q?.quote?.t||0}:${q?.receivedAt||0}:${t?.t||0}:${t?.receivedAt||0}`;
     }).join('|');
@@ -137,6 +142,7 @@
       if(row&&(event.key==='Enter'||event.key===' ')){event.preventDefault();focus(row.dataset.proSelect)}
     });
     window.addEventListener('marketdesk:edition-change',updateEdition);
+    window.addEventListener('marketdesk:layout',()=>{moveChart();if(current()){renderStamp='';render()}if(typeof drawChart==='function')requestAnimationFrame(drawChart)});
     const observer=new MutationObserver(()=>{if(current()&&E.view==='overview'){renderStamp='';render()}});
     observer.observe(byId('view-overview'),{attributes:true,attributeFilter:['class']});
     updateEdition();

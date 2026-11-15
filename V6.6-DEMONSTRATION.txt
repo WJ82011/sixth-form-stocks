@@ -1,0 +1,35 @@
+MARKET DESK 6.6.0 DEMONSTRATION CHECKLIST
+Checked on this Mac, 15 November 2026. Figures below were read from saved records. They are not estimates typed in by hand.
+
+DEMONSTRATED
+- Take-Two is CIK 0000946581, TAKE TWO INTERACTIVE SOFTWARE INC. The SEC submissions list includes TTWO. The gap was that no company facts had been saved. An update from the public SEC company-facts file stored six annual periods and eight quarterly periods.
+- Latest annual period 1 April 2025 to 31 March 2026, 10-K filed 22 May 2026. Revenue 6,656,400,000 USD. Net profit -298,200,000 USD. Net margin -4.48%. Revenue change from the prior annual period 5,633,600,000 to 6,656,400,000 is 18.16%. Operating profit is not in the selected facts and is not shown.
+- Company events keep the provider's ticker association. A title that names Take-Two is labelled third-party reporting. A title that does not name TTWO or the company is labelled broader market coverage. The reason is shown on the dashboard and in the event detail. The same classification is used by the investigation: 18 saved items on the week of 9–13 November 2026, of which 7 are broader market coverage, 3 are third-party reporting, 1 is a third-party calendar and 7 are regulatory filings.
+- Take-Two chart, saved closes. One-year window on screen: 233.58 on 17 November 2025 to 227.82 on 13 November 2026, down 2.47%. Latest completed week: 207.4 to 227.82, 9.85%. SPY has no saved close on 9 November 2026 or 13 November 2026, so that comparison stays unavailable.
+- Comparison board drew Take-Two and AMD from their own saved closes.
+- Forecast read without saving a new experiment. Take-Two stays withheld. One session: model error 1.65 percentage points, unchanged price 1.63. Five sessions: 4.00 versus 3.83. Twenty sessions: 9.46 versus 6.63. News is not an input. The purple line stays hidden.
+- Investigation 5995b9b27d81f5ef was saved and opened again from this Mac. Research pack 17e9c0f201a74113 was saved and opened again offline for TTWO.
+- Display preference was returned to Standard (stored value signal).
+
+MEASURED
+- Saved event list for Take-Two: about 11 ms. Warm repeat about 12 ms.
+- Take-Two earnings review from the saved statement: about 1 ms.
+- Forecast calculation read: about 204 ms.
+- Switching the one-year chart to AMD until the return sentence appeared: 2,065 ms. Switching back to Take-Two until its sentence returned: 73 ms.
+- The local page responded in about 6 ms once the server was already running. The server process was about 64 MB and idle after the checks. Startup of a second server was not timed because port 8765 was already in use.
+
+REMAINING
+- A new person has not tried the five tester tasks. PROJECT-OVERVIEW.md still needs William's own sentences. No usability feedback has been recorded.
+- The one-year return sentence can still sit close to the first date label. That layout was not restyled.
+- The first switch onto a company chart is slower than returning to a company already on screen. The later switch was 73 ms. No further chart-speed change was made in this pass.
+- One Forecast Lab request made while timing the calculation stored a Take-Two check. Later reads used the path that does not store a new experiment.
+
+CHECKS
+668 tests passed, three times. The browser was used in Standard and Professional, then returned to Standard.
+
+DATA LIMITS
+- Operating profit, share count and a cause for the weekly move are not in the saved facts. They were not invented.
+- Apple still has no saved SEC statement on this Mac. AMD was used for the chart-switch check and the comparison board. AMD does not stand in for Take-Two's accounts.
+- Company-specific accounting tags and IFRS are not extracted. Amounts stay in the currency and unit filed.
+- A headline associated with TTWO by the news provider is not a company announcement and is not a cause.
+- The forecast is a test of past misses against an unchanged price. It is not a promise of a future price.

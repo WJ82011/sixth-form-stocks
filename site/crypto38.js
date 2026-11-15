@@ -1,6 +1,6 @@
 /* Public spot trades and closed candles stay separate from the equity workspace. */
 const Crypto38=(()=>{
-  const names={'BTC-USD':'Bitcoin','ETH-USD':'Ethereum'};
+  const names={'BTC-USD':'Bitcoin','ETH-USD':'Ethereum','SOL-USD':'Solana','XRP-USD':'XRP','DOGE-USD':'Dogecoin','ADA-USD':'Cardano','LINK-USD':'Chainlink','AVAX-USD':'Avalanche','LTC-USD':'Litecoin'};
   const labels={'1H':'1 hour','1D':'24 hours','1W':'1 week','1M':'30 days','1Y':'1 year'};
   const money=new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'});
   const date=new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short',timeZone:'UTC'});
@@ -8,7 +8,7 @@ const Crypto38=(()=>{
   const shortDate=new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',timeZone:'UTC'});
   const byId=id=>document.getElementById(id);
   const usablePrice=p=>Number.isFinite(p)&&p>0&&p<=1e9;
-  let product='BTC-USD',range='1D',active=false,chart=null,quote=null,stream=null;
+  let product='BTC-USD',range='1D',active=false,chart=null,quote=null,stream=null,board=null;
   let chartRequest=0,quoteRequest=0,retryTimer=0,quoteTimer=0,chartTimer=0,frame=0,attempt=0;
   let livePoints=[],streamHasTrade=false;
   const visible=()=>active&&!document.hidden;
@@ -119,8 +119,9 @@ const Crypto38=(()=>{
       const response=await api('/api/v3/crypto-chart?product='+product+'&range='+range);
       if(id!==chartRequest||!visible()||product!==expectedProduct||range!==expectedRange)return;
       chart=response.points?.length?response:null;
+      const coverageText=chart?.coverage&&typeof ChartResearch!=='undefined'?ChartResearch.describeCoverage(chart.coverage):'';
       byId('crypto38-status').textContent=chart
-        ?chart.points.length+' of '+chart.expected+' completed candles · '+(response.status==='saved'?'Saved copy · checked ':'Checked ')+date.format(chart.fetchedAt)+' UTC'
+        ?chart.points.length+' of '+chart.expected+' completed candles · '+(response.status==='saved'?'Saved copy · checked ':'Checked ')+date.format(chart.fetchedAt)+' UTC'+(coverageText?' · '+coverageText:'')
         :'Coinbase history is temporarily unavailable. Try again when connected.';
     }catch{
       if(id!==chartRequest||!visible())return;
@@ -187,7 +188,7 @@ const Crypto38=(()=>{
   function start(){
     stop();active=true;attempt=0;
     if(!visible())return;
-    loadChart();loadQuote();connect();
+    loadChart();loadQuote();loadBoard();connect();
     quoteTimer=setInterval(loadQuote,12000);
     chartTimer=setInterval(loadChart,120000);
   }
@@ -201,7 +202,7 @@ const Crypto38=(()=>{
     document.querySelectorAll('[data-crypto-pair]').forEach(button=>{
       button.setAttribute('aria-pressed',String(button.dataset.cryptoPair===product));
     });
-    start();scheduleDraw();
+    start();paintBoard();scheduleDraw();
   }
 
   function selectRange(next){
@@ -215,10 +216,76 @@ const Crypto38=(()=>{
     loadChart();scheduleDraw();
   }
 
+  function favourites(){
+    try{return JSON.parse(localStorage.getItem('md-crypto-favourites')||'[]').filter(item=>names[item]);}
+    catch{return [];}
+  }
+  function paintBoard(){
+    const box=byId('crypto38-assets'),heat=byId('crypto38-heat');
+    if(!box)return;
+    const query=(byId('crypto38-search')?.value||'').trim().toLowerCase();
+    const onlyFav=byId('crypto38-favourites')?.getAttribute('aria-pressed')==='true';
+    const sort=byId('crypto38-sort')?.value||'name';
+    const rows=(board?.rows||Object.keys(names).map(id=>({product:id,name:names[id]}))).filter(row=>{
+      const text=(row.name+' '+row.product).toLowerCase();
+      return text.includes(query)&&(!onlyFav||favourites().includes(row.product));
+    });
+    const value=row=>sort==='24h'?row.change24h:sort==='7d'?row.change7d:row.name;
+    rows.sort((a,b)=>{
+      const left=value(a),right=value(b);
+      if(left==null)return 1;if(right==null)return -1;
+      return sort==='name'?String(left).localeCompare(String(right)):right-left;
+    });
+    const pct=n=>n==null?'Not saved':(n>0?'+':'')+n.toFixed(2)+'%';
+    box.innerHTML=rows.map(row=>'<button class="ghost-btn" type="button" data-crypto-pair="'+row.product+'" aria-pressed="'+(row.product===product)+'">'+row.name+' · '+row.product.split('-')[0]+'</button>').join('')||'<p class="crypto38-foot">No matching market.</p>';
+    if(heat)heat.innerHTML=rows.map(row=>'<button type="button" data-crypto-tile="'+row.product+'"><strong>'+row.name+'</strong><span>'+pct(sort==='7d'?row.change7d:row.change24h)+'</span></button>').join('');
+    box.querySelectorAll('[data-crypto-pair]').forEach(button=>button.addEventListener('click',()=>choose(button.dataset.cryptoPair)));
+    heat?.querySelectorAll('[data-crypto-tile]').forEach(button=>button.addEventListener('click',()=>{choose(button.dataset.cryptoTile);selectRange(sort==='7d'?'1W':'1D');}));
+    const gaps=(board?.rows||[]).reduce((sum,row)=>sum+(row.coverage?.tradingGapCount||0),0);
+    const note=byId('crypto38-coverage');
+    if(note)note.textContent='Coinbase Exchange · USD · UTC · 24 hours, seven days'+(gaps?' · '+gaps+' saved gap'+(gaps===1?'':'s')+' still visible':'');
+    const follow=byId('crypto38-follow');
+    if(follow)follow.textContent=(board?.followed||[]).includes(product)?'Remove from followed':'Follow this market';
+    const star=byId('crypto38-star');
+    if(star)star.textContent=favourites().includes(product)?'Remove favourite':'Add favourite';
+  }
+  async function loadBoard(){
+    try{board=await api('/api/v3/crypto-board');}catch{board=board||{rows:[]};}
+    paintBoard();
+  }
+  async function toggleFollow(){
+    const current=new Set(board?.followed||[]);
+    if(current.has(product))current.delete(product);else current.add(product);
+    await fetch('/api/v3/crypto-follow',{method:'POST',headers:{'Content-Type':'application/json','X-MD-Request':'1'},body:JSON.stringify({products:[...current]})});
+    await loadBoard();
+  }
+  async function saveAlert(){
+    const target=Number(byId('crypto38-target').value);
+    const note=byId('crypto38-alert-note');
+    if(!(target>0)){note.textContent='Enter a USD price above zero.';return;}
+    const response=await fetch('/api/alerts',{method:'POST',headers:{'Content-Type':'application/json','X-MD-Request':'1'},body:JSON.stringify({action:'create',symbol:product,direction:byId('crypto38-direction').value,target,unit:'USD',kind:'level'})});
+    const body=await response.json();
+    note.textContent=body.error||('Saved a '+product+' alert at '+target+' USD. Evidence stays with the alert record.');
+  }
   function setup(){
-    document.querySelectorAll('[data-crypto-pair]').forEach(button=>button.addEventListener('click',()=>choose(button.dataset.cryptoPair)));
+    paintBoard();
     document.querySelectorAll('[data-crypto-range]').forEach(button=>button.addEventListener('click',()=>selectRange(button.dataset.cryptoRange)));
-    byId('crypto38-refresh').addEventListener('click',()=>{loadChart();loadQuote();});
+    byId('crypto38-refresh').addEventListener('click',()=>{loadChart();loadQuote();loadBoard();});
+    byId('crypto38-search')?.addEventListener('input',paintBoard);
+    byId('crypto38-sort')?.addEventListener('change',paintBoard);
+    byId('crypto38-favourites')?.addEventListener('click',()=>{
+      const button=byId('crypto38-favourites');
+      button.setAttribute('aria-pressed',String(button.getAttribute('aria-pressed')!=='true'));
+      paintBoard();
+    });
+    byId('crypto38-star')?.addEventListener('click',()=>{
+      const next=favourites().filter(item=>item!==product);
+      if(!favourites().includes(product))next.push(product);
+      localStorage.setItem('md-crypto-favourites',JSON.stringify(next));
+      paintBoard();
+    });
+    byId('crypto38-follow')?.addEventListener('click',()=>{toggleFollow().catch(()=>{});});
+    byId('crypto38-alert')?.addEventListener('click',()=>{saveAlert().catch(()=>{byId('crypto38-alert-note').textContent='The alert was not saved.';});});
     document.addEventListener('visibilitychange',()=>{if(E.view==='crypto'){if(document.hidden)stop();else start();}});
     window.addEventListener('resize',scheduleDraw);
     byId('theme-toggle')?.addEventListener('click',scheduleDraw);

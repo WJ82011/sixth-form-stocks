@@ -4,6 +4,7 @@ import datetime as dt
 import json
 import threading
 
+import coverage41
 import market37
 
 LOCK = threading.Lock()
@@ -21,7 +22,7 @@ def read(g, symbol, latest):
             WHERE symbol=? AND day<=? ORDER BY day DESC LIMIT 1""", (symbol, latest)).fetchone()
     if row:
         try:
-            return {'day': row[0], 'points': json.loads(row[1]), 'symbol': symbol, 'status': 'saved'}
+            return label(g, {'day': row[0], 'points': json.loads(row[1]), 'symbol': symbol, 'status': 'saved'})
         except ValueError:
             pass
     return None
@@ -58,4 +59,12 @@ def packet(g, raw_symbol):
                         (symbol, day, json.dumps(points, allow_nan=False), int(g['time'].time())))
             con.execute("""DELETE FROM session38_cache WHERE rowid NOT IN
                 (SELECT rowid FROM session38_cache ORDER BY fetched_at DESC,rowid DESC LIMIT 30)""")
-        return {'day': day, 'points': points, 'symbol': symbol, 'status': 'ok'}
+        return label(g, {'day': day, 'points': points, 'symbol': symbol, 'status': 'ok'})
+
+
+def label(g, row):
+    if row.get('points'):
+        row['coverage'] = coverage41.intraday(row['points'], int(g['time'].time() * 1000), 'Massive split-adjusted minute bars')
+        row['coverage']['freshness'] = 'saved'
+        row['coverage']['notice'] = 'Saved minute bars for one completed New York date. Missing minutes stay missing. This is not a live tape.'
+    return row

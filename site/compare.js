@@ -32,12 +32,12 @@ function compareFormat(row,field){const x=compareGet(row,field);if(x===null)retu
 }
 function researchUpdatePickers(){
  const sources=typeof companyChoices==='function'?companyChoices():[...E.watch];
- for(const id of ['compare-a','compare-b','compare-c','report-symbol']){
-  const el=$(id);if(!el)return;
+ for(const id of ['compare-a','compare-b','compare-c','compare-d','report-symbol']){
+  const el=$(id);if(!el){if(id==='compare-d')continue;return}
   const existing=el.value;
-  el.replaceChildren();if(id==='compare-c'){const o=document.createElement('option');o.value='';o.textContent='None / compare two';el.appendChild(o)}
+  el.replaceChildren();if(id==='compare-c'||id==='compare-d'){const o=document.createElement('option');o.value='';o.textContent=id==='compare-d'?'None / up to three':'None / compare two';el.appendChild(o)}
   for(const sym of sources){const o=document.createElement('option');o.value=sym;o.textContent=sym+' · '+safeName(sym);el.appendChild(o)}
-  const def=id==='compare-a'?'AAPL':id==='compare-b'?'MSFT':id==='compare-c'?'NVDA':E.selected;
+  const def=id==='compare-a'?'AAPL':id==='compare-b'?'MSFT':id==='compare-c'?'NVDA':id==='compare-d'?'SONY':E.selected;
   const value=[...el.options].some(o=>o.value===existing)?existing:[...el.options].some(o=>o.value===def)?def:(el.options[0]?.value||'');el.value=value;
  }
 }

@@ -1,0 +1,16 @@
+FIVE TASKS FOR A REAL TESTER
+Results are pending until someone other than the builder tries them and the feedback is written down.
+
+1. Open Take-Two. Say whether a purple forecast line is on the chart, and read the sentence under the chart.
+2. Open one company event. Name the source and whether a time is shown.
+3. Compare two companies for the same dates. Say if any missing figure was left blank.
+4. Open Forecast Lab, choose Apple or AMD, and read whether the learned path was shown or withheld.
+5. In Settings, start the guided demo, then leave it. Check that your previously selected company is still selected.
+
+Write what happened in Settings under Tester tasks, or in this file under the task. Do not fill these in before the test happens.
+
+1. Pending.
+2. Pending.
+3. Pending.
+4. Pending.
+5. Pending.

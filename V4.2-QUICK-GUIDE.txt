@@ -1,0 +1,12 @@
+MARKET DESK REBORN 4.2.0 — COMPANY EVENTS
+
+1. Stop an older Terminal window with Control+C.
+2. Unzip this folder and double-click Start Market Desk.command.
+3. Open http://127.0.0.1:8765 and go to Company Overview.
+4. Choose TTWO. The Events section reads records already saved on this Mac.
+5. Press Update events to check the free news and earnings sources. Filings appear after Update SEC accounts.
+6. Select an event. Switch between 1 session and 5 sessions. The dates, closes and SPY comparison stay under the event.
+7. Press Show this window on the chart to open the existing price chart for those dates.
+8. If no saved item mentions GTA VI, the timeline says so. It does not invent an announcement.
+
+Saved events and comparisons reopen without internet. Source links open only when a connection is available. Keys and personal data stay in ~/.marketdesk-reborn and are not in this ZIP.

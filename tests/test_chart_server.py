@@ -30,7 +30,7 @@ class ChartAssetTests(unittest.TestCase):
                     with urllib.request.urlopen(url+'/api/selftest',timeout=3) as response:
                         audit=json.load(response)
                     self.assertTrue(audit['ok'])
-                    self.assertIn('59 essential assets',str(audit['checks']))
+                    self.assertIn('91 essential assets',str(audit['checks']))
                 finally:
                     server.shutdown();server.server_close();thread.join(timeout=2)
 

@@ -1,3 +1,32 @@
+V6.0 DELIVERED
+Research workspaces, chart annotations and a coverage overview. The Standard
+and Professional layouts stay in place. A saved workspace is not overwritten
+by an unsaved draft. Equity sessions and crypto days are counted separately.
+
+V5.9 DELIVERED
+Company research packs. No separate V5.9 checklist was recorded. A pack
+includes only sections with saved evidence. A saved edition stays fixed.
+A new edition is a separate record.
+
+V5.8 DELIVERED
+Portfolio Stress Lab. No separate V5.8 checklist was recorded. Hypothetical
+percentages and past returns are applied to today's holdings. Cash and the
+practice ledger stay unchanged. A missing price or exchange rate withholds
+the combined total.
+
+V5.7 DELIVERED
+Crypto Forecast Lab. No separate V5.7 checklist was recorded. Forecasts use
+completed Coinbase USD candles on a UTC clock. A learned price is withheld
+when the later test does not beat an unchanged price and a historical-average
+return. Issued forecasts stay saved when training runs again.
+
+V5.6 DELIVERED
+Crypto expansion. The roadmap had no separate V5.6 checklist. Coinbase Exchange
+USD markets were checked on 13 Nov 2026 and Solana, XRP, Dogecoin, Cardano,
+Chainlink, Avalanche and Litecoin were online beside Bitcoin and Ethereum.
+None of those seven was unavailable. Charts stay in UTC and do not use the
+New York equity calendar.
+
 V4.0 DELIVERED
 Server-owned Finnhub stream, scheduled price and history capture, offline
 news reads, optional login startup and multi-horizon local forecast evaluation.

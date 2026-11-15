@@ -89,7 +89,7 @@ def fingerprint(ledger,day):
 
 def calculate(ledger,price_marks=None,as_of=None,exact_date=False):
  clean=events(ledger);latest=as_of or dt.datetime.now(dt.timezone.utc).date().isoformat();date(latest)
- cash=D(0);realised=D(0);fees=D(0);income=D(0);deposits=D(0);withdrawals=D(0);lots={};currencies={};history=[]
+ cash=D(0);realised=D(0);fees=D(0);income=D(0);deposits=D(0);withdrawals=D(0);lots={};currencies={};history=[];realised_by={}
  for e in sorted((e for e in clean if e['date']<=latest),key=lambda e:(e['date'],e['order'])):
   kind=e['kind'];sym=e.get('symbol');fx=D(str(e.get('fx',1)));fee=D(str(e.get('fee',0)))*fx
   if kind=='DEPOSIT':cash+=D(str(e['amount']));deposits+=D(str(e['amount']))
@@ -112,7 +112,7 @@ def calculate(ledger,price_marks=None,as_of=None,exact_date=False):
    while remaining>0:
     lot=lots[sym][0];take=min(lot['quantity'],remaining);basis=lot['cost']*take/lot['quantity'];cost+=basis;lot['cost']-=basis;lot['quantity']-=take;remaining-=take
     if lot['quantity']==0:lots[sym].pop(0)
-   net=q*D(str(e['price']))*fx-fee;cash+=net;realised+=net-cost;fees+=fee
+   net=q*D(str(e['price']))*fx-fee;cash+=net;realised+=net-cost;realised_by[sym]=realised_by.get(sym,D(0))+(net-cost);fees+=fee
   if cash<D('-0.00000001'):raise LedgerError('This record would make cash negative on '+e['date']+'. Add the actual deposit or correct the record.')
   if any(sum((lot['quantity'] for lot in owned),D(0))>D('1e12') for owned in lots.values()):raise LedgerError('Position quantity is too large after corporate actions.')
   if abs(cash)>D('1e15'):raise LedgerError('Ledger value is too large.')
@@ -127,10 +127,12 @@ def calculate(ledger,price_marks=None,as_of=None,exact_date=False):
   value=qty*D(str(m['price']))*D(str(m['fx'])) if m and age<=7 else None
   if value is not None:known_value+=value;unrealised+=value-basis
   else:missing.append(sym)
-  holdings.append({'symbol':sym,'quantity':plain(qty),'costBasisUSD':plain(basis),'averageCostUSD':plain(basis/qty),'currency':currencies[sym],'valueUSD':plain(value) if value is not None else None,'unrealisedUSD':plain(value-basis) if value is not None else None,'mark':m,'markAgeDays':age,'staleMark':bool(age is not None and age>7),'lots':[{'quantity':plain(x['quantity']),'costUSD':plain(x['cost']),'date':x['date']} for x in positions]})
+  holdings.append({'symbol':sym,'quantity':plain(qty),'costBasisUSD':plain(basis),'averageCostUSD':plain(basis/qty),'currency':currencies[sym],'valueUSD':plain(value) if value is not None else None,'unrealisedUSD':plain(value-basis) if value is not None else None,'realisedUSD':plain(realised_by.get(sym,D(0))),'mark':m,'markAgeDays':age,'staleMark':bool(age is not None and age>7),'lots':[{'quantity':plain(x['quantity']),'costUSD':plain(x['cost']),'date':x['date']} for x in positions]})
  complete=not missing;total=plain(known_value) if complete else None
  for h in holdings:h['weightPct']=h['valueUSD']/total*100 if total and h['valueUSD'] is not None else None
- return {'baseCurrency':'USD','asOf':latest,'cashUSD':plain(max(D(0),cash)),'depositsUSD':plain(deposits),'withdrawalsUSD':plain(withdrawals),'netContributionsUSD':plain(deposits-withdrawals),'realisedUSD':plain(realised),'netDividendsUSD':plain(income),'feesUSD':plain(fees),'knownUnrealisedUSD':plain(unrealised),'knownSubtotalUSD':plain(known_value),'totalValueUSD':total,'gainAfterCashFlowsUSD':plain(known_value+withdrawals-deposits) if complete else None,'holdings':holdings,'unpriced':missing,'complete':complete,'history':history,'notice':'Hypothetical FIFO accounting, not tax reporting. FX rates and corporate actions are explicit dated records. Missing marks withhold total value and allocation weights; marks older than seven calendar days withhold the current total and keep their original dates. Fees are included in cash and profit. No live trading.'}
+ open_symbols={h['symbol'] for h in holdings}
+ closed=[{'symbol':sym,'realisedUSD':plain(amount)} for sym,amount in realised_by.items() if sym not in open_symbols]
+ return {'baseCurrency':'USD','asOf':latest,'cashUSD':plain(max(D(0),cash)),'depositsUSD':plain(deposits),'withdrawalsUSD':plain(withdrawals),'netContributionsUSD':plain(deposits-withdrawals),'realisedUSD':plain(realised),'netDividendsUSD':plain(income),'feesUSD':plain(fees),'knownUnrealisedUSD':plain(unrealised),'knownSubtotalUSD':plain(known_value),'totalValueUSD':total,'gainAfterCashFlowsUSD':plain(known_value+withdrawals-deposits) if complete else None,'holdings':holdings,'closedRealised':closed,'unpriced':missing,'complete':complete,'history':history,'notice':'Hypothetical FIFO accounting, not tax reporting. FX rates and corporate actions are explicit dated records. Missing marks withhold total value and allocation weights; marks older than seven calendar days withhold the current total and keep their original dates. Fees are included in cash and profit. No live trading.'}
 
 def checkpoint(ledger,price_marks,day):
  date(day);clean=events(ledger);r=calculate(clean,price_marks,day,True)

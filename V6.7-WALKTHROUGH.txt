@@ -1,0 +1,8 @@
+DECISION PRACTICE
+Open Live Tape. Choose the company that has saved trades, enter the session date and press Show coverage. The count of trades, gaps and timed records appears before any price.
+
+Press Begin. The chart says it is showing only prices reached so far. Step or Play moves the clock. Pause stops it. Restart returns to the starting trade and hides prices that had been stepped past. Switching to another company pauses the session and does not put those prices on the other chart.
+
+Write what you expect, the evidence you can see and what would change your mind, then save the decision. The review stays closed until the clock reaches the end of that saved session. It then shows the recorded return, the original words and any source link. A reflection is saved beside the original decision.
+
+Ask Intelligence while the session is open and it uses the replay clock. After End session, ask it to review this practice session. Add the finished example to the journal or a research pack. Both stay on this Mac.

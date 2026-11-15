@@ -10,6 +10,7 @@ import research_ai
 import screening
 import desk
 import price_alerts
+import journal49
 import intelligence
 import hashlib
 import collections
@@ -64,8 +65,9 @@ CACHE_FETCHED_AT = {}  # true Finnhub fetch timestamp for source provenance, key
 REQUEST_LOG = collections.deque()
 GLOBAL_BACKOFF = 0.0
 NETWORK_BACKOFF_UNTIL = 0.0
-VERSION = '4.0.0'
+VERSION = '6.8.0'
 import collector40
+import coverage41
 COLLECTOR = None
 
 
@@ -656,6 +658,7 @@ def store_massive_daily_bars(symbol, candles):
         con.execute('''DELETE FROM massive_daily_bars WHERE symbol=? AND ts_ms NOT IN
             (SELECT ts_ms FROM massive_daily_bars WHERE symbol=? ORDER BY ts_ms DESC LIMIT 550)''',
             (symbol,symbol))
+        price_alerts.observe_sessions(con,symbol,int(time.time()*1000))
 
 
 def read_massive_daily_bars(symbol, start, end):
@@ -881,7 +884,7 @@ def normalise_workspace(raw):
     tape=raw.get('tapeSymbol','')
     try: tape=valid_symbol(tape)
     except ValueError: tape=''
-    return {'analystDrafts':draft35.normalise(raw.get('analystDrafts',{})),'watch':watch,'names':names,'notes':notes,'reports':reports,'portfolio':portfolio,'preferences':preferences,'design':design,'v3':workspace3.normalise(raw.get('v3',{})),'tapeSymbol':tape}
+    return {'analystDrafts':draft35.normalise(raw.get('analystDrafts',{})),'watch':watch,'names':names,'notes':notes,'reports':reports,'portfolio':portfolio,'preferences':preferences,'design':design,'v3':workspace3.normalise(raw.get('v3',{})),'tapeSymbol':tape,'journal':journal49.normalise(raw.get('journal',[]))}
 
 
 def _workspace_record(path):
@@ -948,7 +951,7 @@ def local_health():
         add('Market data database',status=='ok',f'SQLite check: {status}; {count} observations, {trades} stored trades, {eod} verified Massive EOD bars; {alerts} saved alerts, {events} trigger records')
     except (sqlite3.Error,OSError) as exc:
         add('Market data database',False,'SQLite could not be read: '+type(exc).__name__)
-    assets=['workbench40.js','crypto38.js','crypto38.css','truth36.js','truth36.css','research35.js','research35.css','analyst34.js','analyst34.css','briefing33.js','briefing33.css','projects32.js','projects32.css','v3.js','v3.css','financial-health.js','financial-health.css','design.js','design.css','desk.js','desk.css','heatmap.js','heatmap.css','motion.css','screener.js','screener.css','navigation.js','sidebar.css','ai-research.js','ai-research.css','modern.css','alerts.js','alerts.css','stock-directory.css','intelligence.js','intelligence.css','index.html','app.js','compare.js','reports.js','macro.js','research-v17.css','research-v18.css','v19.css','v19-models.js','v19.js','tape.js','terminal.js','pro.js','styles.css','signal.css','tape.css','terminal.css','pro.css','market-hours.js','chart-research.js','brand-mark.svg','favicon.svg','apple-touch-icon.png']
+    assets=['workbench40.js','crypto38.js','crypto57.js','stress58.js','pack59.js','workspace60.js','annotate60.js','overview60.js','desk61.js','showcase61.js','earnings62.js','tracker65.js','practice67.js','desk68.js','desk61.css','crypto38.css','truth36.js','truth36.css','research35.js','research35.css','analyst34.js','analyst34.css','briefing33.js','briefing33.css','projects32.js','projects32.css','v3.js','v3.css','financial-health.js','financial-health.css','events42.js','v43.js','v43.css','chart43.js','replay43.js','shell43.js','shell43.css','look43.js','look43.css','smoke431.js','move44.js','design.js','design.css','desk.js','desk.css','heatmap.js','heatmap.css','motion.css','screener.js','screener.css','navigation.js','sidebar.css','ai-research.js','ai-research.css','modern.css','alerts.js','alerts.css','stock-directory.css','intelligence.js','ask48.js','journal49.js','desk50.js','overnight51.js','compare52.js','scenario53.js','strategy54.js','scanner55.js','intelligence.css','index.html','app.js','compare.js','reports.js','macro.js','research-v17.css','research-v18.css','v19.css','v19-models.js','v19.js','tape.js','terminal.js','pro.js','styles.css','signal.css','tape.css','terminal.css','pro.css','market-hours.js','chart-research.js','brand-mark.svg','favicon.svg','apple-touch-icon.png']
     missing=[name for name in assets if not (SITE/name).is_file()]
     add('Website files',not missing,('All %s essential assets present'%len(assets)) if not missing else 'Missing: '+', '.join(missing))
     add('Finnhub key permissions',not KEY_FILE.exists() or (KEY_FILE.stat().st_mode & 0o077)==0,
@@ -1477,8 +1480,10 @@ def handle_api(path, qs):
         start=int(qs.get('from',['0'])[0]);end=int(qs.get('to',['0'])[0])
         if start<946684800 or end<=start or end>int(time.time())+86400 or end-start>86400*365*12:raise ValueError('Invalid historical range.')
         saved=read_massive_daily_bars(sym,start,end)
-        if not saved:return {'status':'no_data','candles':None,'message':'No saved provider daily prices for this stock and period. Connect a provider in Settings, or import a daily-price file.'}
-        return {'status':'ok','candles':saved['bars'],'provider':'massive','cached':True,'adjusted':True,'source':'Massive · saved daily prices (offline)','as_of_ms':saved['last_ms'],'notice':'Saved provider daily prices only. No new data was requested; inspect actual dates and missing periods.'}
+        if not saved:return {'status':'no_data','candles':None,'message':'No saved provider daily prices for this stock and period. Connect a provider in Settings, or import a daily-price file.','coverage':coverage41.daily([],int(time.time()*1000),'Massive · saved daily prices (offline)',True)}
+        saved_daily={'status':'ok','candles':saved['bars'],'provider':'massive','cached':True,'adjusted':True,'source':'Massive · saved daily prices (offline)','as_of_ms':saved['last_ms'],'notice':'Saved provider daily prices only. No new data was requested; inspect actual dates and missing periods.'}
+        saved_daily['coverage']=coverage41.from_candles(saved['bars'],int(time.time()*1000),saved_daily['source'],True)
+        return saved_daily
     if path == '/api/imported-history':
         return imported_history(valid_symbol(qs.get('symbol',[''])[0]))
     if path == '/api/candles':
@@ -1491,7 +1496,10 @@ def handle_api(path, qs):
             raise ValueError('Invalid historical range.')
         if resolution == 'D' and get_massive_key():
             try:
-                return massive_daily_candles(sym,start,end,bypass_cache=True) if qs.get('refresh',['0'])[0]=='1' else massive_daily_candles(sym,start,end)
+                loaded=massive_daily_candles(sym,start,end,bypass_cache=True) if qs.get('refresh',['0'])[0]=='1' else massive_daily_candles(sym,start,end)
+                if loaded.get('candles'):
+                    loaded['coverage']=coverage41.from_candles(loaded['candles'],int(time.time()*1000),loaded.get('source','Massive'),loaded.get('adjusted') is not False)
+                return loaded
             except ProviderError as exc:
                 return {'status':'entitlement' if exc.status in (401,403) else 'error',
                         'candles':None,'source':'Massive · EOD historical US stocks',
@@ -1501,7 +1509,12 @@ def handle_api(path, qs):
             candles,_=provider_get('stock/candle',candle_args,ttl=900,bypass_cache=True) if qs.get('refresh',['0'])[0]=='1' else provider_get('stock/candle',candle_args,ttl=900)
             if not valid_provider_candles(candles):
                 return {'status':'no_data','candles':None,'message':'Finnhub did not provide a complete, internally consistent historical OHLC series for this symbol and range.'}
-            return {'status':'ok','candles':candles,'source':'Finnhub historical OHLC', 'provider':'finnhub', 'adjusted':None}
+            loaded={'status':'ok','candles':candles,'source':'Finnhub historical OHLC', 'provider':'finnhub', 'adjusted':None}
+            if resolution=='D':
+                loaded['coverage']=coverage41.from_candles(candles,int(time.time()*1000),loaded['source'],None)
+            else:
+                loaded['coverage']=coverage41.intraday([{'t':stamp,'p':price} for stamp,price in zip(candles.get('t',[]),candles.get('c',[]))],int(time.time()*1000),loaded['source'])
+            return loaded
         except ProviderError as exc:
             if exc.status in (401,403):
                 return {'status':'entitlement','candles':None,
@@ -1523,16 +1536,20 @@ def handle_api(path, qs):
             events=get_tape_events(sym,since,limit,True)
         else:
             events=get_tape_events(sym,since,limit)
-        return {'symbol':sym,'events':events,
+        tape={'symbol':sym,'events':events,
                 'recordingDays':tape_recording_days(sym) if review or day else [],
                 'source':'Locally recorded Finnhub WebSocket trade messages',
                 'complete_market_tape':False,
                 'notice':'Partial captured trade stream. Volume and VWAP describe the captured sample.'}
+        tape['coverage']=coverage41.intraday(events,int(time.time()*1000),tape['source'])
+        return tape
     if path == '/api/history':
         sym=valid_symbol(qs.get('symbol',[''])[0])
         since=max(0,int(qs.get('since',['0'])[0]))
-        return {'symbol':sym,'points':get_history(sym,since), 'source':'Locally recorded Finnhub observations',
+        history={'symbol':sym,'points':get_history(sym,since), 'source':'Locally recorded Finnhub observations',
                 'notice':'Not a complete market-wide historical price series.'}
+        history['coverage']=coverage41.intraday(history['points'],int(time.time()*1000),history['source'])
+        return history
     raise FileNotFoundError(path)
 
 
@@ -1569,14 +1586,14 @@ class AppHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 print('Request failure',repr(e),file=sys.stderr)
                 return self.respond({'error':'Unexpected server error; see local Terminal.'},500)
-        mapping={'/workbench40.js':'workbench40.js','/crypto38.js':'crypto38.js','/crypto38.css':'crypto38.css','/truth36.js':'truth36.js','/truth36.css':'truth36.css','/research35.js':'research35.js','/research35.css':'research35.css','/analyst34.js':'analyst34.js','/analyst34.css':'analyst34.css','/briefing33.js':'briefing33.js','/briefing33.css':'briefing33.css','/projects32.js':'projects32.js','/projects32.css':'projects32.css','/v3.js':'v3.js','/v3.css':'v3.css','/financial-health.js':'financial-health.js','/financial-health.css':'financial-health.css','/design.js':'design.js','/design.css':'design.css','/desk.js':'desk.js','/desk.css':'desk.css','/heatmap.js':'heatmap.js','/heatmap.css':'heatmap.css','/motion.css':'motion.css','/screener.js':'screener.js','/screener.css':'screener.css','/navigation.js':'navigation.js','/sidebar.css':'sidebar.css','/ai-research.js':'ai-research.js','/modern.css':'modern.css','/ai-research.css':'ai-research.css','/alerts.js':'alerts.js','/alerts.css':'alerts.css','/stock-directory.css':'stock-directory.css','/intelligence.js':'intelligence.js','/intelligence.css':'intelligence.css','/':'index.html','/index.html':'index.html','/app.js':'app.js','/compare.js':'compare.js','/reports.js':'reports.js','/research-v17.css':'research-v17.css','/research-v18.css':'research-v18.css','/macro.js':'macro.js','/v19.js':'v19.js','/v19-models.js':'v19-models.js','/v19.css':'v19.css','/chart-research.js':'chart-research.js','/styles.css':'styles.css','/tape.js':'tape.js','/tape.css':'tape.css','/market-hours.js':'market-hours.js','/signal.css':'signal.css','/signal.js':'signal.js','/pro.css':'pro.css','/pro.js':'pro.js','/terminal.css':'terminal.css','/terminal.js':'terminal.js','/brand-mark.svg':'brand-mark.svg','/favicon.svg':'favicon.svg','/apple-touch-icon.png':'apple-touch-icon.png'}
+        mapping={'/workbench40.js':'workbench40.js','/crypto38.js':'crypto38.js','/crypto57.js':'crypto57.js','/stress58.js':'stress58.js','/pack59.js':'pack59.js','/workspace60.js':'workspace60.js','/annotate60.js':'annotate60.js','/overview60.js':'overview60.js','/desk61.js':'desk61.js','/showcase61.js':'showcase61.js','/earnings62.js':'earnings62.js','/tracker65.js':'tracker65.js','/practice67.js':'practice67.js','/desk68.js':'desk68.js','/desk61.css':'desk61.css','/crypto38.css':'crypto38.css','/truth36.js':'truth36.js','/truth36.css':'truth36.css','/research35.js':'research35.js','/research35.css':'research35.css','/analyst34.js':'analyst34.js','/analyst34.css':'analyst34.css','/briefing33.js':'briefing33.js','/briefing33.css':'briefing33.css','/projects32.js':'projects32.js','/projects32.css':'projects32.css','/v3.js':'v3.js','/v3.css':'v3.css','/financial-health.js':'financial-health.js','/events42.js':'events42.js','/v43.js':'v43.js','/v43.css':'v43.css','/chart43.js':'chart43.js','/replay43.js':'replay43.js','/shell43.js':'shell43.js','/shell43.css':'shell43.css','/look43.js':'look43.js','/look43.css':'look43.css','/smoke431.js':'smoke431.js','/move44.js':'move44.js','/financial-health.css':'financial-health.css','/design.js':'design.js','/design.css':'design.css','/desk.js':'desk.js','/desk.css':'desk.css','/heatmap.js':'heatmap.js','/heatmap.css':'heatmap.css','/motion.css':'motion.css','/screener.js':'screener.js','/screener.css':'screener.css','/navigation.js':'navigation.js','/sidebar.css':'sidebar.css','/ai-research.js':'ai-research.js','/modern.css':'modern.css','/ai-research.css':'ai-research.css','/alerts.js':'alerts.js','/alerts.css':'alerts.css','/stock-directory.css':'stock-directory.css','/intelligence.js':'intelligence.js','/ask48.js':'ask48.js','/journal49.js':'journal49.js','/desk50.js':'desk50.js','/overnight51.js':'overnight51.js','/compare52.js':'compare52.js','/scenario53.js':'scenario53.js','/strategy54.js':'strategy54.js','/scanner55.js':'scanner55.js','/intelligence.css':'intelligence.css','/':'index.html','/index.html':'index.html','/app.js':'app.js','/compare.js':'compare.js','/reports.js':'reports.js','/research-v17.css':'research-v17.css','/research-v18.css':'research-v18.css','/macro.js':'macro.js','/v19.js':'v19.js','/v19-models.js':'v19-models.js','/v19.css':'v19.css','/chart-research.js':'chart-research.js','/styles.css':'styles.css','/tape.js':'tape.js','/tape.css':'tape.css','/market-hours.js':'market-hours.js','/signal.css':'signal.css','/signal.js':'signal.js','/pro.css':'pro.css','/pro.js':'pro.js','/terminal.css':'terminal.css','/terminal.js':'terminal.js','/brand-mark.svg':'brand-mark.svg','/favicon.svg':'favicon.svg','/apple-touch-icon.png':'apple-touch-icon.png'}
         filename=mapping.get(split.path)
         if not filename: return self.send_error(404)
         p=SITE/filename
         try: content=p.read_bytes()
         except OSError: return self.send_error(404)
         self.send_response(200)
-        self.send_header('Content-Type',{'workbench40.js':'text/javascript; charset=utf-8','crypto38.js':'text/javascript; charset=utf-8','crypto38.css':'text/css; charset=utf-8','truth36.js':'text/javascript; charset=utf-8','truth36.css':'text/css; charset=utf-8','research35.js':'text/javascript; charset=utf-8','research35.css':'text/css; charset=utf-8','analyst34.js':'text/javascript; charset=utf-8','analyst34.css':'text/css; charset=utf-8','briefing33.js':'text/javascript; charset=utf-8','briefing33.css':'text/css; charset=utf-8','projects32.js':'text/javascript; charset=utf-8','projects32.css':'text/css; charset=utf-8','v3.js':'text/javascript; charset=utf-8','v3.css':'text/css; charset=utf-8','financial-health.js':'text/javascript; charset=utf-8','financial-health.css':'text/css; charset=utf-8','design.js':'text/javascript; charset=utf-8','design.css':'text/css; charset=utf-8','desk.js':'text/javascript; charset=utf-8','desk.css':'text/css; charset=utf-8','heatmap.js':'text/javascript; charset=utf-8','heatmap.css':'text/css; charset=utf-8','motion.css':'text/css; charset=utf-8','screener.js':'text/javascript; charset=utf-8','screener.css':'text/css; charset=utf-8','navigation.js':'text/javascript; charset=utf-8','sidebar.css':'text/css; charset=utf-8','ai-research.js':'text/javascript; charset=utf-8','modern.css':'text/css; charset=utf-8','ai-research.css':'text/css; charset=utf-8','alerts.js':'text/javascript; charset=utf-8','alerts.css':'text/css; charset=utf-8','stock-directory.css':'text/css; charset=utf-8','intelligence.js':'text/javascript; charset=utf-8','intelligence.css':'text/css; charset=utf-8','index.html':'text/html; charset=utf-8','app.js':'text/javascript; charset=utf-8','compare.js':'text/javascript; charset=utf-8','reports.js':'text/javascript; charset=utf-8','research-v17.css':'text/css; charset=utf-8','research-v18.css':'text/css; charset=utf-8','macro.js':'text/javascript; charset=utf-8','v19.js':'text/javascript; charset=utf-8','v19-models.js':'text/javascript; charset=utf-8','v19.css':'text/css; charset=utf-8','chart-research.js':'text/javascript; charset=utf-8','styles.css':'text/css; charset=utf-8','tape.js':'text/javascript; charset=utf-8','market-hours.js':'text/javascript; charset=utf-8','tape.css':'text/css; charset=utf-8','signal.css':'text/css; charset=utf-8','signal.js':'text/javascript; charset=utf-8','pro.css':'text/css; charset=utf-8','pro.js':'text/javascript; charset=utf-8','terminal.css':'text/css; charset=utf-8','terminal.js':'text/javascript; charset=utf-8','brand-mark.svg':'image/svg+xml','favicon.svg':'image/svg+xml','apple-touch-icon.png':'image/png'}[filename])
+        self.send_header('Content-Type',{'workbench40.js':'text/javascript; charset=utf-8','crypto38.js':'text/javascript; charset=utf-8','crypto57.js':'text/javascript; charset=utf-8','stress58.js':'text/javascript; charset=utf-8','pack59.js':'text/javascript; charset=utf-8','workspace60.js':'text/javascript; charset=utf-8','annotate60.js':'text/javascript; charset=utf-8','overview60.js':'text/javascript; charset=utf-8','desk61.js':'text/javascript; charset=utf-8','showcase61.js':'text/javascript; charset=utf-8','earnings62.js':'text/javascript; charset=utf-8','tracker65.js':'text/javascript; charset=utf-8','practice67.js':'text/javascript; charset=utf-8','desk68.js':'text/javascript; charset=utf-8','desk61.css':'text/css; charset=utf-8','crypto38.css':'text/css; charset=utf-8','truth36.js':'text/javascript; charset=utf-8','truth36.css':'text/css; charset=utf-8','research35.js':'text/javascript; charset=utf-8','research35.css':'text/css; charset=utf-8','analyst34.js':'text/javascript; charset=utf-8','analyst34.css':'text/css; charset=utf-8','briefing33.js':'text/javascript; charset=utf-8','briefing33.css':'text/css; charset=utf-8','projects32.js':'text/javascript; charset=utf-8','projects32.css':'text/css; charset=utf-8','v3.js':'text/javascript; charset=utf-8','v3.css':'text/css; charset=utf-8','financial-health.js':'text/javascript; charset=utf-8','events42.js':'text/javascript; charset=utf-8','v43.js':'text/javascript; charset=utf-8','v43.css':'text/css; charset=utf-8','chart43.js':'text/javascript; charset=utf-8','replay43.js':'text/javascript; charset=utf-8','shell43.js':'text/javascript; charset=utf-8','shell43.css':'text/css; charset=utf-8','look43.js':'text/javascript; charset=utf-8','look43.css':'text/css; charset=utf-8','smoke431.js':'text/javascript; charset=utf-8','move44.js':'text/javascript; charset=utf-8','financial-health.css':'text/css; charset=utf-8','design.js':'text/javascript; charset=utf-8','design.css':'text/css; charset=utf-8','desk.js':'text/javascript; charset=utf-8','desk.css':'text/css; charset=utf-8','heatmap.js':'text/javascript; charset=utf-8','heatmap.css':'text/css; charset=utf-8','motion.css':'text/css; charset=utf-8','screener.js':'text/javascript; charset=utf-8','screener.css':'text/css; charset=utf-8','navigation.js':'text/javascript; charset=utf-8','sidebar.css':'text/css; charset=utf-8','ai-research.js':'text/javascript; charset=utf-8','modern.css':'text/css; charset=utf-8','ai-research.css':'text/css; charset=utf-8','alerts.js':'text/javascript; charset=utf-8','alerts.css':'text/css; charset=utf-8','stock-directory.css':'text/css; charset=utf-8','intelligence.js':'text/javascript; charset=utf-8','ask48.js':'text/javascript; charset=utf-8','journal49.js':'text/javascript; charset=utf-8','desk50.js':'text/javascript; charset=utf-8','overnight51.js':'text/javascript; charset=utf-8','compare52.js':'text/javascript; charset=utf-8','scenario53.js':'text/javascript; charset=utf-8','strategy54.js':'text/javascript; charset=utf-8','scanner55.js':'text/javascript; charset=utf-8','intelligence.css':'text/css; charset=utf-8','index.html':'text/html; charset=utf-8','app.js':'text/javascript; charset=utf-8','compare.js':'text/javascript; charset=utf-8','reports.js':'text/javascript; charset=utf-8','research-v17.css':'text/css; charset=utf-8','research-v18.css':'text/css; charset=utf-8','macro.js':'text/javascript; charset=utf-8','v19.js':'text/javascript; charset=utf-8','v19-models.js':'text/javascript; charset=utf-8','v19.css':'text/css; charset=utf-8','chart-research.js':'text/javascript; charset=utf-8','styles.css':'text/css; charset=utf-8','tape.js':'text/javascript; charset=utf-8','market-hours.js':'text/javascript; charset=utf-8','tape.css':'text/css; charset=utf-8','signal.css':'text/css; charset=utf-8','signal.js':'text/javascript; charset=utf-8','pro.css':'text/css; charset=utf-8','pro.js':'text/javascript; charset=utf-8','terminal.css':'text/css; charset=utf-8','terminal.js':'text/javascript; charset=utf-8','brand-mark.svg':'image/svg+xml','favicon.svg':'image/svg+xml','apple-touch-icon.png':'image/png'}[filename])
         self.send_header('Content-Length',str(len(content)))
         self.send_header('X-Content-Type-Options','nosniff')
         self.send_header('Referrer-Policy','no-referrer')
@@ -1586,7 +1603,7 @@ class AppHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.same_origin() or self.headers.get('X-MD-Request')!='1':
             return self.respond({'error':'Local request token missing.'},403)
-        if self.path not in ('/api/collector-pulse','/api/v3/heatmap-sync','/api/token','/api/massive-token','/api/ticks','/api/workspace','/api/alerts','/api/ai/ask','/api/ai/sources','/api/ai/documents','/api/ai/runs','/api/screener/refresh','/api/imported-history','/api/desk/refresh','/api/financials/refresh','/api/v3/market-values','/api/v3/drafts-validate','/api/v3/scenario-assist','/api/v3/forecast-record','/api/v3/forecast-archive','/api/v3/analyst-review','/api/v3/analyst-calculate','/api/v3/market-model','/api/v3/briefing','/api/v3/calculate','/api/v3/marks-from-quotes','/api/v3/events-export','/api/v3/macro-refresh','/api/v3/events-refresh','/api/v3/listings-refresh'): return self.respond({'error':'Not found'},404)
+        if self.path not in ('/api/collector-pulse','/api/v3/heatmap-sync','/api/token','/api/massive-token','/api/ticks','/api/workspace','/api/alerts','/api/ai/ask','/api/ai/sources','/api/ai/documents','/api/ai/runs','/api/screener/refresh','/api/imported-history','/api/desk/refresh','/api/financials/refresh','/api/v3/market-values','/api/v3/drafts-validate','/api/v3/scenario-assist','/api/v3/forecast-record','/api/v3/forecast-archive','/api/v3/analyst-review','/api/v3/analyst-calculate','/api/v3/market-model','/api/v3/briefing','/api/v3/calculate','/api/v3/marks-from-quotes','/api/v3/events-export','/api/v3/macro-refresh','/api/v3/events-refresh','/api/v3/events42-refresh','/api/v3/listings-refresh','/api/v3/desk50-backup','/api/v3/overnight51','/api/v3/compare52','/api/v3/scenario53','/api/v3/strategy54','/api/v3/scanner55','/api/v3/crypto-follow','/api/v3/crypto57','/api/v3/stress58','/api/v3/pack59','/api/v3/workspace60','/api/v3/annotate60','/api/v3/desk61','/api/v3/earnings62','/api/v3/tracker65','/api/v3/practice67'): return self.respond({'error':'Not found'},404)
         try:
             length=int(self.headers.get('Content-Length','0'))
             max_length = 2500000 if self.path in ('/api/workspace','/api/imported-history','/api/v3/market-values','/api/v3/drafts-validate','/api/v3/scenario-assist','/api/v3/forecast-record','/api/v3/forecast-archive','/api/v3/analyst-review','/api/v3/analyst-calculate','/api/v3/market-model','/api/v3/briefing','/api/v3/calculate','/api/v3/marks-from-quotes','/api/v3/events-export') else 220000

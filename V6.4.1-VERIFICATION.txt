@@ -1,0 +1,23 @@
+MARKET DESK REBORN 6.4.1
+Intelligence polish and reliability. Checked 14 November 2026 in the running app at http://127.0.0.1:8765/.
+
+CHART
+AMD, one year. The chart says up 122.04% between the displayed prices. Intelligence says AMD moved 122.04% from 240.52 on 2025-11-17 to 534.06 on 2026-11-13. The label is Fact. Open the cited chart left the chart on those dates. Closing and reopening kept that answer. At a 1440-wide window the chart stayed beside the panel. In Professional mode the chart was about 917 pixels wide with the panel open, then Standard was restored.
+
+FORECAST
+AMD Forecast Lab shows 1-session model 3.76 pp against unchanged 3.79 pp, 5-session 8.28 against 8.71, and 20-session 25.01 against 22.62. Intelligence uses the same figures and says the 1-session and 5-session checks were closer on the later block but were not chosen earlier, so they are not wins. The 20-session check did not beat an unchanged price. The label is Forecast. Opening Forecast Lab reads the check through that screen. The Intelligence question itself does not save a new experiment.
+
+PORTFOLIO
+No portfolio stress test is saved. Intelligence says: Save the portfolio stress test first. No holding was ranked. No holding was invented.
+
+RESEARCH
+The saved ABNB entry is “V6 investigation · ABNB move”, status open, recorded price 186.78, dates 2026-11-12 to 2026-11-13. Intelligence says the saved status is open, the recorded price was 186.78, and the latest saved close is 186.78 on 2026-11-13. It does not change the judgement. Open the research entry shows that note.
+
+INTERRUPTIONS
+Cancel leaves “Cancelled. An earlier question will not replace this screen.” The answer that was already on screen stayed. A later question does not replace an earlier one after Cancel. A failed read keeps the answer on screen.
+
+RELIABILITY
+664 tests passed, three times. The runs used disposable data and did not call a market provider.
+
+PANEL
+Twelve Ask Intelligence buttons cover strategy, heatmap, crypto, scan, alerts, financials, comparison, forecast, journal, report, scenario and portfolio. The chart has its own button. On a narrow window the panel is a full-height sheet with Close. The arrow keys widened the panel from 360 to 384 pixels and the chart was asked to redraw. Reduce Motion and the motion setting remove the slide. Keyboard focus moves to the question when the panel opens and returns to the control that opened it when it closes.

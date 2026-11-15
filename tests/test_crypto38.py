@@ -1,4 +1,5 @@
 """Coinbase provider boundaries and separate offline cache with fixture data."""
+import contextlib
 import datetime as dt
 import urllib.error
 import unittest
@@ -13,8 +14,18 @@ s = fixture.s
 class CryptoTests(unittest.TestCase):
     setUp = fixture.V3APITests.setUp
 
-    def test_only_the_two_supported_spot_markets_are_allowed(self):
-        for symbol in ('BTC', 'AAPL', '../ETH-USD', 'BTC-USDT'):
+    def test_supported_markets_and_rejected_identifiers(self):
+        expected = {
+            'BTC-USD': 'BTC', 'ETH-USD': 'ETH', 'SOL-USD': 'SOL', 'XRP-USD': 'XRP',
+            'DOGE-USD': 'DOGE', 'ADA-USD': 'ADA', 'LINK-USD': 'LINK',
+            'AVAX-USD': 'AVAX', 'LTC-USD': 'LTC',
+        }
+        for product, base in expected.items():
+            self.assertEqual(crypto.MARKETS[product]['base'], base)
+            self.assertEqual(crypto.MARKETS[product]['quote'], 'USD')
+            self.assertEqual(crypto.MARKETS[product]['providerName'], product)
+        self.assertEqual(crypto.UNAVAILABLE, [])
+        for symbol in ('BTC', 'AAPL', '../ETH-USD', 'BTC-USDT', 'SHIB-USD'):
             with self.assertRaises(ValueError):
                 crypto.packet(vars(s), symbol, 'quote')
 
@@ -49,3 +60,37 @@ class CryptoTests(unittest.TestCase):
         self.assertEqual(provider.call_count, 2)
         self.assertEqual(len(packet['points']), 365)
         self.assertEqual(packet['points'][-1]['t'], packet['end'])
+
+    def test_utc_boundary_is_not_an_equity_session(self):
+        import events42
+        saturday = dt.datetime(2026, 11, 14, 1, tzinfo=dt.timezone.utc)
+        friday = dt.datetime(2026, 11, 13, 23, tzinfo=dt.timezone.utc)
+        points = [{'t': int(friday.timestamp()*1000), 'p': 100}, {'t': int(saturday.timestamp()*1000), 'p': 110}]
+        change = crypto.utc_change(points)
+        self.assertEqual(change['timezone'], 'UTC')
+        self.assertAlmostEqual(change['changePct'], 10)
+        self.assertTrue(change['end'].startswith('2026-11-14'))
+        self.assertFalse(events42.is_session(saturday.date()))
+        self.assertAlmostEqual(crypto.match_move(points, 5)['changePct'], 10)
+        self.assertIsNone(crypto.match_move([{'t': 1, 'p': 100}, {'t': 2, 'p': 104}], 5))
+        self.assertTrue(events42.is_session(friday.date()))
+
+    def test_followed_markets_are_collected_first(self):
+        crypto.follow(vars(s), ['SOL-USD', 'NOPE', 'SOL-USD'], 10)
+        order = crypto.rotation(vars(s))
+        self.assertEqual(order[0], 'SOL-USD')
+        self.assertEqual(order.count('SOL-USD'), 1)
+        self.assertIn('BTC-USD', order)
+
+    def test_the_same_coinbase_trade_does_not_alert_twice(self):
+        now = int(s.time.time())
+        with patch.object(s.time, 'time', return_value=now):
+            s.change_alerts({'action': 'create', 'symbol': 'SOL-USD', 'direction': 'above', 'target': 100, 'unit': 'USD'})
+        ticker = {'price': '150', 'time': crypto.iso(now+2)}
+        with patch.dict(crypto.RETRY_AFTER, clear=True), patch.object(crypto, 'public_get', return_value=ticker):
+            with patch.object(s.time, 'time', return_value=now+2):
+                crypto.packet(vars(s), 'SOL-USD', 'quote')
+            with patch.object(s.time, 'time', return_value=now+40):
+                crypto.packet(vars(s), 'SOL-USD', 'quote')
+        with contextlib.closing(s.db_connection()) as con:
+            self.assertEqual(con.execute('SELECT COUNT(*) FROM price_alert_events').fetchone()[0], 1)

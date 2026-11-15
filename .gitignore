@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.DS_Store
+*.sqlite3
+finnhub_key
+massive_key
+*.pem
+backups/
+Reliability-Test-Report.json

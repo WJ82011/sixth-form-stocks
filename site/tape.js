@@ -9,6 +9,7 @@ const T = {
   dragStart:null, pendingDuringLoad:[], loading:false, lastSwitcherRender:0, lastShortcutKey:'', lastRadarRender:0, lastRadarFilter:'',
   searchTimer:0, searchRequest:0, searchActive:-1, searchResults:[], searchCache:new Map(), searchLoading:false, searchError:''
 };
+window.TapeReview = T;
 const tapeTime = t => new Date(t).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 const tapeTimeMs = t => new Date(t).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit',fractionalSecondDigits:3});
 const tapeNum = n => Number(n).toLocaleString('en-GB',{maximumFractionDigits:2});
@@ -243,6 +244,7 @@ async function tapeLoadReview(day=''){
   try{
     const data=await api('/api/tape?symbol='+encodeURIComponent(symbol)+'&last=1&limit=4000'+(day?'&day='+encodeURIComponent(day):''));
     if(id!==T.reviewId||symbol!==T.symbol)return;
+    T.coverage=data.coverage||null;
     const events=tapeSort((data.events||[]).map(tapeClean).filter(Boolean));
     if(!events.length)throw Error('This company has no saved trades yet.');
     if(T.pause)tapeTogglePause();
@@ -253,6 +255,7 @@ async function tapeLoadReview(day=''){
     T.review={events,first:events[0].t,last:events.at(-1).t};
     T.anchor=T.review.last;$('tape-seek').value='1000';
     tapeToggleFollow(false);tapeReviewControls();
+    return T.review;
   }catch(error){
     if(id===T.reviewId)$('tape-review-status').textContent=error.message;
   }finally{
@@ -313,6 +316,7 @@ async function tapeReload(){
   try{
     const data=await api('/api/tape?symbol='+encodeURIComponent(symbol)+'&since='+Math.max(0,nowMs()-86400000)+'&limit=4000');
     if(req!==T.loadId)return;
+    T.coverage=data.coverage||null;
     const old=T.pendingDuringLoad;
     const received=(data.events||[]).map(tapeClean).filter(Boolean);
     // A frame may be stored while history is loading. Exclude exact duplicates only;
@@ -421,7 +425,7 @@ function tapeRenderMetrics(events){
   $('tape-last-source').textContent=!last?'NO OBSERVED TRADE':isCurrent?'VERIFIED LIVE TRADE':'RECORDED · NOT LIVE';
   $('tape-last-source').className='tape-source '+(isCurrent?'good':'');
   $('tape-last-time').textContent=last?'Latest in view: '+tapeFullTime(last.t):'No confirmed trade in selected period';
-  $('tape-point-count').textContent=n+' captured trade'+(n===1?'':'s')+(T.events.length>=4000?' · sample may be capped':'');
+  $('tape-point-count').textContent=n+' captured trade'+(n===1?'':'s')+(T.events.length>=4000?' · sample may be capped':'')+(T.coverage&&typeof ChartResearch!=='undefined'?' · '+ChartResearch.describeCoverage(T.coverage):'');
 }
 function tapeRenderTrades(events){
   const body=$('tape-trades-body');

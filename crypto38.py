@@ -8,7 +8,19 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-PRODUCTS = {'BTC-USD': 'Bitcoin', 'ETH-USD': 'Ethereum'}
+import coverage41
+
+# Provider display_name is the market id. base_currency and quote_currency were
+# read from Coinbase Exchange on 13 Nov 2026. All nine were online USD markets.
+PRODUCTS = {
+    'BTC-USD': 'Bitcoin', 'ETH-USD': 'Ethereum', 'SOL-USD': 'Solana', 'XRP-USD': 'XRP',
+    'DOGE-USD': 'Dogecoin', 'ADA-USD': 'Cardano', 'LINK-USD': 'Chainlink',
+    'AVAX-USD': 'Avalanche', 'LTC-USD': 'Litecoin',
+}
+MARKETS = {product: {'id': product, 'name': name, 'base': product.split('-')[0], 'quote': 'USD',
+                     'providerName': product, 'exchange': 'Coinbase Exchange', 'timezone': 'UTC'}
+           for product, name in PRODUCTS.items()}
+UNAVAILABLE = []
 RANGES = {'1H': (60, 60), '1D': (300, 288), '1W': (3600, 168),
           '1M': (21600, 120), '1Y': (86400, 365)}
 BASE = 'https://api.exchange.coinbase.com/products/'
@@ -20,6 +32,8 @@ def init(con):
     con.execute("""CREATE TABLE IF NOT EXISTS crypto38_cache
         (product TEXT NOT NULL, kind TEXT NOT NULL, payload TEXT NOT NULL,
          fetched_at INTEGER NOT NULL, PRIMARY KEY(product,kind))""")
+    con.execute("""CREATE TABLE IF NOT EXISTS crypto38_follow
+        (product TEXT PRIMARY KEY, added_at INTEGER NOT NULL)""")
 
 
 def read(g, product, kind):
@@ -106,23 +120,23 @@ def normalise_trade(row, now):
 
 def packet(g, product, kind):
     if product not in PRODUCTS or (kind != 'quote' and kind not in RANGES):
-        raise ValueError('Choose Bitcoin or Ethereum and a supported chart period.')
+        raise ValueError('Choose a supported Coinbase USD market and chart period.')
     key = (product, kind)
     ttl = 8 if kind == 'quote' else max(30, min(900, RANGES[kind][0]))
     with LOCK:
         now = int(g['time'].time() * 1000)
         saved = read(g, product, kind)
         age = now - saved['fetchedAt'] if saved else None
-        if saved and 0 <= age < ttl * 1000:
-            return {**saved, 'status': 'cached', 'product': product}
+        if saved and 0 <= age < ttl * 1000 and not _incomplete(kind, saved):
+            return finish(kind, product, {**saved, 'status': 'cached', 'product': product})
         if now < RETRY_AFTER.get(key, 0):
-            return {**(saved or {}), 'status': 'saved' if saved else 'unavailable', 'product': product}
+            return finish(kind, product, {**(saved or {}), 'status': 'saved' if saved else 'unavailable', 'product': product})
         try:
             if kind == 'quote':
                 ticker = public_get(g, product, 'ticker')
                 data = normalise_trade(ticker, int(g['time'].time() * 1000))
                 if saved and data['time'] < saved['time']:
-                    return {**saved, 'status': 'saved', 'product': product}
+                    return finish(kind, product, {**saved, 'status': 'saved', 'product': product})
             else:
                 data = fetch_chart(g, product, kind, now)
             stamp = int(g['time'].time() * 1000)
@@ -130,8 +144,116 @@ def packet(g, product, kind):
                 con.execute('INSERT OR REPLACE INTO crypto38_cache VALUES(?,?,?,?)',
                             (product, kind, json.dumps(data, allow_nan=False), stamp))
             RETRY_AFTER.pop(key, None)
-            return {**data, 'fetchedAt': stamp, 'status': 'ok', 'product': product}
+            result = finish(kind, product, {**data, 'fetchedAt': stamp, 'status': 'ok', 'product': product})
+            if kind == 'quote':
+                _alert(g, product, result, stamp)
+            return result
         except (OSError, ValueError, KeyError, TypeError, AttributeError, OverflowError) as error:
             delay = 60 if isinstance(error, urllib.error.HTTPError) and error.code == 429 else 20
             RETRY_AFTER[key] = now + delay * 1000
-            return {**(saved or {}), 'status': 'saved' if saved else 'unavailable', 'product': product}
+            return finish(kind, product, {**(saved or {}), 'status': 'saved' if saved else 'unavailable', 'product': product})
+
+
+def _incomplete(kind, saved):
+    if kind == 'quote' or not saved or not saved.get('points'):
+        return False
+    points = saved.get('points') or []
+    expected = saved.get('expected') or 0
+    if expected and len(points) < expected:
+        return True
+    interval = saved.get('interval') or 0
+    ordered = sorted(points, key=lambda row: row.get('t', 0))
+    return any(right['t'] - left['t'] > interval * 1.5 for left, right in zip(ordered, ordered[1:])) if interval else False
+
+
+def _alert(g, product, row, now):
+    import price_alerts
+    try:
+        with g['LOCK'], contextlib.closing(g['db_connection']()) as con, con:
+            price_alerts.init(con)
+            price_alerts.observe(con, product, int(row['time']), row['price'], 'coinbase_ticker', int(now))
+    except (OSError, ValueError, KeyError, TypeError):
+        return
+
+
+def follow(g, products, now_ms):
+    chosen = []
+    for product in products or []:
+        if product in PRODUCTS and product not in chosen:
+            chosen.append(product)
+    if len(chosen) > len(PRODUCTS):
+        raise ValueError('Follow the supported USD markets only.')
+    with g['LOCK'], contextlib.closing(g['db_connection']()) as con, con:
+        init(con)
+        con.execute('DELETE FROM crypto38_follow')
+        con.executemany('INSERT INTO crypto38_follow VALUES(?,?)', [(product, int(now_ms)) for product in chosen])
+    return {'followed': chosen}
+
+
+def followed(g):
+    try:
+        with contextlib.closing(g['db_connection']()) as con:
+            init(con)
+            rows = con.execute('SELECT product FROM crypto38_follow ORDER BY added_at').fetchall()
+    except (OSError, TypeError, KeyError):
+        return []
+    return [row[0] for row in rows if row[0] in PRODUCTS]
+
+
+def rotation(g):
+    loved = followed(g)
+    return loved + [product for product in PRODUCTS if product not in loved]
+
+
+def _change(saved):
+    points = (saved or {}).get('points') or []
+    if len(points) < 2 or points[0].get('p') in (None, 0):
+        return None
+    return (points[-1]['p'] / points[0]['p'] - 1) * 100
+
+
+def board(g):
+    rows = []
+    for product, name in PRODUCTS.items():
+        quote = read(g, product, 'quote')
+        day = read(g, product, '1D')
+        week = read(g, product, '1W')
+        chart = finish('1D', product, day) if day else {}
+        rows.append({
+            'product': product, 'name': name, **MARKETS[product],
+            'price': (quote or {}).get('price'), 'time': (quote or {}).get('time'),
+            'quoteStatus': (quote or {}).get('status') or 'not saved',
+            'change24h': _change(day), 'change7d': _change(week),
+            'coverage': chart.get('coverage'),
+        })
+    return {'exchange': 'Coinbase Exchange', 'quote': 'USD', 'timezone': 'UTC',
+            'trading': '24 hours, seven days. Candles are labelled in UTC, not the New York equity calendar.',
+            'unavailable': UNAVAILABLE, 'rows': rows, 'followed': followed(g)}
+
+
+def match_move(points, threshold):
+    """Compare the last two completed candles. Crypto is not filtered by equity sessions."""
+    if len(points) < 2 or not 0 < threshold <= 100:
+        return None
+    change = (points[-1]['p'] / points[-2]['p'] - 1) * 100
+    if abs(change) < threshold:
+        return None
+    return {'changePct': change, 'threshold': threshold, 'timezone': 'UTC',
+            'start': points[-2]['t'], 'end': points[-1]['t'], 'source': 'Coinbase completed candles'}
+
+
+def utc_change(points):
+    """Percent change between the first and last completed candle. Dates are UTC."""
+    if len(points) < 2:
+        raise ValueError('Two completed candles are required.')
+    start = dt.datetime.fromtimestamp(points[0]['t'] / 1000, dt.timezone.utc)
+    end = dt.datetime.fromtimestamp(points[-1]['t'] / 1000, dt.timezone.utc)
+    return {'changePct': (points[-1]['p'] / points[0]['p'] - 1) * 100,
+            'start': start.isoformat(), 'end': end.isoformat(), 'timezone': 'UTC',
+            'sessions': 'Crypto candles are not limited to equity sessions.'}
+
+
+def finish(kind, product, row):
+    if kind != 'quote':
+        row['coverage'] = coverage41.crypto(row, product)
+    return row

@@ -10,3 +10,10 @@
 .crypto38-details strong{color:var(--text)}
 .crypto38-foot{margin:12px 0 0}
 #crypto38-pair{letter-spacing:.09em}
+.crypto38-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
+.crypto38-tools input,.crypto38-tools select{border:1px solid var(--line);background:var(--surf);color:var(--text);border-radius:12px;padding:8px 10px}
+.crypto38-heat{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin:0 0 16px}
+.crypto38-heat button{border:1px solid var(--line);border-radius:16px;background:var(--surf2);color:var(--text);text-align:left;padding:10px 12px}
+.crypto38-heat strong{display:block}
+.crypto57-panel{padding:18px 20px;margin:16px 0;border-radius:24px}
+.crypto57-panel h2{margin:0 0 8px}

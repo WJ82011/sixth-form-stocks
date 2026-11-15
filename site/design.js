@@ -26,13 +26,16 @@ const AppDesign=(()=>{
   return enter?[{opacity:0,transform:'translateY(11px)',filter:'blur(4px)'},{opacity:1,transform:'translateY(0)',filter:'blur(0)'}]:[{opacity:1,filter:'blur(0)'},{opacity:0,filter:'blur(2px)'}];
  }
  function indicator(){const nav=document.querySelector('.focus-nav'),pill=el('nav-indicator');const selected=document.querySelector('#nav .nav-btn.active')?.dataset.view;document.querySelectorAll('[data-focus-view]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.focusView===selected)));const button=nav?.querySelector('[aria-pressed=true]');if(!pill)return;if(!button){pill.style.opacity='0';return}const box=button.getBoundingClientRect(),parent=nav.getBoundingClientRect();pill.style.width=box.width+'px';pill.style.transform='translateX('+(box.left-parent.left)+'px)';pill.style.opacity='1';}
- function flush(){epoch++;cancel('page');if(pending){const job=pending;pending=null;job.commit();active=job.name;}indicator();}
+ function clearMotion(node){if(!node)return;node.getAnimations?.().forEach(animation=>animation.cancel());node.style.removeProperty('opacity');node.style.removeProperty('transform');node.style.removeProperty('filter');}
+ function flush(){epoch++;cancel('page');if(pending){const job=pending;pending=null;job.commit();active=job.name;document.querySelectorAll('.view').forEach(clearMotion);}indicator();}
  async function page(name,commit){
-  if(!ready){commit();active=name;return}
-  const id=++epoch;cancel('page');pending={name,commit};
-  if(!enabled()||name===active){pending=null;commit();active=name;indicator();watch();return}
-  if(el('main-chart-panel')?.classList.contains('is-expanded'))toggleExpandedChart(false);const previous=el('view-'+active);await animate(previous,frames(false),{duration:duration()*.25},'page');
-  if(id!==epoch)return;pending=null;commit();active=name;indicator();watch();await animate(el('view-'+name),frames(true),{duration:duration()},'page');
+  if(!ready){commit();active=name;document.querySelectorAll('.view').forEach(clearMotion);return}
+  const id=++epoch;cancel('page');pending=null;
+  if(el('main-chart-panel')?.classList.contains('is-expanded'))toggleExpandedChart(false);
+  commit();active=name;document.querySelectorAll('.view').forEach(clearMotion);indicator();watch();
+  if(!enabled())return;
+  await animate(el('view-'+name),frames(true),{duration:duration()},'page');
+  if(id!==epoch)return;
  }
  function chart(){if(!ready||!enabled()||!prefs.chart)return;const node=el('overview-chart');cancel('chart');if(node&&node.getBoundingClientRect().width)animate(node,[{opacity:.08},{opacity:1}],{duration:Math.min(320,duration()*.65)},'chart');}
  function company(){if(!enabled())return;cancel('company');animate(el('desk-company-about'),[{opacity:0,transform:'translateY(5px)'},{opacity:1,transform:'translateY(0)'}],{duration:duration()*.65},'company');}
@@ -120,9 +123,12 @@ let syncing=false;
 
  document.addEventListener('DOMContentLoaded',()=>{
   AppDesign.setup();
+  window.Desk68?.regroup();
   const tools=document.getElementById('focus-tools-dialog'),grid=document.getElementById('focus-tools-grid');let opener;
   function close(){tools.close();opener?.focus({preventScroll:true})}
-  document.querySelectorAll('#sidebar .nav-btn[data-view]').forEach(source=>{const b=document.createElement('button');b.type='button';b.textContent=source.dataset.navLabel||source.querySelector('span:nth-child(2)')?.textContent||source.textContent.trim();b.addEventListener('click',()=>{close();changeView(source.dataset.view)});grid.append(b)});
+  document.querySelectorAll('#sidebar .nav-btn[data-view]').forEach(source=>{const b=document.createElement('button');b.type='button';const name=source.dataset.navLabel||source.querySelector('span:nth-child(2)')?.textContent||source.textContent.trim();b.textContent=name;b.dataset.area=source.dataset.area||'';b.title=source.title||name;b.addEventListener('click',()=>{close();changeView(source.dataset.view)});grid.append(b)});
+  const search=document.getElementById('focus-tools-search');
+  search?.addEventListener('input',()=>{const query=search.value.trim().toLowerCase();grid.querySelectorAll('button').forEach(button=>{button.hidden=Boolean(query)&&!button.textContent.toLowerCase().includes(query)&&!button.title.toLowerCase().includes(query)});});
   document.getElementById('focus-tools').addEventListener('click',()=>{opener=document.activeElement;tools.showModal();document.getElementById('focus-tools-close').focus();AppDesign.detailOpen(tools)});
   document.getElementById('focus-tools-close').addEventListener('click',close);
   tools.addEventListener('click',e=>{if(e.target===tools)close()});

@@ -1,0 +1,11 @@
+WHAT CHANGED
+Market Desk 6.5.0
+
+1. Open Research. What changed is at the top of that page.
+2. Choose a review date and, if you have one, the revenue-growth assumption you want compared. Tick Digest or Alert for each kind of change. Alert is off until you tick it.
+3. Follow this company, or open a research entry and follow that entry. The starting prices, dates, announcements, filings, forecasts and alerts are saved. Your thesis and judgement are copied and left for you to edit in the journal.
+4. Check saved records, or leave Market Desk running. The existing overnight research schedule runs the same check. It does not call a new data provider.
+5. Each change shows the original value, the updated value, the dates and the calculation. Open chart, Open source or Open investigation goes to that record.
+6. Acknowledge keeps a previous review. It does not edit the thesis.
+7. Ask Intelligence: “What changed since my last review?” or “Which of my assumptions should I revisit?”
+8. Since your last visit still shows saved price moves since the last time the page was open. Followed research is opened from there with “Open what changed.”

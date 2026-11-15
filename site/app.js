@@ -79,7 +79,7 @@ function refreshWatchFreshness(){
  document.querySelectorAll('[data-watch-symbol]').forEach(row=>{const sym=row.dataset.watchSymbol,f=freshnessInfo(sym),price=row.querySelector('.m-price'),change=row.querySelector('.m-change'),source=row.querySelector('.m-source');if(price)price.textContent=f.q?fmtUnit(sym,f.q.p):'—';if(change){change.textContent=f.q?fmtPct(f.q.change):'—';change.className='m-change '+(f.q?signClass(f.q.change):'neutral');}if(source)source.innerHTML=freshnessHTML(sym);});
  const label=$('research-stock-name'),fresh=$('research-stock-freshness');if(label)label.textContent=E.selected?E.selected+' · '+safeName(E.selected):'Choose a stock';if(fresh){const f=freshnessInfo(E.selected);fresh.textContent=f.label+(f.q?' · '+fmtDateTime(f.q.t):'');}
 }
-function openStock(sym,heatmapWindow=null){if(!safeSymbol(sym))return;E.heatmapWindow=heatmapWindow;setSelected(sym);renderPickers();refreshWatchFreshness();changeView('overview');setTimeout(()=>{if(typeof Desk!=='undefined'){Desk.revealSelected();return}const pane=$('main-chart-panel');if(pane?.scrollIntoView)pane.scrollIntoView({block:'start',behavior:'smooth'});},0);}
+function openStock(sym,heatmapWindow=null){if(!safeSymbol(sym))return;E.heatmapWindow=heatmapWindow;setSelected(sym);renderPickers();refreshWatchFreshness();changeView(document.getElementById('home43-chart')?'home':'overview');setTimeout(()=>{const pane=$('main-chart-panel');if(pane?.scrollIntoView)pane.scrollIntoView({block:'nearest',behavior:'smooth'});},0);}
 function openStockResearch(view){if(!['company','intelligence'].includes(view))return;renderPickers();if($('company-select'))$('company-select').value=E.selected;changeView(view);}
 
 const nowMs = () => Date.now();
@@ -94,10 +94,10 @@ const fmtDateTime = ms => Number.isFinite(ms) && ms>0?new Date(ms).toLocaleStrin
 const elapsed = ms => {if(!ms)return '—';let s=Math.max(0,Math.floor((nowMs()-ms)/1000));return s<60?`${s}s ago`:s<3600?`${Math.floor(s/60)}m ago`:s<86400?`${Math.floor(s/3600)}h ago`:`${Math.floor(s/86400)}d ago`};
 const validHttpLink = raw => {try{const u=new URL(raw);return ['https:','http:'].includes(u.protocol)?u.href:''}catch{return ''}};
 const savedJSON=(key,fallback)=>{try{const v=JSON.parse(localStorage.getItem(key));return v??fallback}catch{return fallback}};
-const BACKUP_KEYS=['md-analyst-drafts-v35','md-reborn-watch','md-reborn-names','md-reborn-notes','md-reborn-reports','md-reborn-portfolio','md-reborn-workstation-v1','md-tape-symbol','md-reborn-v3'];
+const BACKUP_KEYS=['md-analyst-drafts-v35','md-reborn-watch','md-reborn-names','md-reborn-notes','md-reborn-reports','md-reborn-portfolio','md-reborn-workstation-v1','md-tape-symbol','md-reborn-v3','md-reborn-journal'];
 let backupTimer=0,backupReady=false,backupSaving=false,backupAgain=false;
 function recoveryDrafts(allowDamaged=false){try{const raw=localStorage.getItem('md-analyst-drafts-v35'),d=raw?JSON.parse(raw):{version:1,records:[]};if(!d||!Array.isArray(d.records)||d.records.length>10)throw Error();return d;}catch{if(allowDamaged)return {version:1,records:[]};throw Error('Draft recovery data needs checking. Download its raw copy in Intelligence. Existing backup data was not replaced.');}}
-function snapshotWorkspace(allowDamagedDrafts=false){return {analystDrafts:recoveryDrafts(allowDamagedDrafts),watch:savedJSON('md-reborn-watch',DEFAULT_STOCKS),names:savedJSON('md-reborn-names',{}),notes:savedJSON('md-reborn-notes',[]),reports:savedJSON('md-reborn-reports',[]),portfolio:savedJSON('md-reborn-portfolio',{capital:10000,trades:[]}),preferences:savedJSON('md-reborn-workstation-v1',{}),design:savedJSON('md-reborn-design-v28',{}),v3:savedJSON('md-reborn-v3',{}),tapeSymbol:savedJSON('md-tape-symbol','AAPL')}}
+function snapshotWorkspace(allowDamagedDrafts=false){return {analystDrafts:recoveryDrafts(allowDamagedDrafts),watch:savedJSON('md-reborn-watch',DEFAULT_STOCKS),names:savedJSON('md-reborn-names',{}),notes:savedJSON('md-reborn-notes',[]),journal:savedJSON('md-reborn-journal',[]),reports:savedJSON('md-reborn-reports',[]),portfolio:savedJSON('md-reborn-portfolio',{capital:10000,trades:[]}),preferences:savedJSON('md-reborn-workstation-v1',{}),design:savedJSON('md-reborn-design-v28',{}),v3:savedJSON('md-reborn-v3',{}),tapeSymbol:savedJSON('md-tape-symbol','AAPL')}}
 async function sendWorkspaceBackup(){
   if(!backupReady)return;
   if(backupSaving){backupAgain=true;return}
@@ -142,6 +142,7 @@ async function restoreWorkspace(){
         merged.names={...(snapshot.names||{}),...(current.names||{})};
         const notes=[...(Array.isArray(current.notes)?current.notes:[]),...(snapshot.notes||[])];
         const ids=new Set();merged.notes=notes.filter(n=>{const id=JSON.stringify([n.title,n.date,n.thesis]);if(ids.has(id))return false;ids.add(id);return true}).slice(0,250);
+        merged.journal=(typeof Journal49!=='undefined'?Journal49.merge(current.journal,snapshot.journal):snapshot.journal||current.journal||[]);
         merged.reports=mergeReportArchives(current.reports,snapshot.reports);
         merged.portfolio=localStorage.getItem('md-reborn-portfolio')!==null?current.portfolio:snapshot.portfolio;
         merged.v3=localStorage.getItem('md-reborn-v3')!==null?current.v3:snapshot.v3;
@@ -152,7 +153,8 @@ async function restoreWorkspace(){
       merged.reports=mergeReportArchives(current.reports,snapshot.reports);
       merged.portfolio=localStorage.getItem('md-reborn-portfolio')!==null?current.portfolio:snapshot.portfolio;
       merged.analystDrafts=localStorage.getItem('md-analyst-drafts-v35')!==null?current.analystDrafts:snapshot.analystDrafts;
-      const mapping={'md-analyst-drafts-v35':merged.analystDrafts,'md-reborn-watch':merged.watch,'md-reborn-names':merged.names,'md-reborn-notes':merged.notes,'md-reborn-reports':merged.reports,'md-reborn-portfolio':merged.portfolio,'md-reborn-workstation-v1':merged.preferences,'md-reborn-design-v28':merged.design,'md-reborn-v3':merged.v3,'md-tape-symbol':merged.tapeSymbol};
+      merged.journal=(typeof Journal49!=='undefined'?Journal49.merge(current.journal,snapshot.journal):snapshot.journal||current.journal||[]);
+      const mapping={'md-analyst-drafts-v35':merged.analystDrafts,'md-reborn-watch':merged.watch,'md-reborn-names':merged.names,'md-reborn-notes':merged.notes,'md-reborn-journal':merged.journal,'md-reborn-reports':merged.reports,'md-reborn-portfolio':merged.portfolio,'md-reborn-workstation-v1':merged.preferences,'md-reborn-design-v28':merged.design,'md-reborn-v3':merged.v3,'md-tape-symbol':merged.tapeSymbol};
       if(localStorage.getItem('md-analyst-drafts-v35')!==null)delete mapping['md-analyst-drafts-v35'];
       commitBrowserRecords(mapping);
       window.dispatchEvent(new Event('marketdesk:workspace-restored'));
@@ -212,15 +214,36 @@ function toggleExpandedChart(force){
   document.body.classList.toggle('chart-modal-open',expanded);
   setTimeout(drawChart,80);
 }
+function followInvestigation(previous,sym){
+  const same=element=>element&&(!element.value||String(element.value).toUpperCase()===String(previous||'').toUpperCase());
+  const scenario=$('scenario53-symbol');if(same(scenario))scenario.value=sym;
+  const pack=$('pack59-symbol');if(same(pack))pack.value=sym;
+  const compare=$('compare-a');if(same(compare))compare.value=sym;
+  const dates=E.investigation;
+  if(dates&&dates.symbol===sym){
+    const start=$('compare52-start'),end=$('compare52-end');
+    if(start&&!start.value)start.value=dates.start||'';
+    if(end&&!end.value)end.value=dates.end||'';
+  }
+}
 function setSelected(sym){
   if(!safeSymbol(sym))return;
   resetSessionReplay();
-  const changed=E.selected!==sym;E.selected=sym;
+  const previous=E.selected;
+  const changed=E.selected!==sym;
+  if(changed&&window.Practice67?.active)Practice67.onSymbol(sym);
+  else if(changed&&window.Replay43?.active)Chart43.backToLive();
+  E.selected=sym;
+  followInvestigation(previous,sym);
+  E.selectionSeq=(E.selectionSeq||0)+1;
   if(changed){E.forecastFocus=false;E.chartPoints=[];E.chartForecast=null;E.chartSource='Loading recorded prices';E.chartHover=null;drawChart()}
   renderPickers();if($('company-select'))$('company-select').value=sym;
   if($('forecast-select'))$('forecast-select').value=sym;
   if(changed&&E.view==='overview')resubscribe();
-  if(typeof Desk!=='undefined')Desk.selected();renderOverview();loadChart();
+  if(changed&&E.view==='news')loadNews(false);
+  if(changed&&E.view==='company'){if(window.Events42?.open)Events42.open();if(window.FinancialHealth?.load)FinancialHealth.load();}
+  if(changed){forecastRunId++;const pane=$('forecast-content');if(pane)pane.innerHTML='<div class="empty-state"><h3>Research follows '+escapeHtml(sym)+'</h3><p>The previous forecast was cleared so a late result cannot replace this company.</p></div>';window.Move44?.clear()}
+  if(typeof Desk!=='undefined')Desk.selected();renderOverview();loadChart();window.Look43?.refresh();
 }
 function companyChoices(){return [...new Set([...STOCK_DIRECTORY.map(x=>x.symbol),...E.watch,...(E.selected?[E.selected]:[])])]}
 function browseSymbols(){return [...new Set([...(E.selected?[E.selected]:[]),...E.watch])].slice(0,60)}
@@ -320,11 +343,21 @@ async function autoQuoteCycle(){
 
 async function setupTokenStatus(){try{if(location.port&&location.port!=='8765')alertBanner('Market Desk is on a different local port ('+location.port+'). If earlier notes appear missing, close older Market Desk Terminal windows and relaunch on port 8765 before importing/migrating.');const status=await api('/api/status');E.configured=Boolean(status.configured);E.massiveConfigured=Boolean(status.massive_configured);if(E.massiveConfigured&&E.forecastEnabled&&['1H','1D'].includes(E.range)){E.range='1Y';document.querySelectorAll('#overview-ranges button').forEach(b=>b.classList.toggle('active',b.dataset.range==='1Y'));}$('diag-budget').textContent=status.api_used_last_60s+' / '+status.api_budget;E.backgroundCollector=Boolean(status.backgroundCollector);syncConnectionUI();if(E.configured){connectWS();await autoQuoteCycle();loadNews();loadChart();}else if(E.massiveConfigured){loadChart();toast('Massive history is ready; Finnhub live quotes are not connected.');}else{alertBanner('Welcome to Market Desk Reborn. Use All tools → Settings to connect market prices. Local research, SEC accounts and practice tools can be used separately.')}}catch(e){alertBanner('Local server error: '+e.message)}}
 let tradeDisplayTimer=null, tradeChartTimer=null;
+function appendRecordedTrade(){
+  if(!['1H','1D'].includes(E.range))return;
+  const trade=E.trades.get(E.selected);
+  if(!trade||!Number.isFinite(trade.t)||!Number.isFinite(trade.p))return;
+  if(E.chartPoints.some(point=>point.t===trade.t))return;
+  E.chartPoints.push({t:trade.t,p:trade.p,source:'finnhub_websocket'});
+  E.chartPoints.sort((a,b)=>a.t-b.t);
+  drawChart();
+}
 function scheduleTradeRefresh(updateSelected){
   // Preserve smooth interaction even when the exchange emits many trades per second.
   if(!tradeDisplayTimer) tradeDisplayTimer=setTimeout(()=>{tradeDisplayTimer=null;renderAll()},180);
-  if(updateSelected&&E.view==='overview'&&!tradeChartTimer) tradeChartTimer=setTimeout(()=>{
-    tradeChartTimer=null;loadChart(false);
+  // A daily chart is closes, not trades. Reloading it here waited on the forecast and hid the line.
+  if(updateSelected&&E.view==='overview'&&['1H','1D'].includes(E.range)&&!tradeChartTimer) tradeChartTimer=setTimeout(()=>{
+    tradeChartTimer=null;appendRecordedTrade();
   },950);
 }
 let streamPoll=0,streamGeneration=0;
@@ -353,7 +386,14 @@ function acceptCollectorPacket(packet){
     scheduleTradeRefresh(received.some(row=>row.s===E.selected));
     if(typeof tapeOnTrades==='function')tapeOnTrades(received);
   }
-  if(packet.gap&&E.view==='tape'&&typeof tapeReload==='function')tapeReload();
+  const recovered=E.collectorDown;
+  E.collectorDown=false;
+  if(packet.gap||recovered){
+    const feed=$('look43-feed');
+    if(feed)feed.textContent=packet.gap?'Collector found a gap. Reading saved prices.':'Collector reconnected. Reading saved prices.';
+    if(['1H','1D'].includes(E.range))loadChart(false);
+    if(E.view==='tape'&&typeof tapeReload==='function')tapeReload();
+  }
   syncConnectionUI();
 }
 function connectWS(){
@@ -369,11 +409,14 @@ function connectWS(){
       if(generation!==streamGeneration)return;
       cursor=packet.cursor||0;epoch=packet.epoch||'';
       acceptCollectorPacket(packet);
+      const busy=E.view==='tape'||(packet.events&&packet.events.length);
+      streamPoll=setTimeout(poll,document.hidden?8000:busy?1000:3000);
+      return;
     }catch{
       if(generation!==streamGeneration)return;
-      E.wsOpen=false;E.wsError='Waiting for local collector';E.subscribed.clear();syncConnectionUI();
+      E.collectorDown=true;E.wsOpen=false;E.wsError='Waiting for local collector';E.subscribed.clear();syncConnectionUI();
     }
-    streamPoll=setTimeout(poll,1000);
+    streamPoll=setTimeout(poll,document.hidden?8000:3000);
   }
   poll();
 }
@@ -497,29 +540,33 @@ async function searchStocks(q){
 
 function newsCards(items,mini=false){const valid=(items||[]).filter(n=>n.headline&&validHttpLink(n.url)).slice(0,mini?4:30);if(!valid.length)return `<div class="empty-state"><span>▤</span><h3>No verified headlines available</h3><p>News may be restricted by your plan or temporarily unavailable.</p></div>`;return valid.map(n=>{let stamp=n.datetime?fmtDateTime(n.datetime*1000):'Date not provided';let src=escapeHtml(n.source||'Unspecified source'),headline=escapeHtml(n.headline),link=escapeHtml(validHttpLink(n.url));return mini?`<div class="news-mini-item"><small>${src}  ·  ${stamp}</small><a href="${link}" target="_blank" rel="noopener noreferrer">${headline} ↗</a></div>`:`<article class="news-card"><div class="news-meta">${src}  ·  ${stamp}</div><h3>${headline}</h3><p>${escapeHtml((n.summary||'').slice(0,230))}</p><a href="${link}" target="_blank" rel="noopener noreferrer">Read original article ↗</a></article>`}).join('')}
 async function loadNews(force=false){
-  const route=E.configured&&force?'/api/news':'/api/saved-news';
+  const id=++newsReq,sym=safeSymbol(E.selected)?E.selected:'';
+  const saved='/api/saved-news'+(sym?'?symbol='+encodeURIComponent(sym):'');
+  const live=force&&E.configured?(sym?'/api/news?symbol='+encodeURIComponent(sym):'/api/news'):saved;
   try{
-    let result=await api(route).catch(()=>api('/api/saved-news'));
-    if(!result.items?.length&&E.configured&&!E.backgroundCollector&&route==='/api/saved-news')result=await api('/api/news');
-    E.news=result.items||[];renderNews();
+    let result=await api(live).catch(()=>id===newsReq?api(saved):{items:[]});
+    if(id!==newsReq||sym!==(safeSymbol(E.selected)?E.selected:''))return;
+    E.news=result.items||[];
+    if(!E.news.length)$('news-content').innerHTML='<div class="empty-state"><h3>No saved headlines'+(sym?' for '+escapeHtml(sym):'')+'</h3><p>'+(sym?'This company has no headlines saved on this Mac. ':'')+'Refresh news asks the free Finnhub feed for the last 7 days. If the plan does not include that company, nothing is invented.</p></div>';
+    else renderNews();
   }catch(error){
     if(E.news)renderNews();
     else $('news-content').innerHTML='<p>Saved news could not be read. '+escapeHtml(error.message)+'</p>';
   }
 }
 function renderNews(){if(E.news){$('news-content').innerHTML=newsCards(E.news);$('overview-news').innerHTML=newsCards(E.news,true)}}
-async function loadCompany(){let sym=$('company-select').value||E.selected;if(!sym){$('company-content').textContent='Add a stock to your watchlist to see company details.';return}if(!E.configured){$('company-content').innerHTML='<div class="empty-state"><h3>Connect Finnhub first</h3></div>';return}if(E.fundamentals.has(sym)){showCompany(sym,E.fundamentals.get(sym));return}$('company-content').innerHTML='<div class="empty-state"><h3>Loading genuine company information…</h3></div>';try{const data=await api('/api/company?symbol='+encodeURIComponent(sym));data.retrievedAt=Number(data.retrieved_at)||Date.now();data.clientReceivedAt=Date.now();E.fundamentals.set(sym,data);showCompany(sym,data)}catch(e){if($('company-select').value===sym)$('company-content').innerHTML=`<div class="empty-state"><h3>Company data unavailable</h3><p>${escapeHtml(e.message)}</p></div>`}}
+async function loadCompany(){const id=++companyReq;let sym=$('company-select').value||E.selected;if(!sym){$('company-content').textContent='Add a stock to your watchlist to see company details.';return}if(!E.configured){$('company-content').innerHTML='<div class="empty-state"><h3>Connect Finnhub first</h3></div>';return}if(E.fundamentals.has(sym)){if(id===companyReq)showCompany(sym,E.fundamentals.get(sym));return}$('company-content').innerHTML='<div class="empty-state"><h3>Loading genuine company information…</h3></div>';try{const data=await api('/api/company?symbol='+encodeURIComponent(sym));if(id!==companyReq||($('company-select').value||E.selected)!==sym)return;data.retrievedAt=Number(data.retrieved_at)||Date.now();data.clientReceivedAt=Date.now();E.fundamentals.set(sym,data);showCompany(sym,data)}catch(e){if(id===companyReq&&$('company-select').value===sym)$('company-content').innerHTML=`<div class="empty-state"><h3>Company data unavailable</h3><p>${escapeHtml(e.message)}</p></div>`}}
 function showCompany(sym,data){if($('company-select').value!==sym)return;const p=data.profile||{},metrics=data.metrics?.metric||{},name=p.name||safeName(sym),q=quoteFor(sym);if(p.name)E.names[sym]=p.name;let kv=[['Exchange',p.exchange],['Industry',p.finnhubIndustry],['Website',p.weburl],['IPO date',p.ipo],['Currency',p.currency],['Headquarters',p.country]];let metricValues=[['Market cap',p.marketCapitalization?('$'+fmtNum(p.marketCapitalization/1000,2)+'bn'):'Unavailable'],['P/E ratio',metrics.peBasicExclExtraTTM??metrics.peTTM],['52-week high',metrics['52WeekHigh']],['52-week low',metrics['52WeekLow']],['Dividend yield',metrics.dividendYieldIndicatedAnnual]];const logo=validHttpLink(p.logo);$('company-content').innerHTML=`<div class="surface company-hero">${logo?`<img class="company-logo" alt="" src="${escapeHtml(logo)}">`:'<span class="symbol-avatar" style="width:60px;height:60px;font-size:18px">'+escapeHtml(sym.slice(0,2))+'</span>'}<div><h2>${escapeHtml(name)}</h2><p>${escapeHtml(sym)}  ·  ${escapeHtml(p.exchange||'Exchange unreported')}  ·  ${escapeHtml(p.finnhubIndustry||'Sector not provided')}</p><p>Latest quote: ${q?fmtUnit(sym,q.p)+' · '+fmtDateTime(q.t):'Not received'}</p></div></div><div class="company-metrics">${metricValues.slice(0,4).map(([label,value])=>`<div class="metric-card"><span>${escapeHtml(label)}</span><strong>${value===undefined||value===null||value===''?'Unavailable':escapeHtml(value)}</strong></div>`).join('')}</div><div class="surface company-about"><h3>Company profile</h3><div class="kv">${kv.map(([label,value])=>`<div><span>${escapeHtml(label)}</span><strong>${value?escapeHtml(value):'Not available'}</strong></div>`).join('')}</div><p>Company market value and financial ratios may have different dates from the price quote. Company details may be old or missing from your plan. ${data.metrics_error?'Metrics provider note: '+escapeHtml(data.metrics_error):''}</p><p>Primary source: Finnhub /stock/profile2 and /stock/metric. Missing figures are not guessed.</p></div>`}
 function timeWindow(range){const day=86400000;return ({'1H':1/24,'1D':1,'1W':7,'1M':30,'3M':90,'6M':183,'1Y':365,'2Y':730,'5Y':1826,'10Y':3653}[range]||1)*day}
 function forecastHorizon(range){return ({'1W':5,'1M':10,'3M':20,'1Y':60,'2Y':60,'5Y':60,'10Y':60,'6M':30})[range]||0}
 function setChartRange(range){
   if(!['1H','1D','1W','1M','3M','6M','1Y','2Y','5Y','10Y'].includes(range))return;
   resetSessionReplay();
-  E.heatmapWindow=null;E.forecastFocus=false;E.range=range;E.chartPoints=[];E.chartForecast=null;E.chartSource='Loading your chosen period';
+  E.heatmapWindow=null;E.forecastFocus=false;E.range=range;E.chartPoints=[];E.chartForecast=null;E.chartSource='Loading your chosen period';window.Chart43?.backToLive();window.Move44?.clear();
   document.querySelectorAll('#overview-ranges button').forEach(el=>el.classList.toggle('active',el.dataset.range===range));
   $('chart-data-coverage').textContent='Loading '+range+' past prices…';drawChart();loadChart();
 }
-let chartReq=0,sessionRequest=0;
+let chartReq=0,sessionRequest=0,newsReq=0,companyReq=0;
 
 function resetSessionReplay(){
   sessionRequest++;
@@ -561,7 +608,7 @@ function renderSessionReplay(replay){
   E.savedSession=false;E.chartForecast=null;
   E.chartSource='MASSIVE · '+replay.day+' NEW YORK DATE';
   E.lastHistoryStatus='Massive split-adjusted minute history';
-  $('chart-data-coverage').textContent=E.chartPoints.length+' minute closes · '+replay.day+' New York date'+(E.range==='1H'?' · final recorded hour':'');
+  $('chart-data-coverage').textContent=(replay.coverage?ChartResearch.describeCoverage(replay.coverage)+' · ':'')+E.chartPoints.length+' minute closes · '+replay.day+' New York date'+(E.range==='1H'?' · final recorded hour':'');
   $('overview-chart-note').textContent='Completed date from Massive. Includes any extended-hours bars supplied by the provider. The latest Finnhub quote is displayed separately.';
   const analysis=$('mdi-chart');if(analysis)analysis.textContent='';
   forecastStatus('Historical minute closes from Massive.');
@@ -608,7 +655,7 @@ async function historicalFor(sym,range=E.range,useImported=true,refreshDaily=fal
           if(saved?.status==='ok')res={...saved,refresh_error:res.message||'New prices unavailable'};
         }
       }
-      let state={savedAt:nowMs(),status:res.status||'no_data',points:[],message:res.message||'',symbol:sym,provider:res.provider||(E.massiveConfigured?'massive':'finnhub'),source:res.source||'',cached:Boolean(res.cached),refreshError:res.refresh_error||'',notice:res.notice||'',kind:res.kind||''};
+      let state={savedAt:nowMs(),status:res.status||'no_data',points:[],message:res.message||'',symbol:sym,provider:res.provider||(E.massiveConfigured?'massive':'finnhub'),source:res.source||'',cached:Boolean(res.cached),refreshError:res.refresh_error||'',notice:res.notice||'',kind:res.kind||'',coverage:res.coverage||null};
       if(res.status==='ok'&&res.candles){
         const c=res.candles;
         state.points=ChartResearch.normaliseDaily((c.t||[]).map((ts,i)=>({t:Number(ts)*1000,p:Number(c.c?.[i])})));
@@ -646,8 +693,8 @@ async function loadChart(fetchHistorical=true,refreshDaily=false){
   if(E.heatmapWindow){cutoff=Date.parse(E.heatmapWindow.start+'T00:00:00Z');end=Date.parse(E.heatmapWindow.end+'T23:59:59Z');}
   E.chartDomain={from:cutoff,to:end,range};
   E.chartForecast=null;
-  let local=[];
-  try{const r=await api('/api/history?symbol='+encodeURIComponent(sym)+'&since='+Math.floor(cutoff));local=r.points||[]}
+  let local=[],localCoverage=null;
+  try{const r=await api('/api/history?symbol='+encodeURIComponent(sym)+'&since='+Math.floor(cutoff));local=r.points||[];localCoverage=r.coverage||null}
   catch(e){console.warn('Local chart records unavailable:',e.message)}
   if(id!==chartReq||sym!==E.selected||range!==E.range)return;
   let historical=E.candles.get(sym);
@@ -692,6 +739,7 @@ async function loadChart(fetchHistorical=true,refreshDaily=false){
     }else unique.push(pt);
   }
   E.savedSession=savedSession;E.chartPoints=unique.slice(-5000);E.chartSource=source+(savedSession?' · LAST SAVED SESSION · NOT CURRENT':'');
+  if(window.Chart43&&!Chart43.fits(E.chartPoints)){Chart43.backToLive();E.chartSource+=' · previous window had no prices here, so the full period is shown';}
   E.lastHistoryStatus=['1H','1D'].includes(range)?'Intraday: local verified observations only':
     historical?.status==='ok'?(historical.provider==='imported'?'User-imported daily prices (unverified)':historical.provider==='massive'?(historical.refreshError?'Massive cached history · refresh unavailable':'Massive historical daily bars received (EOD)'):'Finnhub historical closes received'):
     historical?.status==='entitlement'?'Price history is not included in your plan':
@@ -700,7 +748,8 @@ async function loadChart(fetchHistorical=true,refreshDaily=false){
   $('diag-candles').textContent=E.lastHistoryStatus;
   const segments=ChartResearch.chartSegments(E.chartPoints,range);
   const offlineGapCount=Math.max(0,segments.length-1);
-  $('chart-data-coverage').textContent=coverageStatus(E.chartPoints,cutoff,end,local.length+(historical?.points?.length||0))+(['1H','1D'].includes(range)&&offlineGapCount?' · '+offlineGapCount+' unrecorded gap'+(offlineGapCount===1?'':'s'):'');
+  const coveragePacket=haveDaily?historical?.coverage:localCoverage;
+  $('chart-data-coverage').textContent=(coveragePacket?ChartResearch.describeCoverage(coveragePacket)+' · ':'')+coverageStatus(E.chartPoints,cutoff,end,local.length+(historical?.points?.length||0))+(['1H','1D'].includes(range)&&offlineGapCount?' · '+offlineGapCount+' unrecorded gap'+(offlineGapCount===1?'':'s'):'');
   const coverage=ChartResearch.coverage(E.chartPoints,cutoff,end);
   const incomplete=coverage.count<2 || (!['1H','1D'].includes(range)&&(coverage.first>cutoff+14*86400000||coverage.last<end-10*86400000));
   if(incomplete&&!['1H','1D'].includes(range))$('chart-data-coverage').textContent+=' · Partial '+range+' history';
@@ -720,31 +769,30 @@ async function loadChart(fetchHistorical=true,refreshDaily=false){
   if(!['1H','1D'].includes(range)&&historical?.status!=='ok')note+=' '+(historical?.message||(E.massiveConfigured?'Massive historical data is unavailable. Check Settings.':'Finnhub historical access is unavailable. Add a Massive key in Settings to load real US daily closes.'));
   if(savedSession){note='LAST SAVED SESSION: '+new Date(cutoff).toLocaleString('en-GB')+' to '+new Date(end).toLocaleString('en-GB')+'. No prices were recorded in the current '+(range==='1H'?'hour':'24 hours')+'. These are genuine older recordings, not live prices or a backfill of time while the Mac was off. Intelligence’s current-hour/day overview remains separate. '+note;$('chart-data-coverage').textContent='Last saved session · '+$('chart-data-coverage').textContent;}
   $('overview-chart-note').textContent=note;
+  // Draw the saved closes before the forecast check. The check can take longer than the chart read.
+  renderOverview();drawChart();window.Look43?.refresh();
+  if(id!==chartReq||sym!==E.selected||range!==E.range)return;
   if(!E.forecastEnabled){forecastStatus('The forecast line is off. Past prices are still shown.');}
-  else if(['1H','1D'].includes(range)){forecastStatus('Hourly and 24-hour charts show recorded prices only. Choose a longer period to see estimates based on daily closing prices.');}
-  else if(historical?.status!=='ok'||!historical?.points?.length){forecastStatus('Forecast unavailable: '+(historical?.message||'daily price history is missing. Check Massive in Settings.')+' No future prices have been made up.');}
-  else if(historical.provider==='imported'){forecastStatus('Forecast off for imported files: these prices have not been independently verified.');}
-  else if(historical.points.length<45){forecastStatus('No forecast: at least 45 daily closing prices are needed.');}
+  else if(['1H','1D'].includes(range)){forecastStatus('Hourly and 24-hour charts show recorded prices only. Choose a longer period for the daily-close forecast.');}
+  else if(historical?.provider==='imported'){forecastStatus('Forecast off for imported files: these prices have not been independently verified.');}
   else{
-    // Start with a price-only model; add a small, explicitly unvalidated news
-    // adjustment only after a successful company-news request.
-    const model=ChartResearch.model(historical.points,[],end,forecastHorizon(range));
-    if(model){
-      E.chartForecast=model;
-      forecastStatus(model.description,true);
-    }else forecastStatus('Forecast withheld: daily-close history is too short, outdated, or insufficiently spaced.');
+    forecastStatus('Checking saved closes for '+sym+'…');
+    try{
+      const packet=await api('/api/v3/forecast61?symbol='+encodeURIComponent(sym));
+      if(id!==chartReq||sym!==E.selected||range!==E.range)return;
+      if(packet.status==='learned'&&packet.rows&&packet.rows.length>1){
+        E.chartForecast=packet;
+        forecastStatus((packet.anchorDate?'Last close '+packet.anchorDate+'. ':'')+packet.notice,true);
+      }else{
+        E.chartForecast=null;
+        forecastStatus((packet.anchorDate?'Last close '+packet.anchorDate+'. ':'')+(packet.notice||packet.error||'No purple line is drawn.'));
+      }
+    }catch(error){
+      E.chartForecast=null;
+      forecastStatus('Forecast check unavailable. '+error.message);
+    }
   }
   renderOverview();drawChart();if(typeof Desk!=='undefined')Desk.historyChanged();if(typeof MDI!=='undefined')MDI.chart();
-  if(E.forecastEnabled&&!['1H','1D'].includes(range)&&E.chartForecast){
-    const info=await forecastHeadlines(sym);
-    if(id!==chartReq||sym!==E.selected||range!==E.range||!E.forecastEnabled)return;
-    const revised=ChartResearch.model(historical.points,info.items,end,forecastHorizon(range));
-    if(revised)E.chartForecast=revised;
-    const sig=E.chartForecast?.sentiment;
-    const note=info.available?` ${sig?.used||0} recent classified company headlines provide context.`:'';
-    forecastStatus(E.chartForecast.description+note,true);
-    drawChart();
-  }
 }
 function drawChart(){
   const isLight=document.documentElement?.dataset?.theme==='light';
@@ -759,14 +807,18 @@ function drawChart(){
   const pw=w-pad.left-pad.right,ph=h-pad.top-pad.bottom;
   ctx.clearRect(0,0,w,h);
   if(pw<=0||ph<=0)return;
-  const points=E.chartPoints.filter(p=>Number.isFinite(p.t)&&Number.isFinite(p.p));
+  const loaded=E.chartPoints.filter(p=>Number.isFinite(p.t)&&Number.isFinite(p.p));
+  const replaying=Boolean(window.Replay43?.active);
+  const base=replaying?Replay43.prices():loaded;
+  const lens=window.Chart43?.lens(base);
+  const points=(lens?lens.points:base).filter(p=>Number.isFinite(p.t)&&Number.isFinite(p.p));
   if(typeof MarketTruth36!=='undefined')MarketTruth36.updateLabel(E.selected);
   const plottedLabel=$('chart-observed-summary');if(plottedLabel){
     const first=points[0],last=points.at(-1),change=points.length>1?(last.p/first.p-1)*100:null;
     const date=t=>new Date(t).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
     plottedLabel.textContent=change!==null?`${E.savedSession?'Last saved session · ':''}${change>=0?'↑ Up':'↓ Down'} ${Math.abs(change).toFixed(2)}% between the displayed prices · ${fmtUnit(E.selected,first.p)} (${date(first.t)}) → ${fmtUnit(E.selected,last.p)} (${date(last.t)}) · ${E.heatmapWindow?'completed-session close-to-close return for the selected heatmap period':'change within this displayed range, NOT the full-session previous-close return'}; no separate dividends added. Missing history is not counted.`:points.length?'Only one recorded price; no change can be calculated.':'No prices plotted for this period.';
   }
-  const forecast=E.forecastEnabled&&!['1H','1D'].includes(E.range)?E.chartForecast:null;
+  const forecast=!replaying&&E.forecastEnabled&&!['1H','1D'].includes(E.range)?E.chartForecast:null;
   const focus=Boolean(forecast?.rows?.length&&E.forecastFocus);
   const focusButton=$('chart-forecast-focus');
   if(focusButton){
@@ -780,7 +832,7 @@ function drawChart(){
     plottedLabel.textContent='Scenario centre detail · '+fmtPct(move)+' over '+last.day+' sessions. The full chart shows the uncertainty range.';
   }
   const segments=focus?[]:ChartResearch.chartSegments(points,E.range);
-  const from=E.chartDomain?.from||nowMs()-timeWindow(E.range),to=E.chartDomain?.to||nowMs();
+  const from=lens?.from??(E.chartDomain?.from||nowMs()-timeWindow(E.range)),to=lens?.to??(E.chartDomain?.to||nowMs());
   const histW=focus?0:pw*(forecast?.rows?.length ? .68 : 1);
   const X=t=>pad.left+Math.max(0,Math.min(1,(t-from)/(to-from||1)))*histW;
   const divide=forecast?X(forecast.anchor.t):pad.left+histW;
@@ -790,10 +842,12 @@ function drawChart(){
     ctx.fillText('No recorded prices for '+E.range+' · review data coverage below',w/2,h/2);
     $('overview-tooltip').classList.add('hidden');return;
   }
-  const sessionReference=!E.sessionReplay&&typeof MarketTruth36!=='undefined'?MarketTruth36.context(E.selected,points):null;
+  const sessionReference=!replaying&&!E.sessionReplay&&typeof MarketTruth36!=='undefined'?MarketTruth36.context(E.selected,points):null;
   const values=focus?forecast.rows.map(row=>row.price):points.map(p=>p.p);
   if(!focus&&sessionReference)values.push(sessionReference.previous);
   if(!focus&&forecast)for(const row of forecast.rows)values.push(row.low,row.high);
+  const candleBars=!focus&&window.Look43?.candleBars?Look43.candleBars(from,to):null;
+  if(candleBars)for(const bar of candleBars)values.push(bar.l,bar.h);
   let min=Math.min(...values),max=Math.max(...values);
   const span=Math.max((max-min)*.14,max*(focus ? .00005 : .001),.01);min-=span;max+=span;
   const Y=p=>pad.top+(1-(p-min)/(max-min))*ph;
@@ -814,7 +868,7 @@ function drawChart(){
     ctx.fillStyle='#a88de10e';ctx.fillRect(divide,pad.top,w-pad.right-divide,ph);
     ctx.strokeStyle='#8267b055';ctx.setLineDash([2,4]);ctx.beginPath();ctx.moveTo(divide,pad.top);ctx.lineTo(divide,h-pad.bottom);ctx.stroke();ctx.setLineDash([]);
     ctx.fillStyle=isLight?'#72539b':'#c6b4e4';ctx.font='9px -apple-system, sans-serif';ctx.textAlign='right';
-    ctx.fillText('SCENARIO +'+forecast.rows.at(-1).day+' SESSIONS',w-pad.right-2,pad.top+9);
+    ctx.fillText((forecast.kind==='model'?'FORECAST':'SCENARIO')+' +'+forecast.rows.at(-1).day+' SESSIONS',w-pad.right-2,pad.top+9);
     const xr=row=>FX(row.day),yr=row=>Y(row.price);
     if(!focus){
       ctx.beginPath();forecast.rows.forEach((r,i)=>i?ctx.lineTo(xr(r),Y(r.high)):ctx.moveTo(xr(r),Y(r.high)));
@@ -834,6 +888,16 @@ function drawChart(){
     const last=forecast.rows.at(-1);ctx.fillStyle='#c59cff';ctx.beginPath();ctx.arc(xr(last),yr(last),3.5,0,Math.PI*2);ctx.fill();
   }
   if(!focus&&points.length===1){const p=points[0];ctx.fillStyle='#7aafff';ctx.beginPath();ctx.arc(X(p.t),Y(p.p),5,0,Math.PI*2);ctx.fill();}
+  else if(!focus&&candleBars?.length){
+    const slot=histW/Math.max(candleBars.length,1),width=Math.max(2,Math.min(9,slot*.62));
+    for(const bar of candleBars){
+      const x=X(bar.t),up=bar.c>=bar.o,colour=up?'#3dd68c':'#ff5d73';
+      ctx.strokeStyle=colour;ctx.fillStyle=colour;ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.moveTo(x,Y(bar.h));ctx.lineTo(x,Y(bar.l));ctx.stroke();
+      const top=Y(Math.max(bar.o,bar.c)),bottom=Y(Math.min(bar.o,bar.c));
+      ctx.fillRect(x-width/2,top,width,Math.max(1,bottom-top));
+    }
+  }
   else if(!focus){
     const up=points.at(-1).p>=(sessionReference?sessionReference.previous:points[0].p),colour=up?(isLight?'#306bcb':'#7aafff'):(isLight?'#c23d59':'#ff8b9d');
     if(sessionReference){const baselineY=Y(sessionReference.previous);ctx.save();ctx.strokeStyle=isLight?'#65758b':'#b7c9df';ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(pad.left,baselineY);ctx.lineTo(w-pad.right,baselineY);ctx.stroke();ctx.fillStyle=isLight?'#52647b':'#b7c9df';ctx.fillText('Provider previous close',pad.left+4,baselineY-6);ctx.restore();}
@@ -866,6 +930,7 @@ function drawChart(){
     }
     const p=points.at(-1);ctx.fillStyle=colour;ctx.beginPath();ctx.arc(X(p.t),Y(p.p),3.5,0,Math.PI*2);ctx.fill();
   }
+  if(window.Chart43)Chart43.paint(ctx,X,Y,points);
   if(E.chartHover!==null){
     const mx=E.chartHover;
     if(!focus&&mx<=divide){
@@ -879,7 +944,7 @@ function drawChart(){
     }else if(forecast && mx<=w-pad.right){
       const row=forecast.rows.reduce((best,r)=>Math.abs(FX(r.day)-mx)<Math.abs(FX(best.day)-mx)?r:best,forecast.rows[0]);
       const tip=$('overview-tooltip');tip.classList.remove('hidden');
-      tip.textContent=`SCENARIO, NOT OBSERVED · +${row.day} sessions · centre ${fmtUnit(E.selected,row.price)} · indicative ${fmtUnit(E.selected,row.low)}–${fmtUnit(E.selected,row.high)}`;
+      tip.textContent=`${forecast.kind==='model'?'MODEL':'SCENARIO'}, NOT OBSERVED · +${row.day} sessions · ${row.kind==='recorded'?'recorded close':'evaluated session'} ${fmtUnit(E.selected,row.price)} · band ${fmtUnit(E.selected,row.low)}–${fmtUnit(E.selected,row.high)}${forecast.interpolation&&forecast.interpolation.length?' · straight join between evaluated sessions':''}`;
       tip.style.left=Math.max(0,Math.min(mx-140,w-370))+'px';
       tip.style.top=Math.max(0,Y(row.price)-46)+'px';
     }else $('overview-tooltip').classList.add('hidden');
@@ -890,33 +955,17 @@ async function runForecast(){
   const id=++forecastRunId,sym=$('forecast-select').value;
   if(!sym)return;
   const pane=$('forecast-content');
-  pane.innerHTML='<div class="empty-state"><h3>Checking verified daily-close history and company headlines…</h3></div>';
-  if(!E.configured&&!E.massiveConfigured){pane.innerHTML='<div class="empty-state"><h3>Connect a historical provider first</h3></div>';return}
+  pane.innerHTML='<div class="empty-state"><h3>Checking the saved daily closes…</h3></div>';
   try{
-    const historic=await historicalFor(sym,'1Y',false);
+    const packet=await api('/api/v3/forecast61?symbol='+encodeURIComponent(sym));
     if(id!==forecastRunId||sym!==$('forecast-select').value)return;
-    if(historic.status!=='ok'||!historic.points?.length)throw new Error(historic.status==='entitlement'?
-      'Your data plan does not currently allow daily price history for this stock. Check Massive in Settings.':historic.message||'No recorded daily prices are available.');
-    const context=await forecastHeadlines(sym);
-    if(id!==forecastRunId||sym!==$('forecast-select').value)return;
-    const result=ChartResearch.model(historic.points,context.items,nowMs(),60);
-    if(!result)throw new Error('The model needs at least 45 daily closing prices spread over 55 calendar days. The latest price must be from the past 10 days.');
-    const validation5=ChartResearch.walkForward(historic.points,5);
-    const validation20=ChartResearch.walkForward(historic.points,20);
-    const metrics=[5,20,60].map(days=>({...result.rows[days],days}));
-    const news=result.sentiment;
-    const signal=news.used?news.score>0.15?'mild positive':news.score<-.15?'mild negative':'mixed / neutral':'no classified headline signal';
-    pane.innerHTML=`<div class="section-heading"><div><div class="section-tag">${historic.provider==='massive'?'MASSIVE HISTORICAL + FINNHUB NEWS':'FINNHUB HISTORY + NEWS'} / ${escapeHtml(sym)} / SCENARIOS</div><h2>Possible price ranges based on past data</h2></div><div class="small-note">Example price ranges · not guaranteed outcomes</div></div>
-      <div class="forecast-tiles">${metrics.map(r=>`<div class="forecast-tile"><small>${r.days} TRADING DAYS · MAIN ESTIMATE</small><strong>${fmtUnit(sym,r.price)}</strong><p>Estimated range: ${fmtUnit(sym,r.low)} – ${fmtUnit(sym,r.high)}</p></div>`).join('')}</div>
-      <div class="forecast-validation-head"><span>CHECKING PAST FORECASTS</span><small>Past forecasts compared with later closing prices · future accuracy is not guaranteed</small></div>
-      <div class="forecast-validation-grid">${[validation5,validation20].map((v,i)=>`<div class="forecast-validation-card"><span>${i?20:5}-SESSION TEST</span>${v?`<strong>${v.modelMAPE.toFixed(2)}% <small>model error</small></strong><p>Error from predicting no change: ${v.baselineMAPE.toFixed(2)}% · ${v.samples} separate past tests</p><em>${v.beatBaseline?'The model worked better in this small test':'Predicting no change worked at least as well'}</em>`:'<strong>Not enough past data</strong><p>More daily closing prices are needed to test this time period.</p>'}</div>`).join('')}</div>
-      <div class="surface forecast-explain"><strong>Data used and how it works</strong>
-      <p>${result.sampleSize} recorded ${historic.provider==='massive'?'Massive split-adjusted EOD':'Finnhub'} daily closes; latest ${fmtDateTime(result.anchor.t)}. The model uses price changes over 5, 20 and 60 trading days. Recent changes get more weight when measuring how much prices move around. Unstable trends have less influence. Short-term trends fade sooner than longer-term trends. ${escapeHtml(result.description)}</p>
-      <p><strong>Company news:</strong> ${context.available?`${news.used} different headlines from the past seven days with wording the tool can classify; ${news.positive} positive, ${news.negative} negative; ${signal}.`:'Company news is unavailable. No news-based changes are used.'} Headlines are grouped using simple keywords to add context. They do not change the price forecast. Headlines are not made up.</p>
-      <p><strong>Tests using only prices available at the time:</strong> ${[validation5,validation20].map(v=>v?`${v.horizon}-session: ${v.samples} separate past forecasts; model average price error ${v.modelMAPE.toFixed(2)}% compared with predicting no change: ${v.baselineMAPE.toFixed(2)}% (${v.beatBaseline?'better':'NOT better'} on these samples).`:`Not enough separate tests for this time period.`).join(' ')} Every test uses the same model rules. Good past results do not prove that future forecasts will be reliable.</p>
-      <p><strong>How to read the curve:</strong> The middle line combines the trend with historical comparisons when enough matches are available. It is not a path the share price is expected to follow exactly. If recent prices have been flat, the estimate may also be flat. The purple shading shows an example range, <strong>not</strong> a range proven to contain the future price 80% or 95% of the time. Company news adds context only.</p>
-      <p>These are estimates based on past prices. They are not live prices, investment advice or tested odds of what will happen. Company results, interest rates, the economy and unexpected events can make the range unreliable. The forecast skips weekends but does not account for each market holiday.</p>
-      <p>On Overview, the purple dashed line uses the same assumptions and shading to show uncertainty when enough history is available. The past-price line contains recorded prices only.</p></div>`;
+    if(packet.error)throw new Error(packet.error);
+    const cards=(packet.horizons||[]).map(row=>`<div class="forecast-validation-card"><span>${row.horizon}-SESSION</span><strong>${escapeHtml(row.status)}</strong><p>${row.modelErrorPP!=null?`Model ${row.modelErrorPP.toFixed(2)} pp · unchanged ${row.baselineErrorPP.toFixed(2)} pp · ${row.testCases} later tests`:'Not enough separate later tests.'}</p></div>`).join('');
+    const path=(packet.rows||[]).filter(row=>row.day>0).map(row=>`<div class="forecast-tile"><small>+${row.day} SESSIONS · EVALUATED</small><strong>${fmtUnit(sym,row.price)}</strong><p>Band ${fmtUnit(sym,row.low)} – ${fmtUnit(sym,row.high)}</p></div>`).join('')||'<div class="forecast-tile"><small>LEARNED PATH</small><strong>Withheld</strong><p>No horizon beat an unchanged price on the later tests.</p></div>';
+    pane.innerHTML=`<div class="section-heading"><div><div class="section-tag">${escapeHtml(packet.method||'')} / ${escapeHtml(sym)}</div><h2>${packet.status==='learned'?'Evaluated forecast path':'Learned path withheld'}</h2></div></div>
+      <div class="forecast-tiles">${path}</div>
+      <div class="forecast-validation-grid">${cards}</div>
+      <div class="surface forecast-explain"><p>${escapeHtml(packet.inputs||'')}</p><p>${escapeHtml(packet.trainingNote||'')} Observations ${packet.observations||0}, ${escapeHtml(packet.first||'—')} to ${escapeHtml(packet.anchorDate||'—')}.</p><p>${escapeHtml(packet.notice||'')}</p><p>${(packet.interpolation||[]).map(escapeHtml).join(' ')}</p><p>A typed company scenario stays separate from this price model. Issued forecast records are not replaced by this check. Count already saved: ${packet.issuedCount||0}.</p></div>`;
   }catch(e){
     if(id!==forecastRunId||sym!==$('forecast-select').value)return;
     pane.innerHTML=`<div class="empty-state"><span>⌁</span><h3>No forecast available</h3><p>${escapeHtml(e.message)}</p><p>Missing past prices are not made up. Check your Massive plan and request limit in Settings.</p></div>`;
@@ -963,7 +1012,7 @@ async function testMassive(){
 }
 async function saveToken(){let token=$('api-key').value.trim();try{await post('/api/token',{token});$('api-key').value='';E.configured=true;E.quotes.clear();E.quoteFailures.clear();E.quoteChecks.clear();E.trades.clear();E.verifiedAt=0;E.news=null;E.candles.clear();E.lastHistoryStatus='';E.lastQuoteError='';E.lastGoodQuoteAt=0;E.probe=null;E.fundamentals.clear();alertBanner('');renderAll();connectWS();await runDiagnostics();await autoQuoteCycle();loadNews();loadChart();toast('Finnhub token saved locally; check the connection result above')}catch(e){toast('Could not save token: '+e.message)}}
 async function clearToken(){try{await post('/api/token',{clear:true});stopWS();E.configured=false;E.quotes.clear();E.quoteFailures.clear();E.quoteChecks.clear();E.trades.clear();E.verifiedAt=0;E.news=null;E.candles.clear();E.lastHistoryStatus='';E.lastQuoteError='';E.probe=null;E.lastGoodQuoteAt=0;renderAll();toast('Saved token removed from this Mac')}catch(e){toast('Could not clear key: '+e.message)}}
-function attachEvents(){$('chart-forecast-focus').addEventListener('click',()=>{E.forecastFocus=!E.forecastFocus;E.chartHover=null;drawChart()});$('chart-session38').addEventListener('click',toggleSessionReplay);$('chart-refresh-saved').addEventListener('click',()=>{resetSessionReplay();E.heatmapWindow=null;if(['1H','1D'].includes(E.range)){E.range='1Y';document.querySelectorAll('#overview-ranges button').forEach(b=>b.classList.toggle('active',b.dataset.range==='1Y'));}E.candles.clear();loadChart(true,true)});setupHistoryImport();if(typeof PriceAlerts!=='undefined')PriceAlerts.setup();setupStockDirectory();setupMarketTabs();if(typeof setupResearchV18==='function')setupResearchV18();window.addEventListener('storage',e=>{if(e.key==='md-reborn-reports'&&typeof reportsOnView==='function')reportsOnView()});if(typeof setupResearchV17==='function')setupResearchV17();if(typeof setupV19==='function')setupV19();document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>changeView(b.dataset.view)));$('open-settings').addEventListener('click',()=>changeView('settings'));$('menu-toggle').addEventListener('click',()=>$('sidebar').classList.toggle('open'));$('overview-explore').addEventListener('click',()=>changeView('markets'));$('chart-expand').addEventListener('click',toggleExpandedChart);if(typeof tapeSetup==='function')tapeSetup();$('refresh-overview').addEventListener('click',()=>loadQuotes(E.watch.slice(0,6)));$('markets-refresh').addEventListener('click',()=>autoQuoteCycle());$('markets-search-focus').addEventListener('click',()=>{switchMarketsTab('explore');$('directory-search').focus()});$('company-reload').addEventListener('click',()=>{E.fundamentals.delete($('company-select').value);loadCompany()});$('company-select').addEventListener('change',()=>{if(typeof FinancialHealth==='undefined'||document.querySelector('#view-company .fh-legacy')?.open)loadCompany();else $('company-content').textContent='Open this section to load the selected company’s provider profile and ratios.';});$('forecast-select').addEventListener('change',()=>{forecastRunId++;$('forecast-content').innerHTML='<div class="empty-state"><h3>Select Calculate scenarios for this company</h3><p>Previous forecasts are cleared when changing stocks.</p></div>'});$('forecast-calculate').addEventListener('click',runForecast);$('chart-show-forecast').addEventListener('change',e=>{E.forecastEnabled=e.target.checked;E.chartForecast=null;if(E.forecastEnabled&&['1H','1D'].includes(E.range)){toast('Forecasts use verified daily closes. Showing the 1Y chart.');setChartRange('1Y')}else loadChart(E.forecastEnabled);});$('news-refresh').addEventListener('click',()=>loadNews(true));$('save-note').addEventListener('click',saveNote);$('export-notes').addEventListener('click',exportNotes);$('save-key').addEventListener('click',saveToken);$('massive-save-key').addEventListener('click',saveMassiveToken);$('massive-clear-key').addEventListener('click',clearMassiveToken);$('massive-test').addEventListener('click',testMassive);$('clear-key').addEventListener('click',clearToken);$('diagnostic-refresh').addEventListener('click',runDiagnostics);$('local-audit-run').addEventListener('click',runLocalAudit);$('export-workspace').addEventListener('click',exportWorkspace);$('import-workspace').addEventListener('change',e=>importWorkspace(e.target.files?.[0]));window.addEventListener('marketdesk:preference-saved',queueWorkspaceBackup);$('symbol-search').addEventListener('input',e=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>searchStocks(e.target.value),360)});document.addEventListener('click',e=>{const tab=e.target.closest('[data-market-tab-link]');if(tab){changeView('markets');switchMarketsTab(tab.dataset.marketTabLink);return}const research=e.target.closest('[data-stock-research]');if(research){openStockResearch(research.dataset.stockResearch);return}const add=e.target.closest('[data-add]');if(add){addStock(add.dataset.add,add.dataset.name);$('search-results').classList.add('hidden');$('symbol-search').value='';return}const rm=e.target.closest('[data-remove]');if(rm){removeStock(rm.dataset.remove);return}const sel=e.target.closest('[data-select]');if(sel){openStock(sel.dataset.select);return}const edit=e.target.closest('[data-editnote]');if(edit){let i=Number(edit.dataset.editnote),n=E.notes[i];if(!n)return;E.editIndex=i;$('note-title').value=n.title;$('note-thesis').value=n.thesis;$('note-risk').value=n.risk;$('note-evidence').value=n.evidence;toast('Editing saved note. Save to update it.');return}const del=e.target.closest('[data-deletenote]');if(del){E.notes.splice(Number(del.dataset.deletenote),1);saveJSON('md-reborn-notes',E.notes);renderNotes();return}let act=e.target.closest('[data-action]');if(act){changeView(act.dataset.action==='all-news'?'news':'markets');return}if(!e.target.closest('.search-panel'))$('search-results').classList.add('hidden')});document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('search-results').classList.add('hidden');if($('main-chart-panel').classList.contains('is-expanded'))toggleExpandedChart(false);if(typeof tapeEscape==='function')tapeEscape()}if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-select]')){e.preventDefault();openStock(e.target.dataset.select)}});document.querySelectorAll('#overview-ranges button').forEach(b=>b.addEventListener('click',()=>setChartRange(b.dataset.range)));let canvas=$('overview-chart'),hoverFrame=0;const queueHover=()=>{if(!hoverFrame)hoverFrame=requestAnimationFrame(()=>{hoverFrame=0;drawChart()})};canvas.addEventListener('mousemove',e=>{E.chartHover=e.clientX-canvas.getBoundingClientRect().left;queueHover()});canvas.addEventListener('mouseleave',()=>{E.chartHover=null;queueHover()});let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(drawChart,80)});window.addEventListener('beforeunload',()=>{if(backupTimer){clearTimeout(backupTimer);sendWorkspaceBackup()}stopWS()})}
+function attachEvents(){$('chart-forecast-focus').addEventListener('click',()=>{E.forecastFocus=!E.forecastFocus;E.chartHover=null;drawChart()});$('chart-session38').addEventListener('click',toggleSessionReplay);$('chart-refresh-saved').addEventListener('click',()=>{resetSessionReplay();E.heatmapWindow=null;if(['1H','1D'].includes(E.range)){E.range='1Y';document.querySelectorAll('#overview-ranges button').forEach(b=>b.classList.toggle('active',b.dataset.range==='1Y'));}E.candles.clear();loadChart(true,true)});setupHistoryImport();if(typeof PriceAlerts!=='undefined')PriceAlerts.setup();setupStockDirectory();setupMarketTabs();if(typeof setupResearchV18==='function')setupResearchV18();window.addEventListener('storage',e=>{if(e.key==='md-reborn-reports'&&typeof reportsOnView==='function')reportsOnView()});if(typeof setupResearchV17==='function')setupResearchV17();if(typeof setupV19==='function')setupV19();document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>changeView(b.dataset.view)));$('open-settings').addEventListener('click',()=>changeView('settings'));$('menu-toggle').addEventListener('click',()=>$('sidebar').classList.toggle('open'));$('overview-explore').addEventListener('click',()=>changeView('markets'));$('chart-expand').addEventListener('click',toggleExpandedChart);if(typeof tapeSetup==='function')tapeSetup();$('refresh-overview').addEventListener('click',()=>loadQuotes(E.watch.slice(0,6)));$('markets-refresh').addEventListener('click',()=>autoQuoteCycle());$('markets-search-focus').addEventListener('click',()=>{switchMarketsTab('explore');$('directory-search').focus()});$('company-reload').addEventListener('click',()=>{E.fundamentals.delete($('company-select').value);loadCompany()});$('company-select').addEventListener('change',()=>{const sym=$('company-select').value;if(safeSymbol(sym)&&sym!==E.selected)setSelected(sym);if(typeof FinancialHealth==='undefined'||document.querySelector('#view-company .fh-legacy')?.open)loadCompany();else $('company-content').textContent='Open this section to load the selected company’s provider profile and ratios.';});$('forecast-select').addEventListener('change',()=>{const sym=$('forecast-select').value;if(safeSymbol(sym)&&sym!==E.selected)setSelected(sym);forecastRunId++;$('forecast-content').innerHTML='<div class="empty-state"><h3>Select Calculate scenarios for '+escapeHtml(sym||'this company')+'</h3><p>Previous forecasts are cleared when changing stocks. The chart and research views use this same ticker.</p></div>'});$('forecast-calculate').addEventListener('click',runForecast);$('chart-show-forecast').addEventListener('change',e=>{E.forecastEnabled=e.target.checked;E.chartForecast=null;if(E.forecastEnabled&&['1H','1D'].includes(E.range)){toast('Forecasts use verified daily closes. Showing the 1Y chart.');setChartRange('1Y')}else loadChart(E.forecastEnabled);});$('news-refresh').addEventListener('click',()=>loadNews(true));$('save-note').addEventListener('click',saveNote);$('export-notes').addEventListener('click',exportNotes);$('save-key').addEventListener('click',saveToken);$('massive-save-key').addEventListener('click',saveMassiveToken);$('massive-clear-key').addEventListener('click',clearMassiveToken);$('massive-test').addEventListener('click',testMassive);$('clear-key').addEventListener('click',clearToken);$('diagnostic-refresh').addEventListener('click',runDiagnostics);$('local-audit-run').addEventListener('click',runLocalAudit);$('export-workspace').addEventListener('click',exportWorkspace);$('import-workspace').addEventListener('change',e=>importWorkspace(e.target.files?.[0]));window.addEventListener('marketdesk:preference-saved',queueWorkspaceBackup);$('symbol-search').addEventListener('input',e=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>searchStocks(e.target.value),360)});document.addEventListener('click',e=>{const tab=e.target.closest('[data-market-tab-link]');if(tab){changeView('markets');switchMarketsTab(tab.dataset.marketTabLink);return}const research=e.target.closest('[data-stock-research]');if(research){openStockResearch(research.dataset.stockResearch);return}const add=e.target.closest('[data-add]');if(add){addStock(add.dataset.add,add.dataset.name);$('search-results').classList.add('hidden');$('symbol-search').value='';return}const rm=e.target.closest('[data-remove]');if(rm){removeStock(rm.dataset.remove);return}const sel=e.target.closest('[data-select]');if(sel){openStock(sel.dataset.select);return}const edit=e.target.closest('[data-editnote]');if(edit){let i=Number(edit.dataset.editnote),n=E.notes[i];if(!n)return;E.editIndex=i;$('note-title').value=n.title;$('note-thesis').value=n.thesis;$('note-risk').value=n.risk;$('note-evidence').value=n.evidence;toast('Editing saved note. Save to update it.');return}const del=e.target.closest('[data-deletenote]');if(del){E.notes.splice(Number(del.dataset.deletenote),1);saveJSON('md-reborn-notes',E.notes);renderNotes();return}let act=e.target.closest('[data-action]');if(act){changeView(act.dataset.action==='all-news'?'news':'markets');return}if(!e.target.closest('.search-panel'))$('search-results').classList.add('hidden')});document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('search-results').classList.add('hidden');if($('main-chart-panel').classList.contains('is-expanded'))toggleExpandedChart(false);if(typeof tapeEscape==='function')tapeEscape()}if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-select]')){e.preventDefault();openStock(e.target.dataset.select)}});document.querySelectorAll('#overview-ranges button').forEach(b=>b.addEventListener('click',()=>setChartRange(b.dataset.range)));let canvas=$('overview-chart'),hoverFrame=0;const queueHover=()=>{if(!hoverFrame)hoverFrame=requestAnimationFrame(()=>{hoverFrame=0;drawChart()})};canvas.addEventListener('mousemove',e=>{E.chartHover=e.clientX-canvas.getBoundingClientRect().left;queueHover()});canvas.addEventListener('mouseleave',()=>{E.chartHover=null;queueHover()});let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(drawChart,80)});window.addEventListener('beforeunload',()=>{if(backupTimer){clearTimeout(backupTimer);sendWorkspaceBackup()}stopWS()})}
 async function init(){await restoreWorkspace();const stored=savedJSON('md-reborn-watch',DEFAULT_STOCKS);E.watch=normaliseWatchlist(stored);if(!E.watch.includes(E.selected))E.selected=E.watch[0]||'';Object.assign(E.names,savedJSON('md-reborn-names',{}));E.notes=Array.isArray(savedJSON('md-reborn-notes',[]))?savedJSON('md-reborn-notes',[]):[];const hour=new Date().getHours();$('greeting-time').textContent=hour<12?'morning':hour<17?'afternoon':'evening';setInterval(()=>{$('clock').textContent=new Date().toLocaleTimeString('en-GB',{timeZone:'UTC',hour:'2-digit',minute:'2-digit',second:'2-digit'})+' UTC';syncConnectionUI();refreshWatchFreshness()},1000);attachEvents();renderAll();renderNotes();drawChart();loadChart();E.initialised=true;window.dispatchEvent(new Event('marketdesk:ready'));if(typeof V3!=='undefined')changeView('home');nextQuoteCycleAt=nowMs()+QUOTE_CYCLE_MS;setupTokenStatus();setInterval(()=>{nextQuoteCycleAt=nowMs()+QUOTE_CYCLE_MS;autoQuoteCycle()},QUOTE_CYCLE_MS);setInterval(()=>{renderOverview();renderMarkets();updateTicker()},35000)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 

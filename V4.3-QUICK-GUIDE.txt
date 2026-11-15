@@ -1,0 +1,67 @@
+The purple line now follows the chronological price model and is withheld when that model loses to an unchanged price. Settings has a labelled guided demo.
+MARKET DESK REBORN 6.8.0
+The rail is My Desk, Explore, Investigate and My Research. All tools lists every older screen. V6.8-WHERE.txt says where each one moved.
+Decision practice is on Live Tape. It shows coverage first, then reveals prices and timed records only when the replay clock reaches them.
+Take-Two accounts are read from the saved SEC company facts when an update has been retrieved. A headline is labelled company reporting or broader market coverage, and the reason is shown.
+What changed follows a company or a saved research entry and compares later saved announcements, filings, graded forecasts and alerts. The original thesis stays editable in the journal.
+Intelligence stays in a panel beside the chart. Closing it keeps the answer. A changed page is named before the next question uses it.
+Ask Intelligence on a chart, scan, portfolio, scenario or forecast uses that screen’s saved calculation. A save waits for confirmation.
+
+The company chart draws saved closes before the forecast check. A daily chart is not reloaded by each trade. Hourly and 24-hour charts add a recorded trade without moving a historical view.
+Company has a Results review for saved SEC revenue and net profit. A missing filing stays missing. Net margin is not called operating profit.
+Company Comparison can show four linked charts. Intelligence can investigate the latest completed weekly move and trace each step to its source. Settings can inspect saved prices before any repair. A saved scan opens the company chart and Review this move. Comparison, the simulator and a research pack follow that company. Five short tasks are in V6.0-TRY-THIS.txt. The decisions and measurements are in V6.0-DEVELOPMENT-LOG.md.
+Saved workspaces are in the top bar: Gaming companies, Crypto and Daily review. Switching opens the saved companies and chart period. Unsaved report wording stays on the page. Resize panels is beside the chart, and Reset layout clears a custom width. On a narrow window the panels stack.
+Chart annotations are on the chart tools: Level, Trend, Note and Measure. Measure shows the percentage change and the time between two recorded points. Undo and Remove are next to them. They are saved with the company and copied into a research pack.
+Coverage overview is at the top of Market Heatmap. Stocks use a completed New York session. Crypto uses UTC days. The counts, the dates and the exclusions are shown. A company name opens its chart or comparison.
+Ask Intelligence: What changed in this workspace?
+
+MARKET DESK REBORN 5.9.0
+Company research packs are at the top of Research Reports. Choose Take-Two or another company and the sections that have saved evidence. Save an edition, edit the overview wording, then make a new edition when you want an update. Export HTML and use the browser print dialog to save a PDF. The saved edition is in the local database backup.
+
+Portfolio Stress Lab is on the practice portfolio page. Type a percentage for one holding, one sector, or every holding. Cash does not change. Replay applies each holding's saved past return to today's allocation and shows any missing dates. A common covered period is offered when one exists. Save keeps the test apart from the ledger. Ask Intelligence: What drives this portfolio result?
+
+Crypto Forecast Lab trains on completed Coinbase USD candles. Bitcoin and Ethereum are first. Another supported market is trained when its saved candles are continuous enough. Horizons are 1 hour, 24 hours and 7 days, in UTC. A forecast is saved only when it beats both an unchanged price and the average of the four earlier horizon returns on later dates. Open it from Crypto, or from Forecast Lab. Ask Intelligence: How has this crypto model performed?
+
+Crypto adds Solana, XRP, Dogecoin, Cardano, Chainlink, Avalanche and Litecoin beside Bitcoin and Ethereum. Each market is a Coinbase Exchange USD pair. Search, favourites and 24-hour or 7-day sorting use saved candles. Tiles open that market. Price alerts use the Coinbase trade and do not repeat the same trade after a reconnect. Followed markets are collected first. Candles are UTC and are not skipped for a New York holiday.
+
+Click a chart point or a heatmap tile to open Review this move. It uses saved daily closes and saved events. It does not call a paid model.
+Learning & offline compares the current forecast with a volatility adjustment and an unchanged price. A forecast is saved only when it beats the unchanged price on a later test.
+The practice portfolio shows cost, value, gains, allocation and a SPY comparison from saved records.
+Price Alerts can use a level, a crossing, a percent move from a saved close, or an unusually large completed session. The evidence card stays saved. The local server checks alerts while it is running, including when the browser tab is closed. Replay prices are not checked.
+Ask Your Chart, inside Intelligence, answers a move, a SPY comparison, announcements during that move, and the saved forecast scorecard. The dates above the question are the dates the answer covers. A saved answer keeps its original evidence.
+Research journal entries are saved from a chart, Move Review, an alert or an Intelligence answer. The original prices stay with the idea. They are included in the workspace backup with your older notes and projects.
+V5 keeps the selected company and dates available to the chart, Move Review, alerts, Intelligence and the journal. Since your last visit, the data status and Settings backup use saved records. An optional local language model is not required.
+V5.5 adds the Market Scanner on the Stock Screener. Presets cover a large daily move, a close above its recent average, and a new closing high. Historical thresholds use earlier observations only. Save a scan before asking why a company matched. New matches can raise one alert each, and a saved scan can run with the background schedule.
+
+V5.4 adds Strategy Lab on Chart Indicators. Describe a moving-average cross or a price breakout, then test it on saved daily bars. Orders fill at the next saved open. Costs, slippage, gaps and split-sized jumps stay visible. A later date range uses the locked rule. Saved experiments stay separate from the practice portfolio.
+
+V5.3 adds the Company Simulator at the top of Valuation. Saved annual figures stay on the left of a five-year simulation. Year 5 uses the enterprise multiple. What would it take solves one assumption from a share price you type. Cautious, central and optimistic cases are conditional calculations. Forecast Lab stays separate. Save a scenario before asking what changed or which assumption has the largest effect.
+V5.2 compares up to four directory companies on Comparison. Take-Two, Roblox, Unity and Sony are the supported game names. The chart starts each company at 100 on the same completed sessions. Saved comparisons reopen offline, and an updated view reads the records saved now. Operating margin is shown only when the saved statements support it.
+V5.1 adds Overnight research on the home page and in Settings. Choose followed companies, collection hours and a daily research time. Pause, resume or use quiet mode there. Scheduled work runs only while the Mac is awake and Market Desk is running. Closing the browser tab does not stop it. Enable Background at Login.command can start the server at login. The morning report shows a gap when the Mac was asleep or the server was stopped, and it cannot tell those apart.
+
+HOW TO OPEN IT
+1. Double-click Start Market Desk.command.
+2. Leave the Terminal window open. Closing the browser tab does not stop Market Desk. Control+C in Terminal does.
+3. The page opens at http://127.0.0.1:8765. If that address is already this version, starting it again only reopens the page.
+
+WHAT YOU SEE FIRST
+Home is a chart-first dashboard. The selected stock, its price, today’s move and the data status sit above the chart. The watchlist is on the right, or underneath on a narrow window. The saved briefing is lower down.
+Company keeps that company and timeframe. Overview, Events, Financials and Research are tabs above the chart.
+Standard / Professional is at the top and is saved on this Mac. Professional is the workstation: watchlist on the left, chart in the centre, trades and company detail on the right. Collapse either side. On a narrow window those panels become Chart, Watchlist and Trades tabs.
+Switching mode keeps the selected stock, timeframe, zoom and replay position.
+
+CHART AND REPLAY
+Move across the chart for the recorded time and price. Drag to pan, scroll or pinch to zoom, or use Pin point, Reset view and Back to live. Arrow keys pan, plus and minus zoom, 0 resets, and Home returns to live.
+Open Live Tape and press Load saved session. Play, pause, step or change the speed. The chart, trades and timed events stay together. Prices and events stay hidden until the replay clock reaches them, including the chart scale. Date-only events are listed separately and marked timing unknown. Replay does not arm or trigger price alerts.
+
+WHERE EVERYTHING IS
+Home — selected stock, chart, watchlist, then the saved briefing.
+Company — chart, then Overview, Events, Financials or Research.
+Markets — watchlists and the stock browser.
+Live Tape — recorded trades and Market Replay.
+Settings — connections, appearance, Standard / Professional, overnight research, backup and checks.
+All tools — heatmap, crypto, screener, news, economy, intelligence, compare, indicators, valuation, forecasts, forecast results, learning and the scorecard, calendar, alerts, portfolio, research projects, reports, and sources.
+
+Saved watchlists, alerts, notes, forecasts and appearance stay in ~/.marketdesk-reborn. This copy does not contain keys or that private folder.
+
+Screenshots of the same screens before and after the layout change are in release-screenshots/.

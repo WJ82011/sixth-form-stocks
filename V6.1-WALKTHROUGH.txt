@@ -1,0 +1,9 @@
+V6.1 WALKTHROUGH
+
+Open http://127.0.0.1:8765/ and choose Take-Two. On 14 November 2026 the saved closes did not support a purple line. The sentence under the chart says the learned path is withheld and the unchanged-price baseline stays in place. The same check for AMD and Apple also withheld the line. Each company had 500 usable closes ending 13 November 2026. Horizons of 1, 5 and 20 sessions were all closer, or no closer, for an unchanged price than for the model.
+
+Forecast Lab uses that same check. A typed company scenario is still separate.
+
+Settings, Start guided demo, shows Demo Co with sample prices, one sample event, a sample comparison and a withheld sample forecast. Leave demo clears that panel. Those figures are not written into the price database.
+
+The engineering notes are in ENGINEERING-NOTEBOOK.md. Tester tasks are in TESTER-TASKS.txt and are still pending.

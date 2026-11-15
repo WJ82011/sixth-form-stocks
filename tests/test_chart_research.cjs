@@ -14,6 +14,11 @@ assert.equal(C.model(sample.slice(-44),[],now,20),null);
 assert.equal(C.model(gen(90,60000),[],now,20),null,'Intraday ticks must not impersonate daily closes');
 assert.equal(C.model(sample.map(x=>({...x,t:x.t-50*day})),[],now,20),null,'Outdated observations cannot generate current forecast');
 assert.equal(C.coverage(gen(20),now-7*day,now).count,6);
+const label=C.describeCoverage({freshness:'saved',complete:false,source:'Massive',asOf:Date.UTC(2026,10,6),tradingGapCount:1,closureCount:1,fillable:false,splitNote:''});
+assert.match(label,/Saved · incomplete · Massive/);
+assert.match(label,/1 trading-hour gap/);
+assert.match(label,/1 scheduled closure/);
+assert.match(label,/Free feed cannot fill these gaps/);
 const dedup=C.normaliseDaily([...sample,{...sample[0],p:101},{t:now-4*day,p:-20},{t:now+30*day,p:50}],now);
 assert.equal(dedup.length,150);
 const headlines=[{datetime:Math.floor((now-day)/1000),headline:'Company raises guidance after strong demand'},

@@ -1,0 +1,17 @@
+MARKET DESK 6.7.0 VERIFICATION
+15 November 2026. Controlled figures are test inputs. The Apple session is saved trades on this Mac.
+
+PREVIOUS RELEASE
+Take-Two remains CIK 0000946581 with the saved SEC company facts from V6.6. Event tests still pass: a title that names the company stays third-party reporting, and a title that does not is broader market coverage. The inclusion reason is still shown.
+
+CONTROLLED SESSION
+Prices 100, then 101, then 180. A timed filing sits between them. A date-only notice has no publication time. Before the filing, the response contains neither 180 nor the filing title nor the date-only title. At the filing, the title is included and 180 is not. The high stays 101. Ending the session reveals 180. A decision saved at the first price waits for the review time. The return is then 80%. The original expectation is unchanged after a reflection and after restart. Restarting hides the later return again. Intelligence refuses a full review while the session is open and does not include 180. After the session ends, the review names 180 and says it is after the session.
+
+SAVED SESSION ON THIS MAC
+Apple, 13 November 2026. Coverage before the prices: 4,000 retained trades, 5 gaps, 49 timed records. The practice list keeps the latest 4,000 trades, so this is not the whole day. Begin showed only the first clock, 13:50 New York, high and low 358.3, with 23 later records hidden. One step revealed 358.325. The chart said replay is showing only prices reached so far. The review said the later return was not calculated. Restart returned to 358.3. Switching to AMD paused Apple and did not put the practice prices on that chart. Standard was restored.
+
+CHECKS
+671 tests passed, three times. Both display modes were opened and the stored edition was left as signal.
+
+LIMITS
+A record with no publication time is counted and left out. It is not treated as known. Operating profit, share count and a cause are still not invented. Take-Two was not the tape example because this check used Apple, which has the retained trades. The five tester tasks still have no result.
