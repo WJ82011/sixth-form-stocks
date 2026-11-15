@@ -123,7 +123,7 @@ const Shell43=window.Shell43=(()=>{
     if(view==='company')return document.getElementById('company43-chart');
     return null;
   }
-  document.addEventListener('DOMContentLoaded',()=>{
+  const boot=()=>{
     ensure();
     place();
     document.body.addEventListener('click',event=>{
@@ -134,7 +134,8 @@ const Shell43=window.Shell43=(()=>{
     const views=new MutationObserver(place);
     for(const view of document.querySelectorAll('.view'))views.observe(view,{attributes:true,attributeFilter:['class']});
     setInterval(()=>{if(document.visibilityState==='visible')paint()},2000);
-  });
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
   window.addEventListener('marketdesk:edition-change',()=>setTimeout(place,0));
   return {place,chartSlot,companyTab,paint};
 })();

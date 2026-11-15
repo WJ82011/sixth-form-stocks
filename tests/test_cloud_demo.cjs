@@ -33,6 +33,8 @@ for (const needle of [
 }
 assert.ok(fs.readFileSync(path.join(root, 'site/index.html'), 'utf8').includes('cloud-host.js'));
 assert.ok(fs.readFileSync(path.join(root, 'site/index.html'), 'utf8').includes('release.js'));
+assert.ok(fs.readFileSync(path.join(root, 'site/index.html'), 'utf8').includes('view-loader.js'));
+assert.ok(fs.existsSync(path.join(root, 'site/stock-directory.json')));
 const release = fs.readFileSync(path.join(root, 'site/release.js'), 'utf8');
 assert.ok(release.includes("version = '6.8.0'"), 'release.js version');
 assert.ok(!fs.readFileSync(path.join(root, 'site/index.html'), 'utf8').includes('Market Desk<span>4.3</span>'));

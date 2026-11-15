@@ -1,6 +1,8 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert/strict'),path=require('path');
 const nodes=new Map();function el(id){if(!nodes.has(id))nodes.set(id,{value:'',textContent:'',innerHTML:'',disabled:false,classList:{add(){},remove(){}}});return nodes.get(id);}
 const ctx={document:{readyState:'loading',addEventListener(){},getElementById:el},console,URL,Date,Math,Map,Set,JSON,Object,Number,String,Array,Promise};vm.createContext(ctx);vm.runInContext(fs.readFileSync(path.join(__dirname,'../site/app.js'),'utf8'),ctx);const run=s=>vm.runInContext(s,ctx);
+const directory=JSON.parse(fs.readFileSync(path.join(__dirname,'../site/stock-directory.json'),'utf8'));
+run(`applyStockDirectory(${JSON.stringify(directory)})`);
 assert.equal(run('STOCK_DIRECTORY.length'),316);assert.equal(run('new Set(STOCK_DIRECTORY.map(x=>x.symbol)).size'),316);assert.equal(run('new Set(STOCK_DIRECTORY.map(x=>x.category)).size'),15);
 assert(run("STOCK_DIRECTORY.every(x=>safeSymbol(x.symbol)&&x.name&&x.listingName&&x.exchange&&x.currency==='USD'&&!('price' in x))"));
 assert.equal(run("directoryMatches('','Games').length"),4);assert.equal(run("directoryMatches('Rockstar','Games')[0].symbol"),'TTWO');assert.equal(run("directoryMatches('','Banking & finance').length"),24);assert.equal(run("directoryMatches('zzzxxyy').length"),0);assert.equal(run("localStockMatches('V')[0].symbol"),'V');assert.equal(run("localStockMatches('SONY')[0].symbol"),'SONY');

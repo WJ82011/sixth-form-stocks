@@ -209,7 +209,8 @@ const Look43=window.Look43=(()=>{
     if((document.body.dataset.edition||'')+'|'+(E?.watch||[]).join(',')!==heatKey){heatKey=(document.body.dataset.edition||'')+'|'+(E?.watch||[]).join(',');paintHeat()}
     if((document.body.dataset.edition||'')+'|'+E?.selected!==tapeKey){tapeKey=(document.body.dataset.edition||'')+'|'+E?.selected;paintTape()}
   }
-  document.addEventListener('DOMContentLoaded',()=>{ensure();refresh();setInterval(()=>{if(document.visibilityState==='visible')refresh()},4000)});
+  const start=()=>{ensure();refresh();setInterval(()=>{if(document.visibilityState==='visible')refresh()},4000)};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
   window.addEventListener('marketdesk:edition-change',()=>setTimeout(refresh,0));
   return {candleBars,refresh};
 })();
