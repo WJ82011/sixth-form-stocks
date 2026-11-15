@@ -18,7 +18,6 @@
     '/desk.js?v=4.0.0',
     '/v3.js?v=4.6.0',
     '/desk50.js?v=6.5.0',
-    '/desk61.js?v=6.4.1',
     '/overview60.js?v=6.0.0b',
     '/workspace60.js?v=6.0.0b',
     '/annotate60.js?v=6.0.0c',
@@ -28,19 +27,12 @@
     '/practice67.js?v=6.7.0',
     '/events42.js?v=6.6.0',
     '/v43.js?v=4.3.14',
-    '/earnings62.js?v=6.2.0b',
-    '/projects32.js?v=4.0.0',
-    '/briefing33.js?v=4.0.0',
-    '/analyst34.js?v=4.0.0',
   ];
 
   const BOOT_STYLES = [
-    '/desk61.css?v=6.0.0e',
+    '/desk.css?v=4.0.0',
     '/design.css?v=4.0.0',
     '/v3.css?v=4.6.0',
-    '/projects32.css?v=4.0.0',
-    '/briefing33.css?v=4.0.0',
-    '/analyst34.css?v=4.0.0',
   ];
 
   const BUNDLES = {
@@ -75,12 +67,12 @@
       styles: [],
     },
     company: {
-      scripts: ['/financial-health.js?v=4.0.0'],
+      scripts: ['/financial-health.js?v=4.0.0', '/earnings62.js?v=6.2.0b'],
       styles: ['/financial-health.css?v=4.0.0'],
     },
     comparison: {
-      scripts: ['/compare.js', '/compare52.js?v=5.2.0'],
-      styles: [],
+      scripts: ['/compare.js', '/compare52.js?v=5.2.0', '/desk61.js?v=6.4.1'],
+      styles: ['/desk61.css?v=6.0.0e'],
     },
     'forecast-lab': {
       scripts: ['/v19-models.js', '/v19.js'],
@@ -120,7 +112,7 @@
     },
     settings: {
       scripts: ['/showcase61.js?v=6.1.0b'],
-      styles: [],
+      styles: ['/desk61.css?v=6.0.0e'],
     },
     markets: {
       scripts: [],
@@ -228,7 +220,7 @@
   async function boot() {
     if (bootPromise) return bootPromise;
     bootPromise = (async () => {
-      for (const href of BOOT_STYLES) await loadStyle(href);
+      await Promise.all(BOOT_STYLES.map(loadStyle));
       for (const src of BOOT_SCRIPTS) await loadScript(src);
       if (new URLSearchParams(location.search).get('smoke') === '431') await loadBundle('smoke');
       if (typeof requestIdleCallback === 'function') {

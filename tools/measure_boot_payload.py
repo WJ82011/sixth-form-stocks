@@ -51,13 +51,18 @@ def main():
     boot_js = sum(file_bytes(s) for s in boot_scripts)
     boot_css = sum(file_bytes(s) for s in boot_styles)
     app_js = file_bytes("/app.js")
+    snapshot = file_bytes("/demo/snapshot.json")
+    directory = file_bytes("/stock-directory.json")
     print("index.html script tags:", len(scripts), html_js, "bytes")
-    print("index.html stylesheet tags:", len(styles), html_css, "bytes")
+    print("index.html blocking stylesheet tags:", len(styles), html_css, "bytes")
     print("view-loader boot scripts:", len(boot_scripts), boot_js, "bytes")
     print("view-loader boot styles:", len(boot_styles), boot_css, "bytes")
     print("app.js deferred:", app_js, "bytes")
+    print("demo snapshot (async, not in sync boot path):", snapshot, "bytes")
+    print("stock directory (parallel fetch):", directory, "bytes")
     print("Estimated first-paint JS:", html_js + boot_js + app_js, "bytes")
     print("Estimated first-paint CSS:", html_css + boot_css, "bytes")
+    print("Estimated blocking head CSS only:", html_css, "bytes")
 
 
 if __name__ == "__main__":

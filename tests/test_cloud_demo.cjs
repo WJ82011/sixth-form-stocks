@@ -32,6 +32,9 @@ for (const needle of [
   assert.ok(shim.includes(needle), `shim routes ${needle}`);
 }
 assert.ok(fs.readFileSync(path.join(root, 'site/index.html'), 'utf8').includes('cloud-host.js'));
+const cloud = fs.readFileSync(path.join(root, 'site/cloud-host.js'), 'utf8');
+assert.ok(!cloud.includes('XMLHttpRequest'), 'demo snapshot must not use sync XHR on the main thread');
+assert.ok(cloud.includes('whenSnapshotReady'), 'demo host exposes async snapshot readiness');
 assert.ok(fs.readFileSync(path.join(root, 'site/index.html'), 'utf8').includes('release.js'));
 assert.ok(fs.readFileSync(path.join(root, 'site/index.html'), 'utf8').includes('view-loader.js'));
 assert.ok(fs.readFileSync(path.join(root, 'site/index.html'), 'utf8').includes('demo-wiring.js'));

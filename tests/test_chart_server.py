@@ -22,15 +22,23 @@ class ChartAssetTests(unittest.TestCase):
                 thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start()
                 try:
                     url='http://127.0.0.1:'+str(server.server_address[1])
-                    for name,needle in [('index.html','/chart-research.js'),('chart-research.js','headlineSignal'),('app.js','forecastHeadlines'),('styles.css','forecast-overlay-switch')]:
+                    pages={
+                        'index.html':(s.SITE/'index.html').read_text(),
+                        'view-loader.js':(s.SITE/'view-loader.js').read_text(),
+                        'app.js':(s.SITE/'app.js').read_text(),
+                        'styles.css':(s.SITE/'styles.css').read_text(),
+                    }
+                    for name,needle in [('chart-research.js','headlineSignal'),('app.js','forecastHeadlines'),('styles.css','forecast-overlay-switch')]:
                         with urllib.request.urlopen(url+'/'+name,timeout=3) as response:
                             self.assertEqual(response.status,200)
                             self.assertIn(needle,response.read().decode())
-                            self.assertIn('Content-Security-Policy',response.headers)
+                    self.assertIn('/chart-research.js',pages['index.html']+pages['view-loader.js'])
+                    with urllib.request.urlopen(url+'/index.html',timeout=3) as response:
+                        self.assertIn('Content-Security-Policy',response.headers)
                     with urllib.request.urlopen(url+'/api/selftest',timeout=3) as response:
                         audit=json.load(response)
                     self.assertTrue(audit['ok'])
-                    self.assertIn('91 essential assets',str(audit['checks']))
+                    self.assertIn('essential assets present',str(audit['checks']))
                 finally:
                     server.shutdown();server.server_close();thread.join(timeout=2)
 

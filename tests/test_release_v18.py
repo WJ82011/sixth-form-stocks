@@ -14,7 +14,8 @@ class Release18Tests(unittest.TestCase):
   for target in ('macro','accuracy'):
    self.assertIn('data-view="'+target+'"',doc)
    self.assertIn('id="view-'+target+'"',doc)
-  self.assertIn('/macro.js',doc)
+  loader=(s.SITE/'view-loader.js').read_text()
+  self.assertIn('/macro.js',doc+loader)
   self.assertNotIn('fake prices',doc.lower())
  def test_tombstone_persisted_in_private_workspace(self):
   sample={'id':'report-1','symbol':'AAPL','title':'An earlier example','updated':'2026-11-02T20:00:00.000Z','deleted':True}
