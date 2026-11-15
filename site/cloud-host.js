@@ -11,6 +11,18 @@
   const demoMode = (forceDemo || isVercel) && !localPython && !forceLocal;
   if (!demoMode) return;
 
+  window.Desk =
+    window.Desk ||
+    {
+      selected() {},
+      memory() {},
+      reload() {},
+      historyChanged() {},
+      chartMount() {
+        return document.getElementById('desk-chart-mount');
+      },
+    };
+
   let snapshot = null;
   try {
     const xhr = new XMLHttpRequest();
@@ -630,8 +642,20 @@
     bind('top-status', 'DEMO DATA');
     bind('side-identity-tagline', 'PORTFOLIO ADMISSIONS DEMO');
     bind('desk-session-label', 'SAMPLE DATA · NOT LIVE');
+    const deskLocal = document.querySelector('.desk-local');
+    if (deskLocal) deskLocal.textContent = 'Portfolio demo · bundled snapshot';
+    bind('desk-edition-label', 'DEMO / 01');
+    bind('preferences-state', 'DEMO · BROWSER ONLY');
     const overline = document.querySelector('.top-location-overline');
     if (overline) overline.innerHTML = 'PORTFOLIO DEMO <i>◆</i> RESEARCH DESK';
+    const ribbonRight = document.querySelector('.desk-ribbon-right');
+    if (ribbonRight && !ribbonRight.dataset.demoRibbon) {
+      ribbonRight.dataset.demoRibbon = '1';
+      const session = document.getElementById('desk-session-label');
+      ribbonRight.innerHTML =
+        '<span class="ribbon-diamond">◆</span> LABELLED SNAPSHOT · NOT LIVE MARKET DATA <span class="ribbon-divider"></span>' +
+        (session ? session.outerHTML : '<span id="desk-session-label">SAMPLE DATA · NOT LIVE</span>');
+    }
     const ticker = document.querySelector('.ticker-placeholder');
     if (ticker) ticker.textContent = 'Sample watchlist quotes from the bundled snapshot';
     const mast = document.querySelector('.masthead-caption');

@@ -40,7 +40,7 @@
       :'The demo uses bundled sample figures. Your saved prices and notes stay where they are.';
     const panel=document.createElement('section');
     panel.className='surface desk61'; panel.id='showcase61';
-    panel.innerHTML='<h2>Project showcase</h2><p id="showcase61-intro">'+intro+'</p><div class="desk61-row"><button type="button" class="primary-btn" id="showcase61-demo">Start guided demo</button><button type="button" class="ghost-btn" id="showcase61-exit">Leave demo</button></div><div id="showcase61-stage"></div><h2>Engineering notebook</h2><div id="showcase61-log"></div><label>Your explanation<textarea id="showcase61-own" rows="3" placeholder="Add what you want to say in your own words"></textarea></label><button type="button" class="ghost-btn" id="showcase61-add">Save my note</button><h2>Tester tasks</h2><ol id="showcase61-tasks"></ol><label>What a tester reported<textarea id="showcase61-feed" rows="3"></textarea></label><button type="button" class="ghost-btn" id="showcase61-save-feed">Save feedback</button><p id="showcase61-feed-list" class="desk61-note"></p>';
+    panel.innerHTML='<h2>Admissions walkthrough</h2><p id="showcase61-intro">'+intro+'</p><div class="desk61-row"><button type="button" class="primary-btn" id="showcase61-demo">Start guided demo</button><button type="button" class="ghost-btn" id="showcase61-exit">Leave demo</button></div><p class="showcase61-progress" id="showcase61-progress" hidden aria-hidden="true"><i id="showcase61-progress-bar" style="width:0%"></i></p><div id="showcase61-stage"></div><h2>Engineering notebook</h2><div id="showcase61-log"></div><label>Your explanation<textarea id="showcase61-own" rows="3" placeholder="Add what you want to say in your own words"></textarea></label><button type="button" class="ghost-btn" id="showcase61-add">Save my note</button><h2>Tester tasks</h2><ol id="showcase61-tasks"></ol><label>What a tester reported<textarea id="showcase61-feed" rows="3"></textarea></label><button type="button" class="ghost-btn" id="showcase61-save-feed">Save feedback</button><p id="showcase61-feed-list" class="desk61-note"></p>';
     document.getElementById('view-settings').insertBefore(panel, document.getElementById('view-settings').firstChild);
     const log=document.getElementById('showcase61-log');
     ENTRIES.concat(notes().map(item=>({date:item.date,status:'your note',text:item.text}))).forEach(item=>{
@@ -65,20 +65,36 @@
       ()=>DEMO.investigation+' This is the end. Leaving the demo does not change the company on your chart.'
     ];
     let step=0;
+    const finishCopy=cloudDemo()
+      ?'Walkthrough complete. Bundled snapshot unchanged · open Overview or Heatmap to explore.'
+      :'Demo finished. Your saved records were not changed.';
+    const exitCopy=cloudDemo()
+      ?'Walkthrough closed. Your chart symbol and bundled data are unchanged.'
+      :'Demo closed. Your saved records were not changed.';
     function showStep(){
       const stage=document.getElementById('showcase61-stage');
+      const progress=document.getElementById('showcase61-progress');
+      const bar=document.getElementById('showcase61-progress-bar');
       stage.innerHTML='';
+      if(progress&&bar){
+        progress.hidden=false;
+        bar.style.width=Math.round(((step+1)/steps.length)*100)+'%';
+      }
       const banner=document.createElement('p'); banner.className='desk61-note'; banner.textContent=DEMO.label+' · Step '+(step+1)+' of '+steps.length;
       const body=steps[step]();
       const nav=document.createElement('div'); nav.className='desk61-row';
-      const next=document.createElement('button'); next.type='button'; next.className='primary-btn'; next.textContent=step===steps.length-1?'Finish':'Next';
-      next.onclick=()=>{ if(step===steps.length-1){ stage.innerHTML='<p class="desk61-note">Demo finished. Your saved records were not changed.</p>'; return;} step+=1; showStep(); };
+      const next=document.createElement('button'); next.type='button'; next.className='primary-btn'; next.textContent=step===steps.length-1?'Finish walkthrough':'Next step';
+      next.onclick=()=>{ if(step===steps.length-1){ if(progress)progress.hidden=true; stage.innerHTML='<p class="desk61-note">'+finishCopy+'</p>'; return;} step+=1; showStep(); };
       stage.append(banner);
       if(body instanceof HTMLCanvasElement) stage.append(body); else { const text=document.createElement('p'); text.textContent=body; stage.append(text); }
       nav.append(next); stage.append(nav);
     }
     document.getElementById('showcase61-demo').onclick=()=>{ step=0; showStep(); };
-    document.getElementById('showcase61-exit').onclick=()=>{ document.getElementById('showcase61-stage').innerHTML='<p class="desk61-note">Demo closed. Your saved records were not changed.</p>'; };
+    document.getElementById('showcase61-exit').onclick=()=>{
+      const progress=document.getElementById('showcase61-progress');
+      if(progress)progress.hidden=true;
+      document.getElementById('showcase61-stage').innerHTML='<p class="desk61-note">'+exitCopy+'</p>';
+    };
     document.getElementById('showcase61-add').onclick=()=>{
       const text=document.getElementById('showcase61-own').value.trim(); if(!text)return;
       const saved=notes(); saved.push({date:new Date().toISOString().slice(0,10), text});
@@ -106,7 +122,10 @@
     }
     if(cloudDemo()&&!localStorage.getItem(FIRST_RUN_KEY)){
       localStorage.setItem(FIRST_RUN_KEY,'1');
-      setTimeout(openSettingsForDemo, 900);
+      setTimeout(()=>{
+        if(document.querySelector('.view.active')?.id!=='view-overview')return;
+        openSettingsForDemo();
+      }, 3200);
     }
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded', mount); else mount();

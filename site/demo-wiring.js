@@ -136,7 +136,8 @@
       } catch {}
       const showcase = document.getElementById('showcase61');
       showcase?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-      toast('Try Start guided demo for a short admissions walkthrough.');
+      window.MarketDeskDemoPolish?.refresh();
+      toast('Sixth-form walkthrough: use Start guided demo, then explore Overview and Heatmap.');
     });
     for (const view of document.querySelectorAll('.view')) {
       observer.observe(view, { attributes: true, attributeFilter: ['class'] });
