@@ -24,14 +24,17 @@
     };
 
   let snapshot = null;
-  try {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', '/demo/snapshot.json', false);
-    xhr.send();
-    if (xhr.status === 200) snapshot = JSON.parse(xhr.responseText);
-  } catch (error) {
-    console.warn('Demo snapshot could not be loaded:', error);
-  }
+  const snapshotReady = fetch('/demo/snapshot.json', { credentials: 'same-origin' })
+    .then((res) => (res.ok ? res.json() : null))
+    .then((data) => {
+      snapshot = data;
+      if (window.MarketDeskHost) window.MarketDeskHost.snapshotReady = Boolean(snapshot);
+      return snapshot;
+    })
+    .catch((error) => {
+      console.warn('Demo snapshot could not be loaded:', error);
+      return null;
+    });
 
   const start = Date.now();
   const sec = Math.floor(start / 1000);
@@ -589,6 +592,7 @@
       /* ignore */
     }
     if (!pathname.startsWith('/api/')) return nativeFetch(url, options);
+    await snapshotReady;
     const payload = route(pathname, options);
     const ok = !payload.error;
     return {
@@ -620,10 +624,14 @@
   window.MarketDeskHost = {
     mode: 'cloud-demo',
     demoMode: true,
-    label: snapshot?.label || 'Portfolio demo',
-    snapshotReady: Boolean(snapshot),
+    label: 'Portfolio demo',
+    snapshotReady: false,
+    whenSnapshotReady: () => snapshotReady,
     isCloud: () => true,
   };
+  snapshotReady.then((data) => {
+    if (data?.label) window.MarketDeskHost.label = data.label;
+  });
 
   function applyChrome() {
     document.documentElement.dataset.demoMode = 'true';
