@@ -148,7 +148,54 @@
     });
   }
 
-  function tapePacket(sym, review) {
+  function changeForHeat(sym) {
+    const row = snapshot?.heatmap?.rows?.find((r) => r.symbol === sym);
+    return row?.change ?? 0.5;
+  }
+
+  function normalizeAlerts(packet) {
+    const base = packet || { revision: 1, alerts: [], events: [] };
+    const alerts = (base.alerts || []).map((a, index) => ({
+      ...a,
+      status: a.status || (a.armed ? 'armed' : 'paused'),
+      arm: a.arm ?? a.armed ?? 1,
+      armed_at: a.armed_at || start - 3600000 - index * 60000,
+      created_at: a.created_at || start - 86400000,
+      frequency: a.frequency || 'once',
+      rule_text:
+        a.rule_text ||
+        (a.kind === 'cross'
+          ? `Crosses ${a.direction === 'above' ? 'above' : 'below'} ${a.target} ${a.unit || 'USD'}`
+          : `${a.direction === 'above' ? 'At or above' : 'At or below'} ${a.target} ${a.unit || 'USD'}`),
+      evaluation_note: a.evaluation_note || 'Bundled demo alert · not evaluated on the static host.',
+    }));
+    return { ...base, alerts, events: base.events || [], serverTime: start };
+  }
+
+  function historyPoints(sym, sinceMs) {
+    const base = quote(sym).c;
+    const span = Math.max(3600000, start - sinceMs);
+    const step = Math.max(180000, Math.floor(span / 72));
+    const points = [];
+    for (let t = sinceMs; t <= start; t += step) {
+      const progress = (t - sinceMs) / span;
+      const jitter = Math.sin(progress * 12) * base * 0.0015;
+      points.push({
+        t,
+        p: +(base * (0.996 + progress * 0.006) + jitter).toFixed(4),
+        source: 'demo_fixture',
+      });
+    }
+    if (points.length < 2) {
+      points.push(
+        { t: start - 2 * 3600000, p: base * 0.998, source: 'demo_fixture' },
+        { t: start - 60000, p: base, source: 'demo_fixture' }
+      );
+    }
+    return points;
+  }
+
+  function tapePacket(sym, review, sinceMs) {
     const saved = snapshot?.tape?.[sym];
     let events = saved?.events || [
       { t: start - 3000, p: quote(sym).c, v: 12, receivedAt: start - 3000, id: 1, s: sym },
@@ -162,9 +209,10 @@
         return { ...e, t, receivedAt: t + 12, id: index + 1, s: sym };
       });
     }
+    const floor = Number.isFinite(sinceMs) ? sinceMs : start - 86400000;
     return {
       symbol: sym,
-      events: review ? events : events.filter((e) => e.t >= start - 86400000),
+      events: review ? events : events.filter((e) => e.t >= floor),
       recordingDays: saved?.recordingDays || [{ date: '2025-11-12', count: events.length }],
       source: 'Portfolio demo · synthetic tape',
       complete_market_tape: false,
@@ -306,15 +354,9 @@
     }
     if (p === '/api/history') {
       const sym = qs.get('symbol') || 'AAPL';
-      const q = quote(sym);
-      return {
-        points: [
-          { t: start - 2 * 3600000, p: q.pc, source: 'demo_fixture' },
-          { t: start - 40 * 60000, p: q.c * 0.998, source: 'demo_fixture' },
-          { t: start - 60000, p: q.c, source: 'demo_fixture' },
-        ],
-        demoMode: true,
-      };
+      const since = Number(qs.get('since') || 0);
+      const sinceMs = since > 0 ? since * (since < 1e12 ? 1000 : 1) : start - 86400000;
+      return { points: historyPoints(sym, sinceMs), demoMode: true };
     }
     if (p === '/api/candles' || p === '/api/saved-daily') return dailyResponse(qs.get('symbol') || 'AAPL');
     if (p === '/api/massive-diagnose') {
@@ -336,13 +378,11 @@
         notice: 'API keys are not stored on the public demo host. Run server.py on your Mac for live Finnhub.',
       };
     }
-    if (p === '/api/collector-pulse') {
-      return { cursor: 1, epoch: 'demo', status: { stream: 'Disconnected' }, symbols: [], events: [], gap: false, demoMode: true };
-    }
     if (p === '/api/tape') {
       const sym = qs.get('symbol') || 'AAPL';
       const review = qs.get('last') === '1' || Boolean(qs.get('day'));
-      return tapePacket(sym, review);
+      const since = Number(qs.get('since') || 0);
+      return tapePacket(sym, review, since || undefined);
     }
     if (p === '/api/search') {
       const q = String(qs.get('q') || '').toUpperCase();
@@ -453,12 +493,26 @@
     if (p === '/api/v3/calculate' && isPost) return { ...v3Calculate(body), demoMode: true };
     if (p === '/api/v3/overview') {
       const s = defaultV3State();
+      const macro = (snapshot?.macro?.series || []).slice(0, 4).map((row) => ({
+        title: row.title,
+        unit: row.unit,
+        latest: row.latest,
+      }));
       return {
         state: s,
         portfolio: v3Calculate({ state: s }).portfolio,
-        events: [],
+        events: [
+          {
+            date: '2025-11-20',
+            title: 'Earnings estimate · bundled demo',
+            symbol: 'AAPL',
+            status: 'estimated',
+            origin: 'portfolio demo',
+          },
+        ],
         accounts: { rows: [] },
-        macro: [],
+        macro,
+        notice: 'Portfolio demo home · bundled macro and watchlist.',
         demoMode: true,
       };
     }
@@ -515,7 +569,20 @@
       return { status: 'insufficient', notice: 'Open Overview charts on the demo bundle instead.', demoMode: true };
     }
     if (p === '/api/v3/events42') {
-      return { symbol: qs.get('symbol'), events: [], notice: 'Events need the Mac server.', demoMode: true };
+      const sym = qs.get('symbol') || 'AAPL';
+      return {
+        symbol: sym,
+        events: [
+          {
+            symbol: sym,
+            title: 'Earnings window · demo estimate',
+            timeLabel: 'Nov 2025',
+            kindLabel: 'Estimate',
+            reason: 'Bundled event for admissions screenshots.',
+          },
+        ],
+        demoMode: true,
+      };
     }
     if (p === '/api/v3/forecast61') {
       const sym = qs.get('symbol') || 'AAPL';
@@ -562,12 +629,86 @@
     if (p === '/api/alerts') {
       if (isPost) {
         return {
+          ...normalizeAlerts(snapshot?.alerts),
           ok: true,
           notice: 'Alert edits stay in your browser on the demo.',
           demoMode: true,
         };
       }
-      return { ...(snapshot?.alerts || { alerts: [], events: [] }), demoMode: true };
+      return { ...normalizeAlerts(snapshot?.alerts), demoMode: true };
+    }
+    if (p === '/api/v3/learning') {
+      const sym = qs.get('symbol') || 'AAPL';
+      const packet = snapshot?.learning?.[sym] || snapshot?.learning?.TTWO;
+      if (!packet) return { error: 'No learning bundle for this symbol.', demoMode: true };
+      return { ...packet, symbol: sym, demoMode: true };
+    }
+    if (p === '/api/collector' || p === '/api/collector-pulse') {
+      return {
+        cursor: 1,
+        epoch: 'demo',
+        lastTrade: start - 120000,
+        status: {
+          stream: 'Demo bundle',
+          quotes: 'Bundled',
+          history: 'Bundled',
+          model: 'Illustration only',
+        },
+        symbols: snapshot?.watchlist || [],
+        events: [],
+        gap: false,
+        notice: 'Background collector runs on your Mac · not on this public demo.',
+        demoMode: true,
+      };
+    }
+    if (p === '/api/v3/overnight51') {
+      const part = qs.get('part') || 'status';
+      if (part === 'morning') {
+        return {
+          notice: 'Bundled overnight log for the portfolio demo.',
+          jobs: [
+            { symbol: 'AAPL', kind: 'history', status: 'complete', detail: 'Demo daily closes refreshed' },
+            { symbol: 'TTWO', kind: 'training', status: 'complete', detail: 'Bundled evaluation kept' },
+          ],
+          demoMode: true,
+        };
+      }
+      return {
+        notice: 'Overnight schedule is illustrative on the public demo.',
+        paused: false,
+        inWindow: false,
+        databaseBytes: 0,
+        lastHistoryAt: start - 86400000,
+        lastTrainingAt: start - 172800000,
+        jobs: [{ symbol: 'AMD', kind: 'quotes', status: 'skipped', detail: 'Live collection needs server.py' }],
+        demoMode: true,
+      };
+    }
+    if (p === '/api/v3/desk50') {
+      const sym = qs.get('symbol') || 'AAPL';
+      if (qs.get('part') === 'since') {
+        const syms = String(qs.get('symbols') || snapshot?.watchlist?.join(',') || 'AAPL').split(',');
+        return {
+          moves: syms.slice(0, 4).map((s) => ({
+            symbol: s,
+            start: '2025-11-08',
+            end: '2025-11-12',
+            returnPct: changeForHeat(s),
+          })),
+          alerts: [{ symbol: 'TTWO', price: 158.2, rule: 'At or above 155 USD' }],
+          graded: [{ symbol: 'TTWO', forecastPrice: 167.0, actualPrice: 168.5, anchorDay: '2025-08-01', targetDay: '2025-08-08' }],
+          gaps: [],
+          demoMode: true,
+        };
+      }
+      if (qs.get('part') === 'storage') {
+        return { databaseBytes: 0, workspaceBytes: 0, backupCount: 0, cleanup: 'Mac backups not available on Vercel.', demoMode: true };
+      }
+      return {
+        detail: `Bundled context for ${sym}.`,
+        source: 'Portfolio demo · not a live collector status.',
+        demoMode: true,
+      };
     }
     if (isPost) {
       return { ok: true, demoMode: true, notice: 'Saved in your browser only on the public demo.' };

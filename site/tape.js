@@ -473,17 +473,18 @@ function tapeRenderMarquee(){
 }
 function tapeRenderHealth(){
   const latest=E.trades.get(T.symbol),quote=E.quotes.get(T.symbol);
-  const live=E.wsOpen&&E.subscribed.has(T.symbol)&&latest&&nowMs()-latest.receivedAt<180000&&nowMs()-latest.t<300000;
-  $('tape-feed-pill').textContent=live?'● VERIFIED TRADE STREAM':E.wsOpen?'● CONNECTED / AWAITING TRADE':'● STREAM NOT CONNECTED';
-  $('tape-feed-pill').className='tape-feed-pill '+(live?'tape-pill-live':E.wsOpen?'tape-pill-idle':'tape-pill-offline');
-  $('tape-health-dot').className='tape-health-dot '+(live?'healthy':E.wsOpen?'idle':'offline');
-  $('tape-ws-status').textContent=E.wsOpen?'CONNECTED · TRANSPORT ONLY':E.wsError||'DISCONNECTED';
+  const demoReplay=E.demoMode&&T.events.length>0;
+  const live=!demoReplay&&E.wsOpen&&E.subscribed.has(T.symbol)&&latest&&nowMs()-latest.receivedAt<180000&&nowMs()-latest.t<300000;
+  $('tape-feed-pill').textContent=live?'● VERIFIED TRADE STREAM':demoReplay?'● DEMO TAPE REPLAY':E.wsOpen?'● CONNECTED / AWAITING TRADE':'● STREAM NOT CONNECTED';
+  $('tape-feed-pill').className='tape-feed-pill '+(live?'tape-pill-live':demoReplay?'tape-pill-idle':E.wsOpen?'tape-pill-idle':'tape-pill-offline');
+  $('tape-health-dot').className='tape-health-dot '+(live?'healthy':demoReplay?'idle':E.wsOpen?'idle':'offline');
+  $('tape-ws-status').textContent=demoReplay?'BUNDLED REPLAY · NOT FINNHUB':E.wsOpen?'CONNECTED · TRANSPORT ONLY':E.wsError||'DISCONNECTED';
   $('tape-health-trade').textContent=latest?(live?'LIVE TRADE · ':'LAST OBSERVED · ')+tapeTime(latest.t):'NONE CONFIRMED';
   $('tape-quote-status').textContent=quote?.quote?((nowMs()-quote.quote.t*1000>900000?'STALE REST QUOTE':'REST QUOTE')+' · '+elapsed(quote.quote.t*1000)):'NO QUOTE';
   $('tape-event-age').textContent=latest?elapsed(latest.t):'—';
   const latency=latest?latest.receivedAt-latest.t:null;
   $('tape-latency').textContent=latency!==null&&latency>=0?Math.round(latency)+' ms · approximate':'—';
-  $('tape-connection-help').textContent=T.lastError||(live?'A Finnhub trade with a size above zero has arrived. Your feed may cover only markets included in your plan.':E.wsOpen?'Transport open. No qualifying recent trade for this symbol; a quote or zero-volume update is not proof of an execution.':'The live feed is not connected. Price quotes and saved trades keep their labels.');
+  $('tape-connection-help').textContent=T.lastError||(demoReplay?'Illustrative captured trades from the admissions demo bundle. Reconnect loads the replay again; live Finnhub needs server.py on your Mac.':live?'A Finnhub trade with a size above zero has arrived. Your feed may cover only markets included in your plan.':E.wsOpen?'Transport open. No qualifying recent trade for this symbol; a quote or zero-volume update is not proof of an execution.':'The live feed is not connected. Price quotes and saved trades keep their labels.');
 }
 function tapeRender(){
   if(!T.setup||E.view!=='tape'||T.pause)return;
@@ -604,7 +605,7 @@ function tapeSetup(){
   const selected=savedJSON('md-tape-symbol','AAPL');
   T.symbol=typeof selected==='string'&&tapeCanOpen(selected)?selected:(E.watch.includes('AAPL')?'AAPL':E.watch[0]||'AAPL');
   $('tape-timezone').textContent='CHART TIME · '+(Intl.DateTimeFormat().resolvedOptions().timeZone||'LOCAL');
-  $('tape-reconnect').addEventListener('click',()=>{if(!E.configured){changeView('settings');return}connectWS();toast('Finnhub WebSocket reconnect requested. Wait for a verified trade before calling it live.')});
+  $('tape-reconnect').addEventListener('click',()=>{if(E.demoMode){tapeReload();toast('Reloaded bundled tape replay for this symbol.');return}if(!E.configured){changeView('settings');return}connectWS();toast('Finnhub WebSocket reconnect requested. Wait for a verified trade before calling it live.')});
   $('tape-export').addEventListener('click',tapeExport);
   $('tape-review').addEventListener('click',()=>tapeLoadReview());
   $('tape-date').addEventListener('change',event=>tapeLoadReview(event.target.value));

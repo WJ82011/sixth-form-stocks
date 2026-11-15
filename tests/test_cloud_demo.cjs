@@ -7,7 +7,10 @@ const root = path.join(__dirname, '..');
 const snapshot = JSON.parse(fs.readFileSync(path.join(root, 'site/demo/snapshot.json'), 'utf8'));
 const shim = fs.readFileSync(path.join(root, 'site/cloud-host.js'), 'utf8');
 
-assert.ok(snapshot.version >= 2, 'snapshot version');
+assert.ok(snapshot.version >= 3, 'snapshot version');
+assert.ok(snapshot.learning.TTWO.rows.length >= 3, 'learning TTWO rows');
+assert.ok(snapshot.alerts.alerts.some((a) => a.status === 'armed'), 'demo armed alert');
+assert.ok(snapshot.alerts.events.length >= 1, 'demo alert history');
 assert.equal(snapshot.heatmap.rows.length, snapshot.screener.rows.length, 'heatmap/screener parity');
 assert.ok(snapshot.heatmap.rows.length >= 200, 'directory heatmap rows');
 const coloured = snapshot.heatmap.rows.filter((r) => Number.isFinite(r.change));
@@ -28,6 +31,10 @@ for (const needle of [
   '/api/v3/crypto-chart',
   '/api/intelligence',
   '/api/v3/forecast61',
+  '/api/v3/learning',
+  '/api/v3/desk50',
+  '/api/v3/overnight51',
+  '/api/collector',
 ]) {
   assert.ok(shim.includes(needle), `shim routes ${needle}`);
 }
