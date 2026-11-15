@@ -4,9 +4,11 @@ Background market collection and local forecast evaluation
 PUBLIC PORTFOLIO DEMO (VERCEL)
 The live sixth-form URL is a static admissions demo. It loads site/demo/snapshot.json
 and cloud-host.js serves read-only /api responses without your Mac. Labels say
-PORTFOLIO DEMO. Finnhub keys, SEC refresh and live research still need server.py
-locally. Regenerate the bundle with: python3 tools/export-demo-snapshot.py
-Test the same mode locally with ?demo=1 on any static server (not port 8765).
+PORTFOLIO DEMO. The bundle includes heatmap/screener directory rows, overview60,
+crypto candles, tape, intelligence summaries, macro stubs and sample forecasts
+(TTWO shown, AMD withheld). Finnhub keys, SEC refresh, local AI and live research
+still need server.py locally. Regenerate: python3 tools/export-demo-snapshot.py
+Verify: node tests/test_cloud_demo.cjs. Test locally with ?demo=1 on static hosting (not port 8765).
 
 NEW IN V4.0
 Market Desk now collects prices in the local server. Close the tab and leave
