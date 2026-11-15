@@ -45,11 +45,11 @@ class ScreenerTests(unittest.TestCase):
    for i in range(5):self.put('quote',self.quote(),symbol='TEST'+str(i),at=NOW-i)
   with contextlib.closing(s.db_connection()) as con:self.assertEqual(con.execute('SELECT count(*) FROM screen_snapshots').fetchone()[0],3)
  def test_directory_plus_extra_symbols_and_limit_are_explicit(self):
-  d=s.screen_data(['TEST','AAPL']);self.assertEqual(d['directoryCount'],221);self.assertEqual(len(d['rows']),222);self.assertFalse(next(x for x in d['rows'] if x['symbol']=='TEST')['inDirectory'])
+  d=s.screen_data(['TEST','AAPL']);self.assertEqual(d['directoryCount'],316);self.assertEqual(len(d['rows']),317);self.assertFalse(next(x for x in d['rows'] if x['symbol']=='TEST')['inDirectory'])
   with self.assertRaises(ValueError):s.screen_data(['AAPL']*61)
   with self.assertRaises(ValueError):s.screen_data(['../etc'])
  def test_reading_the_screener_makes_no_provider_requests(self):
-  with patch.object(s,'provider_get',side_effect=AssertionError('No network')):self.assertEqual(s.handle_api('/api/screener',{})['directoryCount'],221)
+  with patch.object(s,'provider_get',side_effect=AssertionError('No network')):self.assertEqual(s.handle_api('/api/screener',{})['directoryCount'],316)
  def test_existing_quote_api_captures_real_source_pair(self):
   with patch.object(s,'provider_get',return_value=({'c':110,'pc':100,'t':int(time.time())},False)):s.handle_api('/api/quote',{'symbol':['AAPL']})
   with contextlib.closing(s.db_connection()) as con:self.assertEqual(f.snapshot(con,'AAPL','quote')[1]['pc'],100)

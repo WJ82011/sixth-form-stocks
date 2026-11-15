@@ -11,11 +11,19 @@ import urllib.request
 import coverage41
 
 # Provider display_name is the market id. base_currency and quote_currency were
-# read from Coinbase Exchange on 13 Nov 2026. All nine were online USD markets.
+# read from Coinbase Exchange on 15 Nov 2026. All listed ids were online USD markets.
+# Coinbase Exchange online USD spot ids checked 15 Nov 2026 (public product list).
 PRODUCTS = {
     'BTC-USD': 'Bitcoin', 'ETH-USD': 'Ethereum', 'SOL-USD': 'Solana', 'XRP-USD': 'XRP',
     'DOGE-USD': 'Dogecoin', 'ADA-USD': 'Cardano', 'LINK-USD': 'Chainlink',
-    'AVAX-USD': 'Avalanche', 'LTC-USD': 'Litecoin',
+    'AVAX-USD': 'Avalanche', 'LTC-USD': 'Litecoin', 'BCH-USD': 'Bitcoin Cash',
+    'DOT-USD': 'Polkadot', 'ATOM-USD': 'Cosmos', 'UNI-USD': 'Uniswap',
+    'AAVE-USD': 'Aave', 'NEAR-USD': 'NEAR', 'SUI-USD': 'Sui', 'HBAR-USD': 'Hedera',
+    'ICP-USD': 'Internet Computer', 'FIL-USD': 'Filecoin', 'INJ-USD': 'Injective',
+    'ARB-USD': 'Arbitrum', 'OP-USD': 'Optimism', 'SEI-USD': 'Sei', 'TIA-USD': 'Celestia',
+    'FET-USD': 'Fetch.ai', 'RENDER-USD': 'Render', 'APT-USD': 'Aptos', 'ENA-USD': 'Ethena',
+    'POL-USD': 'Polygon', 'SHIB-USD': 'Shiba Inu', 'PEPE-USD': 'Pepe', 'WIF-USD': 'dogwifhat',
+    'BONK-USD': 'Bonk', 'XLM-USD': 'Stellar',
 }
 MARKETS = {product: {'id': product, 'name': name, 'base': product.split('-')[0], 'quote': 'USD',
                      'providerName': product, 'exchange': 'Coinbase Exchange', 'timezone': 'UTC'}

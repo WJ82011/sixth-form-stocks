@@ -1,0 +1,11 @@
+Directory additions checked 15 November 2026 against public Nasdaq Trader symbol directories.
+95 additional liquid common-share listings; 316 total in curated ai_catalog.json and site/app.js STOCK_DIRECTORY.
+New symbols include GLW, MCHP, MRVL, ON, FTNT, ZS, DKNG, CDNS, SNPS, ANET, USB, PNC, SPGI, ICE, CME, HUM, CI, CMCSA, TMUS, MRNA, BNTX, PDD, JD, BIDU, and others.
+https://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt
+https://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt
+
+Bundled listings-index.json (6392 Nasdaq Trader rows, symbol+name only) supports wider company search on static deploy when /api/v3/listings is unavailable.
+
+Crypto: Coinbase Exchange USD spot board expanded to 32 online products (was 9); checked 15 November 2026 via https://api.exchange.coinbase.com/products
+
+No listed-options chains were added; sixth-form breadth is equities + crypto + practice ledger.
