@@ -92,8 +92,34 @@
     return { ...snapshot.heatmap, period, rows, cloudDemo: true };
   }
 
+  function catalogNames() {
+    return snapshot?.workspace?.names || {};
+  }
+
+  function screenerPacket() {
+    const base =
+      snapshot?.screener || {
+        asOf: snapshot?.heatmap?.asOf || start,
+        directoryCount: snapshot?.heatmap?.rows?.length || 0,
+        rows: [],
+        notice: 'Demo screener bundle missing.',
+      };
+    const quoteMs = start - 45 * 60000;
+    return {
+      ...base,
+      asOf: start,
+      rows: (base.rows || []).map((r) => ({
+        ...r,
+        quoteTime: quoteMs,
+        quoteFetchedAt: start,
+        financialsFetchedAt: start,
+        profileFetchedAt: start,
+      })),
+    };
+  }
+
   function deskRows(symbols) {
-    const catalog = snapshot?.workspace?.names || {};
+    const catalog = catalogNames();
     return symbols.map((sym) => {
       const q = quote(sym);
       return {
@@ -105,6 +131,58 @@
         changePct: +(((q.c - q.pc) / q.pc) * 100).toFixed(2),
       };
     });
+  }
+
+  function tapePacket(sym, review) {
+    const saved = snapshot?.tape?.[sym];
+    let events = saved?.events || [
+      { t: start - 3000, p: quote(sym).c, v: 12, receivedAt: start - 3000, id: 1, s: sym },
+    ];
+    if (events.length && start - events[events.length - 1].t > 86400000 * 7) {
+      const span = Math.max(1000, events[events.length - 1].t - events[0].t);
+      const anchor = start - Math.min(span, 6 * 3600000);
+      events = events.map((e, index) => {
+        const offset = e.t - events[0].t;
+        const t = anchor + offset;
+        return { ...e, t, receivedAt: t + 12, id: index + 1, s: sym };
+      });
+    }
+    return {
+      symbol: sym,
+      events: review ? events : events.filter((e) => e.t >= start - 86400000),
+      recordingDays: saved?.recordingDays || [{ date: '2025-11-12', count: events.length }],
+      source: 'Portfolio demo · synthetic tape',
+      complete_market_tape: false,
+      notice: 'Illustrative captured trades on the public demo.',
+      coverage: { label: 'Demo partial tape', gaps: 0 },
+      demoMode: true,
+    };
+  }
+
+  function newsItems(sym) {
+    if (sym && snapshot?.newsBySymbol?.[sym]) return snapshot.newsBySymbol[sym];
+    return snapshot?.news || [];
+  }
+
+  function shiftCryptoPacket(packet) {
+    if (!packet) return packet;
+    const cloned = { ...packet, fetchedAt: start };
+    if (packet.points?.length) {
+      const last = packet.points[packet.points.length - 1].t;
+      if (start - last > 86400000 * 2) {
+        const delta = start - last;
+        cloned.points = packet.points.map((p) => ({ ...p, t: p.t + delta }));
+        cloned.start = (packet.start || 0) + delta;
+        cloned.end = (packet.end || 0) + delta;
+      }
+    }
+    if (packet.time && start - packet.time > 86400000 * 2) {
+      cloned.time = start - 15000;
+    }
+    if (packet.price === undefined && packet.points?.length) {
+      cloned.price = packet.points[packet.points.length - 1].p;
+    }
+    return cloned;
   }
 
   function dailyResponse(sym) {
@@ -172,12 +250,13 @@
     }
     if (p === '/api/workspace') {
       if (isPost) return { ok: true, updated_at: start, demoMode: true, notice: 'Browser-only on public demo.' };
+      const ws = snapshot?.workspace;
       const snap = snapshot
         ? {
             watch: snapshot.watchlist,
-            names: snapshot.workspace?.names || {},
-            notes: [],
-            reports: [],
+            names: ws?.names || {},
+            notes: ws?.notes || [],
+            reports: ws?.reports || [],
             portfolio: { capital: 10000, trades: [] },
             preferences: {},
             design: {},
@@ -185,6 +264,7 @@
             tapeSymbol: 'AAPL',
             analystDrafts: { version: 1, records: [] },
             journal: [],
+            research: ws?.research || { projects: [], watchlists: [] },
           }
         : null;
       return { snapshot: snap, updated_at: snap ? start : 0, cloudDemo: true };
@@ -246,16 +326,12 @@
     }
     if (p === '/api/tape') {
       const sym = qs.get('symbol') || 'AAPL';
-      const q = quote(sym);
-      return {
-        symbol: sym,
-        events: [{ t: start - 3000, p: q.c, v: 12, receivedAt: start - 3000, id: 1, s: sym }],
-        demoMode: true,
-      };
+      const review = qs.get('last') === '1' || Boolean(qs.get('day'));
+      return tapePacket(sym, review);
     }
     if (p === '/api/search') {
       const q = String(qs.get('q') || '').toUpperCase();
-      const names = snapshot?.workspace?.names || {};
+      const names = catalogNames();
       const result = Object.keys(names)
         .filter((sym) => !q || sym.includes(q) || names[sym].toUpperCase().includes(q))
         .slice(0, 12)
@@ -284,12 +360,26 @@
       };
     }
     if (p === '/api/news' || p === '/api/saved-news') {
-      return { items: snapshot?.news || [], demoMode: true };
+      const sym = qs.get('symbol');
+      return { items: newsItems(sym), demoMode: true };
+    }
+    if (p === '/api/intelligence') {
+      const sym = qs.get('symbol') || 'AAPL';
+      const packet = snapshot?.intelligence?.[sym] || snapshot?.intelligence?.AAPL;
+      if (!packet) return { error: 'No intelligence bundle for this symbol.', demoMode: true };
+      return { ...packet, demoMode: true };
     }
     if (p === '/api/imported-history') return { status: 'no_data', demoMode: true };
     if (p === '/api/desk') {
       const syms = String(qs.get('symbols') || snapshot?.watchlist?.join(',') || 'AAPL').split(',').filter(Boolean);
-      return { rows: deskRows(syms), movers: deskRows(syms.slice(0, 4)), demoMode: true };
+      const screen = screenerPacket();
+      const bySym = Object.fromEntries(screen.rows.map((r) => [r.symbol, r]));
+      return {
+        ...screen,
+        rows: syms.map((sym) => bySym[sym] || deskRows([sym])[0]),
+        movers: deskRows(syms.slice(0, 4)),
+        demoMode: true,
+      };
     }
     if (p === '/api/v3/heatmap') return heatmapPacket(qs.get('period') || '1D');
     if (p === '/api/v3/heatmap-sync') {
@@ -302,17 +392,45 @@
       };
     }
     if (p === '/api/screener') {
-      const syms = String(qs.get('symbols') || 'AAPL,NVDA,MSFT').split(',');
+      return { ...screenerPacket(), demoMode: true };
+    }
+    if (p === '/api/screener/refresh') {
       return {
-        rows: syms.map((sym) => ({
-          symbol: sym,
-          name: snapshot?.workspace?.names?.[sym] || sym,
-          price: quote(sym).c,
-          changePct: 1.2,
-          marketCapMillions: 400000,
-          marketCapCurrency: 'USD',
-          marketCapFetchedAt: snapshot?.heatmap?.asOf || start,
-        })),
+        symbol: body?.symbol || 'AAPL',
+        warnings: ['Public demo does not call Finnhub. Figures stay on the bundled snapshot.'],
+        stop: false,
+        notice: 'Refresh simulated on the demo host.',
+        demoMode: true,
+      };
+    }
+    if (p === '/api/v3/overview60') {
+      return { ...(snapshot?.overview60 || {}), demoMode: true };
+    }
+    if (p === '/api/v3/crypto-chart') {
+      const product = qs.get('product') || 'BTC-USD';
+      const range = qs.get('range') || '1D';
+      const chart = snapshot?.crypto?.charts?.[`${product}|${range}`];
+      if (!chart) return { error: 'Crypto chart not in demo bundle.', demoMode: true };
+      return { ...shiftCryptoPacket(chart), demoMode: true };
+    }
+    if (p === '/api/v3/crypto-quote') {
+      const product = qs.get('product') || 'BTC-USD';
+      const row = snapshot?.crypto?.quotes?.[product];
+      if (!row) return { error: 'Crypto quote not in demo bundle.', demoMode: true };
+      return { ...shiftCryptoPacket(row), demoMode: true };
+    }
+    if (p === '/api/v3/crypto-board') {
+      return { ...(snapshot?.crypto?.board || { rows: [] }), demoMode: true };
+    }
+    if (p === '/api/v3/crypto-follow') {
+      return { followed: body?.products || snapshot?.crypto?.followed || [], demoMode: true };
+    }
+    if (p === '/api/v3/equity-session') {
+      return {
+        symbol: qs.get('symbol') || 'AAPL',
+        status: 'demo',
+        session: '2025-11-12',
+        notice: 'Bundled session label for the public demo.',
         demoMode: true,
       };
     }
@@ -332,15 +450,33 @@
     if (p === '/api/v3/events') return { events: [], demoMode: true };
     if (p === '/api/v3/listings') {
       const q = String(qs.get('q') || '').toUpperCase();
-      const names = snapshot?.workspace?.names || {};
+      const names = catalogNames();
       const rows = Object.keys(names)
         .filter((sym) => !q || sym.includes(q) || names[sym].toUpperCase().includes(q))
-        .slice(0, 40)
+        .slice(0, 100)
         .map((sym) => ({ symbol: sym, name: names[sym] }));
-      return { rows, total: rows.length, source: 'Demo watchlist slice', checkedAt: snapshot?.heatmap?.asOf, demoMode: true };
+      return {
+        rows,
+        total: Object.keys(names).length,
+        source: 'Bundled directory names',
+        checkedAt: snapshot?.heatmap?.asOf,
+        demoMode: true,
+      };
     }
-    if (p === '/api/v3/screen') return { rows: [], notice: 'Full account screen needs your Mac.', demoMode: true };
-    if (p === '/api/v3/macro') return { series: [], available: {}, demoMode: true };
+    if (p === '/api/v3/screen') {
+      const screen = screenerPacket();
+      return {
+        rows: screen.rows.filter((r) => r.inDirectory).slice(0, 60),
+        notice: screen.notice,
+        demoMode: true,
+      };
+    }
+    if (p === '/api/v3/macro') {
+      return { ...(snapshot?.macro || { series: [], available: {} }), demoMode: true };
+    }
+    if (p === '/api/macro') {
+      return { items: snapshot?.macro?.series || [], demoMode: true };
+    }
     if (p === '/api/v3/sources') {
       return {
         accounts: { count: 0, latestFetch: null },
@@ -361,32 +497,64 @@
     }
     if (p === '/api/v3/forecast61') {
       const sym = qs.get('symbol') || 'AAPL';
-      const q = quote(sym);
+      const packet = snapshot?.forecasts?.[sym] || snapshot?.forecasts?.AMD;
+      if (!packet) {
+        return {
+          symbol: sym,
+          status: 'withheld',
+          rows: [],
+          notice: 'No forecast bundle for this symbol.',
+          demoMode: true,
+        };
+      }
+      return { ...packet, symbol: sym, demoMode: true };
+    }
+    if (p === '/api/v3/forecast-journal') {
       return {
-        symbol: sym,
-        status: 'withheld',
-        method: 'Demo withholding example',
-        observations: 90,
-        notice: 'Sample: unchanged price beat the model on later dates — no purple path drawn.',
+        asOf: start,
         rows: [],
-        horizons: [{ horizon: 5, status: 'Withheld', testCases: 4 }],
-        issuedCount: 0,
+        summary: { all: { count: 0 }, nonOverlapping: { count: 0 } },
+        notice: 'Forecast journal needs your Mac.',
         demoMode: true,
-        inputs: 'Demo only',
-        trainingNote: 'Not fitted on this host.',
-        anchorDate: '2025-11-01',
-        first: '2025-08-01',
-        interpolation: [],
       };
     }
-    if (p === '/api/alerts') return { alerts: [], triggered: [], demoMode: true };
+    if (p === '/api/v3/drafts-validate' && isPost) {
+      const drafts = body?.drafts;
+      return {
+        records: Array.isArray(drafts?.records) ? drafts.records : [],
+        demoMode: true,
+      };
+    }
+    if (p === '/api/ai/status') {
+      return {
+        ready: false,
+        configured: false,
+        models: [],
+        message: 'Local AI is not available on the public demo host.',
+        demoMode: true,
+      };
+    }
+    if (p === '/api/ai/library') {
+      return { documents: [], runs: [], demoMode: true };
+    }
+    if (p === '/api/alerts') {
+      if (isPost) {
+        return {
+          ok: true,
+          notice: 'Alert edits stay in your browser on the demo.',
+          demoMode: true,
+        };
+      }
+      return { ...(snapshot?.alerts || { alerts: [], events: [] }), demoMode: true };
+    }
     if (isPost) {
       return { ok: true, demoMode: true, notice: 'Saved in your browser only on the public demo.' };
     }
     return {
       error: 'This tool needs the full Mac server.',
       demoMode: true,
-      notice: 'Home, Overview, Heatmap, Browser and Settings work on the public demo.',
+      notice:
+        'Overview, Heatmap, Screener, Browser, Tape, Crypto, Intelligence, Research and Settings use the bundled demo snapshot.',
     };
   }
 

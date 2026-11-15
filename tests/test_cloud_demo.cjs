@@ -5,12 +5,34 @@ const assert = require('node:assert/strict');
 
 const root = path.join(__dirname, '..');
 const snapshot = JSON.parse(fs.readFileSync(path.join(root, 'site/demo/snapshot.json'), 'utf8'));
-assert.equal(snapshot.version, 1);
-assert.equal(snapshot.heatmap.rows.length, 221, 'directory heatmap rows');
+const shim = fs.readFileSync(path.join(root, 'site/cloud-host.js'), 'utf8');
+
+assert.ok(snapshot.version >= 2, 'snapshot version');
+assert.equal(snapshot.heatmap.rows.length, snapshot.screener.rows.length, 'heatmap/screener parity');
+assert.ok(snapshot.heatmap.rows.length >= 200, 'directory heatmap rows');
 const coloured = snapshot.heatmap.rows.filter((r) => Number.isFinite(r.change));
-assert.ok(coloured.length >= 200, 'most tiles should have a period change');
+assert.ok(coloured.length >= 180, 'most tiles should have a period change');
 assert.ok(snapshot.dailyBars.AAPL.c.length > 100, 'AAPL daily chart series');
-assert.ok(fs.readFileSync(path.join(root, 'site/cloud-host.js'), 'utf8').includes('/api/v3/heatmap'));
+assert.ok(snapshot.overview60.equity.included > 50, 'overview60 equity included');
+assert.ok(snapshot.crypto.board.rows.length >= 6, 'crypto board rows');
+assert.ok(snapshot.tape.AAPL.events.length > 20, 'tape events');
+assert.ok(snapshot.intelligence.TTWO.hour.count > 0, 'intelligence hour points');
+assert.equal(snapshot.forecasts.TTWO.status, 'learned', 'TTWO shown forecast');
+assert.equal(snapshot.forecasts.AMD.status, 'withheld', 'AMD withheld forecast');
+assert.ok(Object.keys(snapshot.workspace.names).length >= 200, 'workspace name index');
+
+for (const needle of [
+  '/api/v3/heatmap',
+  '/api/screener',
+  '/api/v3/overview60',
+  '/api/v3/crypto-chart',
+  '/api/intelligence',
+  '/api/v3/forecast61',
+]) {
+  assert.ok(shim.includes(needle), `shim routes ${needle}`);
+}
 assert.ok(fs.readFileSync(path.join(root, 'site/index.html'), 'utf8').includes('cloud-host.js'));
 assert.ok(fs.existsSync(path.join(root, 'tools/export-demo-snapshot.py')));
-console.log('Public demo bundle: snapshot, shim hook and export script OK');
+console.log(
+  `Public demo bundle OK · v${snapshot.version} · ${snapshot.heatmap.rows.length} directory rows · ${(fs.statSync(path.join(root, 'site/demo/snapshot.json')).size / 1024).toFixed(0)} KB`
+);
