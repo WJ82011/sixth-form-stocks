@@ -471,6 +471,164 @@ def news_bundle() -> tuple[list[dict], dict]:
     return global_news, by_symbol
 
 
+def learning_bundle() -> dict:
+    trained = QUOTE_TS
+    common = {
+        'method': 'ridge-sessions-v4.1',
+        'trainedAt': trained,
+        'stale': False,
+        'quality': 'Bundled chronological evaluation for the admissions demo.',
+        'coverage': {
+            'savedCloses': 240,
+            'usedCloses': 240,
+            'droppedForGap': 0,
+            'firstUsed': '2024-11-12',
+            'lastUsed': '2025-11-12',
+            'latestSavedDate': '2025-11-12',
+            'latestSavedPrice': 228.4,
+            'source': 'Portfolio demo · synthetic daily closes',
+        },
+        'anchorDate': '2025-11-12',
+        'latestEligibleDate': '2025-11-12',
+    }
+
+    def row(horizon: int, status: str, learned: bool) -> dict:
+        return {
+            'horizon': horizon,
+            'status': status,
+            'calibrationCases': 14,
+            'testCases': 11,
+            'calibrationErrorPP': 1.8 if learned else 2.4,
+            'calibrationBaselinePP': 2.1,
+            'calibrationPassed': learned,
+            'modelErrorPP': 2.2 if learned else 2.9,
+            'baselineErrorPP': 2.5,
+            'rangeCoveragePct': 78.0,
+            'expectedCoveragePct': 80,
+            'returnPct': 1.4 * horizon if learned else None,
+            'price': round(158.2 * (1.014 ** horizon), 2) if learned else None,
+            'low': round(158.2 * (1.012 ** horizon), 2) if learned else None,
+            'high': round(158.2 * (1.016 ** horizon), 2) if learned else None,
+        }
+
+    def lab_block(horizon: int, withheld: bool = False) -> dict:
+        return {
+            'horizon': horizon,
+            'status': 'withheld' if withheld else 'learned',
+            'path': [{'actualPrice': 158.2 + i * 0.6} for i in range(12)],
+            'reason': 'No volatility forecast was released on later dates.' if withheld else 'Later test favoured the learned path over an unchanged price.',
+            'shrinkage': 0.12 if not withheld else None,
+            'calibration': {'count': 12},
+            'durability': None if withheld else {'lateErrorPP': 2.1, 'lateBaselineErrorPP': 2.6, 'rangeCoveragePct': 76.0, 'expectedCoveragePct': 80},
+            'models': [] if withheld else [{'name': 'Ridge sessions', 'start': '2024-11-12', 'end': '2025-06-01', 'count': 9, 'averageErrorPP': 2.1, 'rangeCoveragePct': 77.0}],
+            'misses': [] if withheld else [{'anchorDate': '2025-08-01', 'targetDate': '2025-08-08', 'forecastPrice': 167.0, 'baselinePrice': 165.0, 'actualPrice': 168.5, 'errorPP': 1.1, 'baselineErrorPP': 1.8, 'inRange': True, 'low': 165.5, 'high': 169.0, 'currentPrice': 166.8, 'inputs': [{'date': '2025-07-28', 'price': 164.4}]}],
+        }
+
+    ttwo = {
+        **common,
+        'symbol': 'TTWO',
+        'closes': 240,
+        'rows': [row(1, 'baseline', False), row(5, 'learned', True), row(20, 'learned', True)],
+        'lab': [lab_block(1), lab_block(5), lab_block(20)],
+        'scorecard': {
+            'message': 'Issued forecasts stay on your Mac · below is a bundled illustration.',
+            'notice': 'The public demo does not train models or store issued forecasts.',
+            'backtestNotice': 'Backtests above are illustrative only.',
+            'summary': {'count': 2, 'averageErrorPP': 2.0, 'baselineAverageErrorPP': 2.4, 'rangeCoveragePct': 75.0, 'rangeCount': 2, 'beatBaseline': True},
+            'pending': [{'id': 'demo-issued-ttwo', 'symbol': 'TTWO', 'anchorDay': '2025-10-01', 'horizon': 5, 'targetDay': '2025-10-08', 'anchorPrice': 155.0, 'low': 156.2, 'high': 162.8, 'method': 'Ridge sessions', 'issuedAt': trained - 86400000 * 30, 'outcome': {'status': 'pending'}, 'knownCloses': [{'date': '2025-09-28', 'price': 154.2}]}],
+            'graded': [{'id': 'demo-graded-ttwo', 'symbol': 'TTWO', 'anchorDay': '2025-08-01', 'horizon': 5, 'targetDay': '2025-08-08', 'anchorPrice': 163.0, 'low': 164.5, 'high': 170.0, 'method': 'Ridge sessions', 'issuedAt': trained - 86400000 * 90, 'outcome': {'status': 'scored', 'actualPrice': 168.5, 'absoluteErrorPP': 1.2, 'unchangedErrorPP': 1.9, 'inRange': True, 'beatBaseline': True}, 'knownCloses': [{'date': '2025-07-31', 'price': 162.1}]}],
+        },
+    }
+    amd = {
+        **common,
+        'symbol': 'AMD',
+        'closes': 240,
+        'rows': [row(1, 'baseline', False), row(5, 'baseline', False), row(20, 'baseline', False)],
+        'lab': [lab_block(5, withheld=True), lab_block(20, withheld=True)],
+        'quality': 'Sample withholding example · unchanged price beat the model on later tests.',
+        'scorecard': {'message': 'No graded issued forecasts in this demo slice.', 'summary': {'count': 0}, 'pending': [], 'graded': []},
+    }
+    aapl = {
+        **common,
+        'symbol': 'AAPL',
+        'closes': 240,
+        'coverage': {**common['coverage'], 'latestSavedPrice': 228.4},
+        'rows': [row(1, 'insufficient', False), row(5, 'learned', True), row(20, 'learned', True)],
+        'lab': [lab_block(5), lab_block(20)],
+        'scorecard': {'message': 'Bundled AAPL lab rows for screenshots.', 'summary': {'count': 1, 'averageErrorPP': 1.9, 'baselineAverageErrorPP': 2.3, 'rangeCoveragePct': 80.0, 'rangeCount': 1, 'beatBaseline': True}, 'pending': [], 'graded': []},
+    }
+    return {'TTWO': ttwo, 'AMD': amd, 'AAPL': aapl}
+
+
+def alerts_bundle() -> dict:
+    armed_at = QUOTE_TS - 3_600_000
+    return {
+        'revision': 2,
+        'alerts': [
+            {
+                'id': 'demo-alert-aapl',
+                'symbol': 'AAPL',
+                'direction': 'above',
+                'target': 230.0,
+                'unit': 'USD',
+                'kind': 'level',
+                'status': 'armed',
+                'created_at': armed_at - 86_400_000,
+                'armed_at': armed_at,
+                'arm': 1,
+                'last_ts': 0,
+                'last_received': None,
+                'last_price': None,
+                'frequency': 'once',
+                'rule_text': 'At or above 230 USD',
+                'evaluation_note': 'Bundled demo alert · not evaluated on the static host.',
+            },
+            {
+                'id': 'demo-alert-nvda',
+                'symbol': 'NVDA',
+                'direction': 'below',
+                'target': 130.0,
+                'unit': 'USD',
+                'kind': 'cross',
+                'status': 'paused',
+                'created_at': armed_at - 172_800_000,
+                'armed_at': armed_at - 86_400_000,
+                'arm': 1,
+                'last_ts': QUOTE_TS - 7_200_000,
+                'last_received': QUOTE_TS - 7_100_000,
+                'last_price': 139.2,
+                'frequency': 'once',
+                'rule_text': 'Crosses below 130 USD',
+                'evaluation_note': 'Paused for the demo · live evaluation needs your Mac.',
+            },
+        ],
+        'events': [{
+            'id': 1,
+            'alert_id': 'demo-alert-ttwo',
+            'arm': 1,
+            'symbol': 'TTWO',
+            'direction': 'above',
+            'target': 155.0,
+            'unit': 'USD',
+            'price': 158.2,
+            'price_ts': QUOTE_TS - 86_400_000 * 5,
+            'received_at': QUOTE_TS - 86_400_000 * 5 + 120_000,
+            'source': 'saved_daily_close',
+            'match_type': 'level',
+            'rule_text': 'At or above 155 USD',
+            'chart_range': '1M',
+            'start_date': '2025-10-01',
+            'end_date': '2025-11-12',
+            'comparison_price': 154.0,
+        }],
+        'serverTime': QUOTE_TS,
+        'maxAlerts': 25,
+        'historyLimit': 2000,
+        'maxPriceAgeSeconds': 86400,
+        'notice': 'Demo alert list · rules are not evaluated on the static host.',
+    }
+
+
 def main() -> None:
     catalog = json.loads(CATALOG.read_text())
     stamp = QUOTE_TS
@@ -478,7 +636,7 @@ def main() -> None:
     global_news, news_by_symbol = news_bundle()
 
     snapshot = {
-        'version': 2,
+        'version': 3,
         'label': 'PORTFOLIO DEMO · labelled synthetic snapshot · not live market data',
         'generated': '2026-11-15',
         'watchlist': WATCHLIST,
@@ -520,25 +678,8 @@ def main() -> None:
         'intelligence': {sym: intelligence_packet(sym) for sym in WATCHLIST},
         'forecasts': {sym: forecast_packet(sym) for sym in ['TTWO', 'AMD', 'AAPL', 'NVDA', 'TSLA']},
         'macro': macro_bundle(),
-        'alerts': {
-            'revision': 1,
-            'alerts': [{
-                'id': 'demo-alert-aapl',
-                'symbol': 'AAPL',
-                'direction': 'above',
-                'target': 230.0,
-                'unit': 'USD',
-                'kind': 'level',
-                'armed': 1,
-                'condition_met': 0,
-            }],
-            'events': [],
-            'serverTime': stamp,
-            'maxAlerts': 25,
-            'historyLimit': 2000,
-            'maxPriceAgeSeconds': 86400,
-            'notice': 'Demo alert list · alerts are not evaluated on the static host.',
-        },
+        'alerts': alerts_bundle(),
+        'learning': learning_bundle(),
         'workspace': workspace_bundle(catalog),
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)

@@ -7,9 +7,12 @@ const Workbench40=(()=>{
   const jobs={stream:'Finnhub stream',quotes:'Stock quotes',crypto:'Crypto snapshots',cryptoHistory:'Crypto 24-hour history',cryptoForecast:'Crypto forecast training',news:'Company news',marketNews:'Market news',heatmap:'Heatmap history',history:'Daily history',model:'Model training'};
   let revision=0, working=false, shown=null, queued=false;
   async function health(){
+    if(typeof E!=='undefined'&&E.demoMode){
+      $('learning40-collector').textContent='Bundled demo collector · live jobs run on your Mac.';
+    }
     try{
       const data=await api('/api/collector');
-      $('learning40-collector').textContent=data.lastTrade?'Last captured trade · '+time(data.lastTrade):'Waiting for a captured trade.';
+      $('learning40-collector').textContent=data.notice||data.lastTrade?('Last captured trade · '+time(data.lastTrade)):'Waiting for a captured trade.';
       $('learning40-jobs').innerHTML=Object.entries(data.status||{}).map(([key,value])=>
         '<li><strong>'+escapeHtml(jobs[key]||key)+'</strong> · '+escapeHtml(value)+'</li>').join('');
     }catch{$('learning40-collector').textContent='Local server unavailable.';}
@@ -93,9 +96,10 @@ const Workbench40=(()=>{
     box.innerHTML='<h3>Issued forecasts</h3><p>'+escapeHtml(card.message||'')+'</p><p>'+escapeHtml(sample)+'</p><h3>Pending</h3>'+table(card.pending||[])+'<h3>Graded</h3>'+table(card.graded||[])+'<p>'+escapeHtml(card.notice||'')+' '+escapeHtml(card.backtestNotice||'')+'</p>';
   }
   async function train(refresh=false){
-    if(typeof E!=='undefined'&&E.demoMode){
-      $('learning40-message').textContent=refresh?'Live price training needs server.py on your Mac.':'Forecast Lab evaluation needs saved Mac prices.';
+    if(typeof E!=='undefined'&&E.demoMode&&refresh){
+      $('learning40-message').textContent='Live price training needs server.py on your Mac.';
       $('learning40-collector').textContent='Background collector runs on your Mac · not on this public demo.';
+      toast('Training from live prices needs server.py on your Mac. The bundled Forecast Lab below uses the demo snapshot.');
       return;
     }
     if(working){queued=true;return}

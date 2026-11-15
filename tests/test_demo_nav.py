@@ -35,7 +35,7 @@ def main():
                 '() => document.querySelector(".view.active")?.id === "view-overview"',
                 timeout=15000,
             )
-            for view in ('home', 'overview', 'heatmap', 'markets', 'settings'):
+            for view in ('home', 'overview', 'heatmap', 'markets', 'tape', 'alerts', 'learning', 'settings'):
                 page.evaluate('(v) => changeView(v)', view)
                 page.wait_for_function(
                     f'() => document.querySelector(".view.active")?.id === "view-{view}"',
@@ -51,6 +51,22 @@ def main():
             page.wait_for_timeout(2500)
             price = page.locator('#overview-chart-price, #look43-head strong, .big-price').first.inner_text(timeout=5000)
             assert any(ch.isdigit() for ch in price), f'overview price ({price!r})'
+            page.evaluate('() => changeView("home")')
+            page.wait_for_timeout(2000)
+            plotted = page.locator('#chart-observed-summary').inner_text(timeout=5000)
+            assert 'No prices plotted' not in plotted, f'home chart ({plotted!r})'
+            page.evaluate('() => changeView("tape")')
+            page.wait_for_timeout(2000)
+            pill = page.locator('#tape-feed-pill').inner_text(timeout=5000)
+            assert 'DEMO TAPE' in pill, f'tape pill ({pill!r})'
+            page.evaluate('() => changeView("alerts")')
+            page.wait_for_timeout(1500)
+            armed = page.locator('#alerts-summary strong').first.inner_text(timeout=5000)
+            assert armed and armed != '0', f'alerts armed ({armed!r})'
+            page.evaluate('() => changeView("learning")')
+            page.wait_for_timeout(3500)
+            lab = page.locator('#learning40-results').inner_text(timeout=8000)
+            assert 'Forecast Lab' in lab, f'learning ({lab[:80]!r})'
             browser.close()
         print('PASS demo navigation', {'tiles': tiles, 'price': price, 'console': len(errors)})
         if errors:

@@ -54,7 +54,6 @@
   const MAC_ONLY = new Map([
     ['heat-refresh', 'Directory history is already in this demo bundle. Load all company history runs on your Mac.'],
     ['learning40-refresh', 'Training from live prices needs server.py on your Mac.'],
-    ['learning40-train', 'Evaluate from saved prices needs your Mac ledger. Browse Overview and Heatmap here.'],
     ['v3-listing-refresh', 'SEC directory refresh runs on your Mac. Demo search still uses the bundled watchlist slice.'],
     ['v3-refresh-statements', 'Expanded SEC accounts need the Mac server.'],
     ['massive-test', 'Massive history tests stay on your Mac. Charts here use the bundled snapshot.'],
