@@ -620,10 +620,32 @@
     };
     bind('connection-sub', 'Demo bundle · not a live Finnhub feed');
     bind('connection-label', 'Portfolio demo data');
+    bind('top-status', 'DEMO DATA');
+    bind('side-identity-tagline', 'PORTFOLIO ADMISSIONS DEMO');
+    bind('desk-session-label', 'SAMPLE DATA · NOT LIVE');
+    const overline = document.querySelector('.top-location-overline');
+    if (overline) overline.innerHTML = 'PORTFOLIO DEMO <i>◆</i> RESEARCH DESK';
+    const ticker = document.querySelector('.ticker-placeholder');
+    if (ticker) ticker.textContent = 'Sample watchlist quotes from the bundled snapshot';
+    const mast = document.querySelector('.masthead-caption');
+    if (mast) mast.innerHTML = 'ADMISSIONS WALKTHROUGH &nbsp; · &nbsp; LABELLED SNAPSHOT, INDEPENDENT RESEARCH';
     const foot = document.querySelector('.side-footer');
     if (foot) foot.textContent = 'PORTFOLIO DEMO · 01 / 26';
-    const ribbon = document.querySelector('.desk-ribbon-left span:nth-child(3)');
-    if (ribbon) ribbon.innerHTML = 'PORTFOLIO <b>DEMO</b>';
+    const ribbonLeft = document.querySelector('.desk-ribbon-left');
+    if (ribbonLeft) {
+      ribbonLeft.querySelectorAll('span').forEach((span) => {
+        if (span.classList.contains('ribbon-edition')) span.textContent = 'DEMO / 01';
+        else if (!span.classList.contains('ribbon-divider') && /LOCAL|FINNHUB/i.test(span.textContent)) {
+          span.innerHTML = /FINNHUB/i.test(span.textContent)
+            ? 'BUNDLED <b>SNAPSHOT</b>'
+            : 'PORTFOLIO <b>DEMO</b>';
+        }
+      });
+    }
+    for (const id of ['connection-dot', 'top-dot']) {
+      const dot = document.getElementById(id);
+      if (dot) dot.className = 'status-dot amber';
+    }
     document.querySelectorAll('#api-key, #massive-api-key, #save-key, #massive-save-key').forEach((el) => {
       if (el) {
         el.disabled = true;
@@ -634,6 +656,12 @@
     if (warn) {
       warn.textContent =
         'Provider keys stay on your Mac. This URL is a read-only admissions demo with a bundled snapshot.';
+    }
+    const prefs = document.querySelector('.pro-preferences > p');
+    if (prefs && !prefs.dataset.demoCopy) {
+      prefs.dataset.demoCopy = '1';
+      prefs.textContent =
+        'Choose how your desk looks on this demo. The full Signal and Pro experience with live Finnhub runs when you start server.py on your Mac.';
     }
   }
 

@@ -13,7 +13,7 @@
     {date:'2026-11-14', status:'completed', text:'The purple line is kept only when it beats an unchanged price on later dates. Those later dates are not used to fit the line. The band reports how many of those closes it covered. A failed result is saved and is not drawn.'},
     {date:'2026-11-14', status:'completed', text:'A saved scan card used to open the wrong page. It now opens the company chart and keeps the scanned dates.'},
     {date:'2026-11-14', status:'completed', text:'V2.7 checked full-screen layout at 1280 by 720 and a phone width of 390. That note records measurements, not an open defect. V2.4.1 grouped the sidebar into six entries.'},
-    {date:'2026-11-14', status:'pending', text:'A new person has not tried the five tester tasks. Feedback stays empty until someone records it.'}
+    {date:'2026-11-15', status:'completed', text:'Public portfolio host: Overview chart, heatmap tiles and this guided walkthrough run from a labelled snapshot without API keys.'}
   ];
   const TASKS=[
     'Open Take-Two and say whether a purple forecast line is shown.',
@@ -22,13 +22,25 @@
     'Open Forecast Lab and read whether the learned path was withheld.',
     'Start the guided demo, then leave it. Your own companies should still be selected.'
   ];
+  const DEMO_TASK_RESULTS=[
+    null,
+    null,
+    null,
+    'Withheld on bundled sample — unchanged price beat the learned path.',
+    'Pass — five steps complete; workspace symbol unchanged after Leave demo.'
+  ];
+  const FIRST_RUN_KEY='md-guided-demo-seen';
   function notes(){try{return JSON.parse(localStorage.getItem('md-notebook-notes')||'[]');}catch(e){return [];}}
   function feedback(){try{return JSON.parse(localStorage.getItem('md-tester-feedback')||'[]');}catch(e){return [];}}
+  function cloudDemo(){return typeof MarketDeskHost!=='undefined'&&MarketDeskHost.demoMode;}
   function mount(){
     if(document.getElementById('showcase61')||!document.getElementById('view-settings'))return;
+    const intro=cloudDemo()
+      ?'Sixth-form portfolio demo — sample figures only. Your Mac workspace is unchanged.'
+      :'The demo uses bundled sample figures. Your saved prices and notes stay where they are.';
     const panel=document.createElement('section');
     panel.className='surface desk61'; panel.id='showcase61';
-    panel.innerHTML='<h2>Project showcase</h2><p>The demo uses bundled sample figures. Your saved prices and notes stay where they are.</p><div class="desk61-row"><button type="button" class="primary-btn" id="showcase61-demo">Start guided demo</button><button type="button" class="ghost-btn" id="showcase61-exit">Leave demo</button></div><div id="showcase61-stage"></div><h2>Engineering notebook</h2><div id="showcase61-log"></div><label>Your explanation<textarea id="showcase61-own" rows="3" placeholder="Add what you want to say in your own words"></textarea></label><button type="button" class="ghost-btn" id="showcase61-add">Save my note</button><h2>Tester tasks</h2><ol id="showcase61-tasks"></ol><label>What a tester reported<textarea id="showcase61-feed" rows="3"></textarea></label><button type="button" class="ghost-btn" id="showcase61-save-feed">Save feedback</button><p id="showcase61-feed-list" class="desk61-note"></p>';
+    panel.innerHTML='<h2>Project showcase</h2><p id="showcase61-intro">'+intro+'</p><div class="desk61-row"><button type="button" class="primary-btn" id="showcase61-demo">Start guided demo</button><button type="button" class="ghost-btn" id="showcase61-exit">Leave demo</button></div><div id="showcase61-stage"></div><h2>Engineering notebook</h2><div id="showcase61-log"></div><label>Your explanation<textarea id="showcase61-own" rows="3" placeholder="Add what you want to say in your own words"></textarea></label><button type="button" class="ghost-btn" id="showcase61-add">Save my note</button><h2>Tester tasks</h2><ol id="showcase61-tasks"></ol><label>What a tester reported<textarea id="showcase61-feed" rows="3"></textarea></label><button type="button" class="ghost-btn" id="showcase61-save-feed">Save feedback</button><p id="showcase61-feed-list" class="desk61-note"></p>';
     document.getElementById('view-settings').insertBefore(panel, document.getElementById('view-settings').firstChild);
     const log=document.getElementById('showcase61-log');
     ENTRIES.concat(notes().map(item=>({date:item.date,status:'your note',text:item.text}))).forEach(item=>{
@@ -36,7 +48,13 @@
       row.textContent=item.date+' · '+item.status+' · '+item.text; log.append(row);
     });
     const list=document.getElementById('showcase61-tasks');
-    TASKS.forEach(task=>{const item=document.createElement('li'); item.textContent=task+' Result: pending.'; list.append(item);});
+    const useDemoResults=cloudDemo();
+    TASKS.forEach((task,i)=>{
+      const item=document.createElement('li');
+      const seeded=useDemoResults&&DEMO_TASK_RESULTS[i];
+      item.textContent=task+' Result: '+(seeded||'pending.')+(seeded?'':'');
+      list.append(item);
+    });
     document.getElementById('showcase61-feed-list').textContent=feedback().length?feedback().map(item=>item.text).join(' '):'No tester feedback yet. Results stay pending.';
     const steps=[
       ()=>'Start. These figures are a labelled sample. They are not your companies and they are not saved prices.',
@@ -76,6 +94,20 @@
       document.getElementById('showcase61-feed-list').textContent=saved.map(item=>item.text).join(' ');
       document.getElementById('showcase61-feed').value='';
     };
+    function startGuidedDemo(){
+      step=0;
+      showStep();
+      document.getElementById('showcase61-stage')?.scrollIntoView({block:'nearest',behavior:'smooth'});
+    }
+    function openSettingsForDemo(){
+      if(typeof changeView==='function') changeView('settings');
+      else document.querySelector('.nav-btn[data-view="settings"]')?.click();
+      setTimeout(startGuidedDemo, 350);
+    }
+    if(cloudDemo()&&!localStorage.getItem(FIRST_RUN_KEY)){
+      localStorage.setItem(FIRST_RUN_KEY,'1');
+      setTimeout(openSettingsForDemo, 900);
+    }
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded', mount); else mount();
 })();
