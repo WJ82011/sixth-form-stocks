@@ -460,6 +460,21 @@ function resubscribe(){
 }
 async function runDiagnostics(){
   if(E.probing)return;
+  if(E.demoMode){
+    $('diag-probe').textContent='✓ Demo bundle';
+    $('diag-probe').className='diag-good';
+    $('diag-tls').textContent='Static portfolio host';
+    $('diag-rest').textContent='Bundled snapshot · not Finnhub live';
+    $('diag-ws').textContent='Not used on public demo';
+    $('diag-trades').textContent='Sample quotes only';
+    $('diag-candles').textContent='Bundled daily bars where available';
+    $('diag-storage').textContent='Browser storage only';
+    $('diag-budget').textContent='0 / 48';
+    $('diag-message').textContent='Public admissions demo. Run the Mac server for Finnhub connection tests.';
+    $('diag-message').className='diag-result good';
+    syncConnectionUI();
+    return;
+  }
   E.probing=true;
   const btn=$('diagnostic-refresh');btn.disabled=true;btn.textContent='Checking Finnhub…';
   $('diag-probe').textContent='Testing a fresh AAPL quote…';
@@ -540,6 +555,17 @@ async function importWorkspace(file){
 }
 async function runLocalAudit(){
   const btn=$('local-audit-run'),out=$('local-audit-output');
+  if(E.demoMode){
+    out.replaceChildren();
+    for(const check of [{ok:true,name:'Demo snapshot',detail:'Bundled heatmap, quotes and charts'},{ok:true,name:'Website files',detail:'Static portfolio host'},{ok:true,name:'Mac database',detail:'Full integrity check needs server.py on your Mac'}]){
+      const line=document.createElement('div');line.className='audit-line';
+      const title=document.createElement('strong');title.textContent=(check.ok?'✓ ':'✕ ')+check.name;
+      const detail=document.createElement('span');detail.textContent=check.detail;
+      line.append(title,detail);out.appendChild(line);
+    }
+    const note=document.createElement('p');note.textContent='Public demo file check · no Mac database attached.';out.appendChild(note);
+    return;
+  }
   btn.disabled=true;out.textContent='Checking database, saved files and application assets…';
   try{
     const result=await api('/api/selftest');
@@ -1003,6 +1029,7 @@ function renderNotes(){const pane=$('saved-notes');$('note-count').textContent=E
 function saveNote(){const title=$('note-title').value.trim();if(!title){toast('Add a company or research topic first.');return}const note={title,thesis:$('note-thesis').value,risk:$('note-risk').value,evidence:$('note-evidence').value,date:new Date().toLocaleString('en-GB')};if(Number.isInteger(E.editIndex)){E.notes[E.editIndex]=note;E.editIndex=null}else E.notes.unshift(note);saveJSON('md-reborn-notes',E.notes);renderNotes();for(const id of ['note-title','note-thesis','note-risk','note-evidence'])$(id).value='';toast('Research note saved on this browser')}
 function exportNotes(){const text=E.notes.map(n=>`${n.title}\n${n.date}\n\nTHESIS\n${n.thesis}\n\nRISKS / CONTRARY EVIDENCE\n${n.risk}\n\nSOURCES\n${n.evidence}\n\n${'='.repeat(60)}\n`).join('\n');const blob=new Blob([text||'No saved notes yet.'],{type:'text/plain;charset=utf-8'});let url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='MarketDesk-Research-'+new Date().toISOString().slice(0,10)+'.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 async function saveMassiveToken(){
+  if(E.demoMode){toast('Provider keys are not stored on this public demo.');return}
   const input=$('massive-api-key'),button=$('massive-save-key'),token=input.value.trim();
   if(!token){toast('Paste your private Massive API key in the field first.');return}
   button.disabled=true;
@@ -1017,6 +1044,7 @@ async function saveMassiveToken(){
   finally{button.disabled=false}
 }
 async function clearMassiveToken(){
+  if(E.demoMode){toast('No Massive key is stored on this host.');return}
   try{
     await post('/api/massive-token',{clear:true});
     E.massiveConfigured=false;E.candles.clear();$('massive-api-key').value='';
@@ -1026,6 +1054,7 @@ async function clearMassiveToken(){
   }catch(e){toast('Cannot remove Massive key: '+e.message)}
 }
 async function testMassive(){
+  if(E.demoMode){$('massive-test-result').textContent='Massive history tests stay on your Mac. Charts here use the bundled snapshot.';return}
   const btn=$('massive-test'),out=$('massive-test-result');btn.disabled=true;
   out.textContent='Checking genuine AAPL daily bars with Massive (one request)…';
   try{
@@ -1038,10 +1067,10 @@ async function testMassive(){
   }catch(e){out.className='diag-result issue';out.textContent='Historical test failed: '+e.message}
   finally{btn.disabled=false}
 }
-async function saveToken(){let token=$('api-key').value.trim();try{await post('/api/token',{token});$('api-key').value='';E.configured=true;E.quotes.clear();E.quoteFailures.clear();E.quoteChecks.clear();E.trades.clear();E.verifiedAt=0;E.news=null;E.candles.clear();E.lastHistoryStatus='';E.lastQuoteError='';E.lastGoodQuoteAt=0;E.probe=null;E.fundamentals.clear();alertBanner('');renderAll();connectWS();await runDiagnostics();await autoQuoteCycle();loadNews();loadChart();toast('Finnhub token saved locally; check the connection result above')}catch(e){toast('Could not save token: '+e.message)}}
-async function clearToken(){try{await post('/api/token',{clear:true});stopWS();E.configured=false;E.quotes.clear();E.quoteFailures.clear();E.quoteChecks.clear();E.trades.clear();E.verifiedAt=0;E.news=null;E.candles.clear();E.lastHistoryStatus='';E.lastQuoteError='';E.probe=null;E.lastGoodQuoteAt=0;renderAll();toast('Saved token removed from this Mac')}catch(e){toast('Could not clear key: '+e.message)}}
+async function saveToken(){if(E.demoMode){toast('Provider keys are not stored on this public demo.');return}let token=$('api-key').value.trim();try{await post('/api/token',{token});$('api-key').value='';E.configured=true;E.quotes.clear();E.quoteFailures.clear();E.quoteChecks.clear();E.trades.clear();E.verifiedAt=0;E.news=null;E.candles.clear();E.lastHistoryStatus='';E.lastQuoteError='';E.lastGoodQuoteAt=0;E.probe=null;E.fundamentals.clear();alertBanner('');renderAll();connectWS();await runDiagnostics();await autoQuoteCycle();loadNews();loadChart();toast('Finnhub token saved locally; check the connection result above')}catch(e){toast('Could not save token: '+e.message)}}
+async function clearToken(){if(E.demoMode){toast('No Finnhub key is stored on this host.');return}try{await post('/api/token',{clear:true});stopWS();E.configured=false;E.quotes.clear();E.quoteFailures.clear();E.quoteChecks.clear();E.trades.clear();E.verifiedAt=0;E.news=null;E.candles.clear();E.lastHistoryStatus='';E.lastQuoteError='';E.probe=null;E.lastGoodQuoteAt=0;renderAll();toast('Saved token removed from this Mac')}catch(e){toast('Could not clear key: '+e.message)}}
 function attachEvents(){$('chart-forecast-focus').addEventListener('click',()=>{E.forecastFocus=!E.forecastFocus;E.chartHover=null;drawChart()});$('chart-session38').addEventListener('click',toggleSessionReplay);$('chart-refresh-saved').addEventListener('click',()=>{resetSessionReplay();E.heatmapWindow=null;if(['1H','1D'].includes(E.range)){E.range='1Y';document.querySelectorAll('#overview-ranges button').forEach(b=>b.classList.toggle('active',b.dataset.range==='1Y'));}E.candles.clear();loadChart(true,true)});setupHistoryImport();if(typeof PriceAlerts!=='undefined')PriceAlerts.setup();setupStockDirectory();setupMarketTabs();if(typeof setupResearchV18==='function')setupResearchV18();window.addEventListener('storage',e=>{if(e.key==='md-reborn-reports'&&typeof reportsOnView==='function')reportsOnView()});if(typeof setupResearchV17==='function')setupResearchV17();if(typeof setupV19==='function')setupV19();document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>changeView(b.dataset.view)));$('open-settings').addEventListener('click',()=>changeView('settings'));$('menu-toggle').addEventListener('click',()=>$('sidebar').classList.toggle('open'));$('overview-explore').addEventListener('click',()=>changeView('markets'));$('chart-expand').addEventListener('click',toggleExpandedChart);if(typeof tapeSetup==='function')tapeSetup();$('refresh-overview').addEventListener('click',()=>loadQuotes(E.watch.slice(0,6)));$('markets-refresh').addEventListener('click',()=>autoQuoteCycle());$('markets-search-focus').addEventListener('click',()=>{switchMarketsTab('explore');$('directory-search').focus()});$('company-reload').addEventListener('click',()=>{E.fundamentals.delete($('company-select').value);loadCompany()});$('company-select').addEventListener('change',()=>{const sym=$('company-select').value;if(safeSymbol(sym)&&sym!==E.selected)setSelected(sym);if(typeof FinancialHealth==='undefined'||document.querySelector('#view-company .fh-legacy')?.open)loadCompany();else $('company-content').textContent='Open this section to load the selected company’s provider profile and ratios.';});$('forecast-select').addEventListener('change',()=>{const sym=$('forecast-select').value;if(safeSymbol(sym)&&sym!==E.selected)setSelected(sym);forecastRunId++;$('forecast-content').innerHTML='<div class="empty-state"><h3>Select Calculate scenarios for '+escapeHtml(sym||'this company')+'</h3><p>Previous forecasts are cleared when changing stocks. The chart and research views use this same ticker.</p></div>'});$('forecast-calculate').addEventListener('click',runForecast);$('chart-show-forecast').addEventListener('change',e=>{E.forecastEnabled=e.target.checked;E.chartForecast=null;if(E.forecastEnabled&&['1H','1D'].includes(E.range)){toast('Forecasts use verified daily closes. Showing the 1Y chart.');setChartRange('1Y')}else loadChart(E.forecastEnabled);});$('news-refresh').addEventListener('click',()=>loadNews(true));$('save-note').addEventListener('click',saveNote);$('export-notes').addEventListener('click',exportNotes);$('save-key').addEventListener('click',saveToken);$('massive-save-key').addEventListener('click',saveMassiveToken);$('massive-clear-key').addEventListener('click',clearMassiveToken);$('massive-test').addEventListener('click',testMassive);$('clear-key').addEventListener('click',clearToken);$('diagnostic-refresh').addEventListener('click',runDiagnostics);$('local-audit-run').addEventListener('click',runLocalAudit);$('export-workspace').addEventListener('click',exportWorkspace);$('import-workspace').addEventListener('change',e=>importWorkspace(e.target.files?.[0]));window.addEventListener('marketdesk:preference-saved',queueWorkspaceBackup);$('symbol-search').addEventListener('input',e=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>searchStocks(e.target.value),360)});document.addEventListener('click',e=>{const tab=e.target.closest('[data-market-tab-link]');if(tab){changeView('markets');switchMarketsTab(tab.dataset.marketTabLink);return}const research=e.target.closest('[data-stock-research]');if(research){openStockResearch(research.dataset.stockResearch);return}const add=e.target.closest('[data-add]');if(add){addStock(add.dataset.add,add.dataset.name);$('search-results').classList.add('hidden');$('symbol-search').value='';return}const rm=e.target.closest('[data-remove]');if(rm){removeStock(rm.dataset.remove);return}const sel=e.target.closest('[data-select]');if(sel){openStock(sel.dataset.select);return}const edit=e.target.closest('[data-editnote]');if(edit){let i=Number(edit.dataset.editnote),n=E.notes[i];if(!n)return;E.editIndex=i;$('note-title').value=n.title;$('note-thesis').value=n.thesis;$('note-risk').value=n.risk;$('note-evidence').value=n.evidence;toast('Editing saved note. Save to update it.');return}const del=e.target.closest('[data-deletenote]');if(del){E.notes.splice(Number(del.dataset.deletenote),1);saveJSON('md-reborn-notes',E.notes);renderNotes();return}let act=e.target.closest('[data-action]');if(act){changeView(act.dataset.action==='all-news'?'news':'markets');return}if(!e.target.closest('.search-panel'))$('search-results').classList.add('hidden')});document.addEventListener('keydown',e=>{if(e.key==='Escape'){$('search-results').classList.add('hidden');if($('main-chart-panel').classList.contains('is-expanded'))toggleExpandedChart(false);if(typeof tapeEscape==='function')tapeEscape()}if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-select]')){e.preventDefault();openStock(e.target.dataset.select)}});document.querySelectorAll('#overview-ranges button').forEach(b=>b.addEventListener('click',()=>setChartRange(b.dataset.range)));let canvas=$('overview-chart'),hoverFrame=0;const queueHover=()=>{if(!hoverFrame)hoverFrame=requestAnimationFrame(()=>{hoverFrame=0;drawChart()})};canvas.addEventListener('mousemove',e=>{E.chartHover=e.clientX-canvas.getBoundingClientRect().left;queueHover()});canvas.addEventListener('mouseleave',()=>{E.chartHover=null;queueHover()});let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(drawChart,80)});window.addEventListener('beforeunload',()=>{if(backupTimer){clearTimeout(backupTimer);sendWorkspaceBackup()}stopWS()})}
-async function init(){if(window.MarketDeskViews)await MarketDeskViews.boot();await loadStockDirectory();await restoreWorkspace();const stored=savedJSON('md-reborn-watch',DEFAULT_STOCKS);E.watch=normaliseWatchlist(stored);if(!E.watch.includes(E.selected))E.selected=E.watch[0]||'';Object.assign(E.names,savedJSON('md-reborn-names',{}));E.notes=Array.isArray(savedJSON('md-reborn-notes',[]))?savedJSON('md-reborn-notes',[]):[];const hour=new Date().getHours();$('greeting-time').textContent=hour<12?'morning':hour<17?'afternoon':'evening';setInterval(()=>{$('clock').textContent=new Date().toLocaleTimeString('en-GB',{timeZone:'UTC',hour:'2-digit',minute:'2-digit',second:'2-digit'})+' UTC';syncConnectionUI();refreshWatchFreshness()},1000);attachEvents();renderAll();renderNotes();drawChart();loadChart();E.initialised=true;window.dispatchEvent(new Event('marketdesk:ready'));if(typeof V3!=='undefined')changeView('home');nextQuoteCycleAt=nowMs()+QUOTE_CYCLE_MS;setupTokenStatus();setInterval(()=>{nextQuoteCycleAt=nowMs()+QUOTE_CYCLE_MS;autoQuoteCycle()},QUOTE_CYCLE_MS);setInterval(()=>{renderOverview();renderMarkets();updateTicker()},35000)}
+async function init(){if(window.MarketDeskViews)await MarketDeskViews.boot();await loadStockDirectory();await restoreWorkspace();const stored=savedJSON('md-reborn-watch',DEFAULT_STOCKS);E.watch=normaliseWatchlist(stored);if(!E.watch.includes(E.selected))E.selected=E.watch[0]||'';Object.assign(E.names,savedJSON('md-reborn-names',{}));E.notes=Array.isArray(savedJSON('md-reborn-notes',[]))?savedJSON('md-reborn-notes',[]):[];const hour=new Date().getHours();$('greeting-time').textContent=hour<12?'morning':hour<17?'afternoon':'evening';setInterval(()=>{$('clock').textContent=new Date().toLocaleTimeString('en-GB',{timeZone:'UTC',hour:'2-digit',minute:'2-digit',second:'2-digit'})+' UTC';syncConnectionUI();refreshWatchFreshness()},1000);attachEvents();renderAll();renderNotes();drawChart();loadChart();E.initialised=true;window.dispatchEvent(new Event('marketdesk:ready'));if(E.demoMode)changeView('overview');else if(typeof V3!=='undefined')changeView('home');nextQuoteCycleAt=nowMs()+QUOTE_CYCLE_MS;setupTokenStatus();setInterval(()=>{nextQuoteCycleAt=nowMs()+QUOTE_CYCLE_MS;autoQuoteCycle()},QUOTE_CYCLE_MS);setInterval(()=>{renderOverview();renderMarkets();updateTicker()},35000)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 
 function setupHistoryImport(){
