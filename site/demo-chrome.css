@@ -1,0 +1,99 @@
+/* Public portfolio demo — admissions chrome (html[data-demo-mode="true"] only). */
+html[data-demo-mode='true'] {
+  --demo-accent: #d5fa6a;
+  --demo-banner: rgba(213, 250, 106, 0.08);
+}
+
+html[data-demo-mode='true'] #global-alert.global-alert:not(.hidden) {
+  background: var(--demo-banner);
+  border: 1px solid rgba(213, 250, 106, 0.35);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.55;
+  padding: 10px 16px;
+}
+
+html[data-demo-mode='true'] .desk-local {
+  color: var(--demo-accent);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+html[data-demo-mode='true'] .desk-ribbon {
+  border-color: rgba(213, 250, 106, 0.18);
+}
+
+html[data-demo-mode='true'] .ribbon-edition,
+html[data-demo-mode='true'] #desk-edition-label {
+  color: var(--demo-accent);
+}
+
+html[data-demo-mode='true'] #showcase61 {
+  border: 1px solid rgba(122, 175, 255, 0.35);
+  box-shadow: 0 0 0 1px rgba(8, 12, 19, 0.6) inset;
+  margin-bottom: 20px;
+  order: -1;
+}
+
+html[data-demo-mode='true'] #view-settings .settings-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+html[data-demo-mode='true'] #showcase61 > h2:first-child {
+  font-size: 1.25rem;
+  margin-bottom: 4px;
+}
+
+html[data-demo-mode='true'] #showcase61-intro {
+  color: var(--muted);
+  font-size: 13px;
+  max-width: 52rem;
+}
+
+html[data-demo-mode='true'] .showcase61-progress {
+  background: var(--side);
+  border-radius: 99px;
+  height: 6px;
+  margin: 10px 0 14px;
+  overflow: hidden;
+  width: 100%;
+}
+
+html[data-demo-mode='true'] .showcase61-progress > i {
+  background: linear-gradient(90deg, #7aafff, var(--demo-accent));
+  border-radius: 99px;
+  display: block;
+  height: 100%;
+  transition: width 0.25s ease;
+}
+
+html[data-demo-mode='true'] #showcase61-stage .desk61-note:first-child {
+  color: var(--demo-accent);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  margin-bottom: 12px;
+}
+
+html[data-demo-mode='true'] #showcase61-stage canvas {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  display: block;
+  margin: 8px 0 12px;
+  max-width: 100%;
+}
+
+html[data-demo-mode='true'] .side-footer {
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+html[data-demo-mode='true'] #view-learning .page-title > div > p {
+  max-width: 42rem;
+}
+
+html[data-demo-mode='true'] #preferences-state {
+  color: var(--demo-accent);
+}
