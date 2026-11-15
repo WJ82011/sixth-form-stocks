@@ -93,6 +93,11 @@ const Workbench40=(()=>{
     box.innerHTML='<h3>Issued forecasts</h3><p>'+escapeHtml(card.message||'')+'</p><p>'+escapeHtml(sample)+'</p><h3>Pending</h3>'+table(card.pending||[])+'<h3>Graded</h3>'+table(card.graded||[])+'<p>'+escapeHtml(card.notice||'')+' '+escapeHtml(card.backtestNotice||'')+'</p>';
   }
   async function train(refresh=false){
+    if(typeof E!=='undefined'&&E.demoMode){
+      $('learning40-message').textContent=refresh?'Live price training needs server.py on your Mac.':'Forecast Lab evaluation needs saved Mac prices.';
+      $('learning40-collector').textContent='Background collector runs on your Mac · not on this public demo.';
+      return;
+    }
     if(working){queued=true;return}
     const symbol=$('learning40-symbol').value;
     if(!symbol)return;

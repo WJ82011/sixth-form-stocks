@@ -448,6 +448,13 @@
       };
     }
     if (p === '/api/v3/events') return { events: [], demoMode: true };
+    if (p === '/api/v3/listings-refresh') {
+      return {
+        ok: true,
+        notice: 'SEC directory refresh needs your Mac. Demo search uses the bundled watchlist slice.',
+        demoMode: true,
+      };
+    }
     if (p === '/api/v3/listings') {
       const q = String(qs.get('q') || '').toUpperCase();
       const names = catalogNames();
