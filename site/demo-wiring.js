@@ -184,6 +184,67 @@
     });
   }
 
+  const FIRST_RUN_KEY = 'md-guided-demo-seen';
+
+  function guidedSeen() {
+    try {
+      return localStorage.getItem(FIRST_RUN_KEY) === '1';
+    } catch {
+      return true;
+    }
+  }
+
+  function markGuidedSeen() {
+    try {
+      localStorage.setItem(FIRST_RUN_KEY, '1');
+    } catch {}
+    window.MarketDeskShowcase?.markGuidedSeen?.();
+    document.getElementById('demo-first-run-cta')?.remove();
+  }
+
+  function openGuidedDemoFromCta() {
+    markGuidedSeen();
+    if (typeof changeView === 'function') changeView('settings');
+    else document.querySelector('.nav-btn[data-view="settings"]')?.click();
+    let tries = 0;
+    const tick = () => {
+      tries += 1;
+      if (window.MarketDeskShowcase?.beginGuidedDemo?.()) return;
+      const btn = document.getElementById('showcase61-demo');
+      if (btn) {
+        btn.click();
+        document.getElementById('showcase61')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        return;
+      }
+      if (tries < 50) setTimeout(tick, 100);
+    };
+    setTimeout(tick, 200);
+  }
+
+  function firstRunCta() {
+    if (!isDemo() || guidedSeen() || document.getElementById('demo-first-run-cta')) return;
+    // Mount inside Overview scroll content so the fixed look43 header cannot intercept clicks.
+    const overview = document.getElementById('view-overview');
+    if (!overview) return;
+    const cue = document.createElement('aside');
+    cue.id = 'demo-first-run-cta';
+    cue.className = 'demo-first-run-cta';
+    cue.setAttribute('role', 'region');
+    cue.setAttribute('aria-label', 'Optional guided demo');
+    cue.innerHTML =
+      '<div class="demo-first-run-copy">' +
+      '<strong>Optional walkthrough</strong>' +
+      '<p>DEMO DATA only — labelled sample figures, not a live feed. Open Settings for the guided demo (Overview → Heatmap → Stock Browser → Forecast Lab).</p>' +
+      '</div>' +
+      '<div class="demo-first-run-actions">' +
+      '<button type="button" class="primary-btn" id="demo-first-run-start">Start guided demo</button>' +
+      '<button type="button" class="ghost-btn" id="demo-first-run-dismiss">Not now</button>' +
+      '</div>';
+    overview.insertBefore(cue, overview.firstChild);
+    document.getElementById('demo-first-run-start')?.addEventListener('click', openGuidedDemoFromCta);
+    document.getElementById('demo-first-run-dismiss')?.addEventListener('click', markGuidedSeen);
+  }
+
   function settingsTour() {
     try {
       if (localStorage.getItem('md-demo-settings-hint') === '1') return;
@@ -222,6 +283,7 @@
       assertDemoChrome();
       syncFocusNav(window.E?.view || 'overview');
       window.MarketDeskDemoPolish?.refresh();
+      firstRunCta();
     });
     window.addEventListener('marketdesk:edition-change', assertDemoChrome);
     window.addEventListener('marketdesk:preference-saved', assertDemoChrome);
@@ -232,10 +294,20 @@
         if (selected) syncFocusNav(selected);
       }).observe(nav, { subtree: true, attributes: true, attributeFilter: ['class'] });
     }
+    if (window.E?.initialised) firstRunCta();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onReady);
   else onReady();
 
-  window.MarketDeskDemo = { syncFocusNav, FOCUS_FOR, SOFT_HIDE, assertDemoChrome };
+  window.MarketDeskDemo = {
+    syncFocusNav,
+    FOCUS_FOR,
+    SOFT_HIDE,
+    assertDemoChrome,
+    firstRunCta,
+    markGuidedSeen,
+    FIRST_RUN_KEY,
+  };
 })();
+

@@ -35,6 +35,27 @@ def main():
                 '() => document.querySelector(".view.active")?.id === "view-overview"',
                 timeout=15000,
             )
+            page.evaluate('() => localStorage.removeItem("md-guided-demo-seen")')
+            page.reload(wait_until='networkidle', timeout=60000)
+            page.wait_for_function(
+                '() => document.documentElement.dataset.demoMode === "true" && document.querySelector(".view.active")?.id === "view-overview"',
+                timeout=30000,
+            )
+            page.wait_for_selector('#demo-first-run-cta', timeout=15000)
+            status = page.locator('#top-status').inner_text()
+            assert 'DEMO DATA' in status, f'top status ({status!r})'
+            assert page.locator('#demo-first-run-cta').inner_text().find('DEMO DATA') >= 0
+            page.locator('#demo-first-run-dismiss').click(timeout=5000)
+            page.wait_for_function('() => !document.getElementById("demo-first-run-cta")', timeout=5000)
+            seen = page.evaluate('() => localStorage.getItem("md-guided-demo-seen")')
+            assert seen == '1', f'first-run dismiss should stick ({seen!r})'
+            page.reload(wait_until='networkidle', timeout=60000)
+            page.wait_for_function(
+                '() => document.documentElement.dataset.demoMode === "true" && document.querySelector(".view.active")?.id === "view-overview"',
+                timeout=30000,
+            )
+            page.wait_for_timeout(1500)
+            assert page.locator('#demo-first-run-cta').count() == 0, 'returning visitor must not see CTA again'
             # Soft-hidden on public demo nav (still reachable via changeView for checks):
             # learning, accuracy, valuation, calendar, reports.
             hidden = page.evaluate(

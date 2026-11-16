@@ -116,3 +116,55 @@ html[data-demo-mode='true'] #desk-session-label,
 html[data-demo-mode='true'] #desk-edition-label {
   letter-spacing: 0.04em;
 }
+
+/* Soft first-run cue — non-blocking, once per browser (localStorage). */
+html[data-demo-mode='true'] .demo-first-run-cta {
+  align-items: center;
+  background: var(--demo-banner);
+  border: 1px solid rgba(213, 250, 106, 0.35);
+  border-radius: 14px;
+  color: var(--text);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  justify-content: space-between;
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  position: relative;
+  z-index: 1;
+}
+
+html[data-demo-mode='true'] .demo-first-run-copy {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+html[data-demo-mode='true'] .demo-first-run-copy strong {
+  color: var(--demo-accent);
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+html[data-demo-mode='true'] .demo-first-run-copy p {
+  color: var(--muted, #9eb2cc);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 46rem;
+}
+
+html[data-demo-mode='true'] .demo-first-run-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+@media (max-width: 720px) {
+  html[data-demo-mode='true'] .demo-first-run-cta {
+    margin-bottom: 12px;
+  }
+}
