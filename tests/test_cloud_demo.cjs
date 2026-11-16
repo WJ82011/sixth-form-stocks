@@ -23,6 +23,15 @@ assert.ok(snapshot.intelligence.TTWO.hour.count > 0, 'intelligence hour points')
 assert.equal(snapshot.forecasts.TTWO.status, 'learned', 'TTWO shown forecast');
 assert.equal(snapshot.forecasts.AMD.status, 'withheld', 'AMD withheld forecast');
 assert.ok(Object.keys(snapshot.workspace.names).length >= 200, 'workspace name index');
+assert.ok(Array.isArray(snapshot.workspace.notes) && snapshot.workspace.notes.length >= 1, 'demo research notes');
+assert.ok(snapshot.workspace.notes.every((n) => n.title && n.thesis && n.risk && n.evidence && n.date), 'notes use thesis/risk/evidence schema');
+assert.ok(snapshot.workspace.portfolio?.trades?.length >= 2, 'demo paper portfolio trades');
+assert.ok(snapshot.workspace.v3?.ledger?.length >= 3, 'demo V3 practice ledger');
+assert.ok(snapshot.workspace.v3?.marks?.length >= 2, 'demo V3 dated marks');
+assert.ok(snapshot.workspace.v3?.research?.projects?.length >= 1, 'demo research project');
+assert.ok(snapshot.workspace.v3.research.projects[0].items?.length >= 1, 'demo research project has evidence items');
+assert.ok(snapshot.workspace.v3Calc?.portfolio?.holdings?.length >= 2, 'precomputed demo holdings');
+assert.match(String(snapshot.workspace.v3Calc.notice || snapshot.workspace.v3Calc.portfolio.notice || ''), /demo|synthetic|labelled/i, 'portfolio calc stays labelled');
 
 for (const needle of [
   '/api/v3/heatmap',
@@ -58,6 +67,9 @@ assert.ok(wiring.includes('assertDemoChrome'), 'demo wiring re-asserts DEMO DATA
 assert.ok(fs.readFileSync(path.join(root, 'site/demo-chrome.css'), 'utf8').includes('demo-nav-soft-hidden'));
 assert.ok(fs.readFileSync(path.join(root, 'site/demo-chrome.css'), 'utf8').includes('demo-mac-only'));
 assert.ok(fs.readFileSync(path.join(root, 'site/cloud-host.js'), 'utf8').includes("dataset.demoMode = 'true'"));
+assert.ok(cloud.includes('md-demo-workflow-seed-v1'), 'demo seeds portfolio/research once');
+assert.ok(cloud.includes('v3Calc'), 'cloud host uses precomputed demo portfolio calc');
+assert.ok(cloud.includes('workspace?.v3') || cloud.includes('workspace.v3'), 'cloud host serves seeded V3 workspace');
 assert.ok(fs.readFileSync(path.join(root, 'site/signal.js'), 'utf8').includes('SAMPLE DATA · NOT LIVE'));
 assert.ok(fs.readFileSync(path.join(root, 'site/pro.js'), 'utf8').includes('DEMO / 01'));
 assert.ok(fs.existsSync(path.join(root, 'site/stock-directory.json')));
@@ -66,6 +78,14 @@ assert.ok(release.includes("version = '6.8.0'"), 'release.js version');
 assert.ok(!fs.readFileSync(path.join(root, 'site/index.html'), 'utf8').includes('Market Desk<span>4.3</span>'));
 assert.ok(fs.readFileSync(path.join(root, 'site/showcase61.js'), 'utf8').includes('md-guided-demo-seen'));
 assert.ok(fs.existsSync(path.join(root, 'tools/export-demo-snapshot.py')));
+assert.ok(
+  fs.readFileSync(path.join(root, 'tools/export-demo-snapshot.py'), 'utf8').includes('v3Calc'),
+  'export script builds practice portfolio calc'
+);
+assert.ok(
+  fs.readFileSync(path.join(root, 'site/view-loader.js'), 'utf8').includes('/projects32.js'),
+  'research lazy bundle loads projects32'
+);
 console.log(
-  `Public demo bundle OK · v${snapshot.version} · ${snapshot.heatmap.rows.length} directory rows · ${(fs.statSync(path.join(root, 'site/demo/snapshot.json')).size / 1024).toFixed(0)} KB`
+  `Public demo bundle OK · v${snapshot.version} · ${snapshot.heatmap.rows.length} directory rows · ${(fs.statSync(path.join(root, 'site/demo/snapshot.json')).size / 1024).toFixed(0)} KB · ${snapshot.workspace.v3Calc.portfolio.holdings.length} demo holdings`
 );

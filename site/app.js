@@ -158,14 +158,14 @@ async function restoreWorkspace(){
         const notes=[...(Array.isArray(current.notes)?current.notes:[]),...(snapshot.notes||[])];
         const ids=new Set();merged.notes=notes.filter(n=>{const id=JSON.stringify([n.title,n.date,n.thesis]);if(ids.has(id))return false;ids.add(id);return true}).slice(0,250);
         merged.journal=(typeof Journal49!=='undefined'?Journal49.merge(current.journal,snapshot.journal):snapshot.journal||current.journal||[]);
-        merged.reports=mergeReportArchives(current.reports,snapshot.reports);
+        merged.reports=typeof mergeReportArchives==='function'?mergeReportArchives(current.reports,snapshot.reports):(Array.isArray(current.reports)&&current.reports.length?current.reports:(snapshot.reports||[]));
         merged.portfolio=localStorage.getItem('md-reborn-portfolio')!==null?current.portfolio:snapshot.portfolio;
         merged.v3=localStorage.getItem('md-reborn-v3')!==null?current.v3:snapshot.v3;
         merged.design=localStorage.getItem('md-reborn-design-v28')!==null?current.design:snapshot.design;
         merged.preferences=localStorage.getItem('md-reborn-workstation-v1')!==null?current.preferences:snapshot.preferences;
         merged.tapeSymbol=localStorage.getItem('md-tape-symbol')!==null?current.tapeSymbol:snapshot.tapeSymbol;
       }
-      merged.reports=mergeReportArchives(current.reports,snapshot.reports);
+      merged.reports=typeof mergeReportArchives==='function'?mergeReportArchives(current.reports,snapshot.reports):(Array.isArray(current.reports)&&current.reports.length?current.reports:(snapshot.reports||[]));
       merged.portfolio=localStorage.getItem('md-reborn-portfolio')!==null?current.portfolio:snapshot.portfolio;
       merged.analystDrafts=localStorage.getItem('md-analyst-drafts-v35')!==null?current.analystDrafts:snapshot.analystDrafts;
       merged.journal=(typeof Journal49!=='undefined'?Journal49.merge(current.journal,snapshot.journal):snapshot.journal||current.journal||[]);

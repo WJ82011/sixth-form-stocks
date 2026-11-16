@@ -139,7 +139,7 @@ const Projects32=(()=>{
   window.addEventListener('beforeunload',e=>{if(dirty||listDirty){e.preventDefault();e.returnValue='';}});
  }
  async function setup(){mount();bind();if(!E.initialised)await new Promise(resolve=>window.addEventListener('marketdesk:ready',resolve,{once:true}));await V3.whenReady();if(!V3.workspace()){status('The workspace could not be loaded. Check Settings and your backup before creating research.');return;}loaded=true;if(!data().initialised)await save('watchlist.bootstrap',{symbols:E.watch});render();renderLists();status('Private research projects · saved on this Mac and included in your full research backup.');}
- document.addEventListener('DOMContentLoaded',setup,{once:true});
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});else setup();
  function context(view){const el=$('p32-context'),p=current();if(!el)return;el.hidden=!(p&&['overview','company','intelligence','reports'].includes(view));if(!el.hidden){el.innerHTML='<span>RESEARCH PROJECT · '+esc(p.symbol)+'<strong>'+esc(p.title)+'</strong></span>'+button('Back to project','back-project');$('view-'+view).prepend(el);}}
  return {notesChanged:()=>{if(loaded&&mode==='overview')render();},open:view=>{if(view==='research')render();if(view==='markets')renderLists();context(view);}};
 })();

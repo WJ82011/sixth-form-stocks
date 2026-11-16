@@ -15,11 +15,22 @@
     ['#view-tape .page-title .eyebrow', 'PORTFOLIO DEMO / BUNDLED TRADES'],
     ['#view-tape .page-title > div > p', 'Replay labelled sample trades from the demo bundle. Live Finnhub sockets run on your Mac.'],
     ['#view-reports .page-title .eyebrow', 'INVESTMENT RESEARCH / DEMO BROWSER'],
+    ['#view-research .page-title .eyebrow', 'YOUR RESEARCH / PORTFOLIO DEMO'],
+    ['#view-portfolio .page-title .eyebrow', 'PRACTICE / PORTFOLIO DEMO'],
   ]);
 
   const SUBTREE_PHRASES = [
     ['Private workspace · saved on this Mac', 'Portfolio demo · bundled snapshot'],
     ['Private research workspace ·', 'Portfolio demo ·'],
+    [
+      'Private research projects · saved on this Mac and included in your full research backup.',
+      'Demo sample research · labelled synthetic project in this browser.',
+    ],
+    ['Private research projects · saved on this Mac', 'Demo sample research · labelled synthetic'],
+    [
+      'Your saved V3 records are ready. All trades are hypothetical.',
+      'Demo sample ledger ready. All trades are hypothetical · labelled synthetic.',
+    ],
     ['saved on this Mac', 'in this demo bundle'],
     ['on this Mac', 'on the public demo host'],
     ['this Mac has saved', 'the demo bundle includes'],
@@ -96,7 +107,7 @@
       }
     }
     const roots = document.querySelectorAll(
-      '#view-overview, #view-home, #view-learning, #view-settings, #view-alerts, #view-reports, #view-markets, #view-tape, #view-intelligence, #view-news, #view-sources'
+      '#view-overview, #view-home, #view-learning, #view-settings, #view-alerts, #view-reports, #view-markets, #view-tape, #view-intelligence, #view-news, #view-sources, #view-research, #view-portfolio, #p32-projects, #v3-portfolio'
     );
     for (const root of roots) {
       const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);

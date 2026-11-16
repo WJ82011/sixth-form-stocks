@@ -94,6 +94,7 @@
     },
     research: {
       scripts: [
+        '/projects32.js?v=3.2.1',
         '/research35.js?v=4.0.0',
         '/truth36.js?v=4.0.0',
         '/journal49.js?v=6.5.0',
@@ -106,6 +107,7 @@
         '/tracker65.js?v=6.5.0',
       ],
       styles: [
+        '/projects32.css?v=3.2.1',
         '/research35.css?v=4.0.0',
         '/truth36.css?v=4.0.0',
       ],
