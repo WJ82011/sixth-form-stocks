@@ -5,10 +5,13 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import sys
 from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 CATALOG = ROOT / 'ai_catalog.json'
 OUT = ROOT / 'site' / 'demo' / 'snapshot.json'
 
@@ -405,17 +408,246 @@ def macro_bundle() -> dict:
 
 
 def workspace_bundle(catalog: list[dict]) -> dict:
+    """Practice portfolio + research samples for admissions (?demo=1). Labelled synthetic only."""
+    import portfolio3
+    import research32
+    import workspace3
+    import insights46
+
     names = {e['symbol']: e['name'] for e in catalog}
+    as_of = '2025-11-12'
+    mark_source = 'Portfolio demo bundle · labelled synthetic close · not live Finnhub'
+
+    # V2 paper portfolio (legacy details under Practice Portfolio)
+    paper_trades = [
+        {
+            'symbol': 'AAPL',
+            'side': 'BUY',
+            'qty': 12,
+            'price': 214.5,
+            'date': '2025-09-15T15:30:00.000Z',
+            'note': 'Demo sample BUY · synthetic practice price',
+        },
+        {
+            'symbol': 'TTWO',
+            'side': 'BUY',
+            'qty': 18,
+            'price': 152.0,
+            'date': '2025-10-02T14:05:00.000Z',
+            'note': 'Demo sample BUY · synthetic practice price',
+        },
+        {
+            'symbol': 'NVDA',
+            'side': 'BUY',
+            'qty': 8,
+            'price': 128.4,
+            'date': '2025-10-20T16:00:00.000Z',
+            'note': 'Demo sample BUY · synthetic practice price',
+        },
+    ]
+    paper = {'capital': 10000, 'trades': paper_trades}
+
+    # V3 ledger: deposit + three labelled holdings with dated marks
+    ledger = [
+        {
+            'id': 'demo-dep-1',
+            'date': '2025-09-01',
+            'kind': 'DEPOSIT',
+            'amount': 10000,
+            'source': 'Portfolio demo · synthetic starting cash (not a real deposit)',
+            'note': 'Admissions sample ledger',
+        },
+        {
+            'id': 'demo-buy-aapl',
+            'date': '2025-09-15',
+            'kind': 'BUY',
+            'symbol': 'AAPL',
+            'quantity': 12,
+            'price': 214.5,
+            'currency': 'USD',
+            'fx': 1,
+            'fee': 0,
+            'fxSource': '',
+            'assetType': 'stock',
+            'source': mark_source,
+            'note': 'Demo sample holding · labelled synthetic',
+        },
+        {
+            'id': 'demo-buy-ttwo',
+            'date': '2025-10-02',
+            'kind': 'BUY',
+            'symbol': 'TTWO',
+            'quantity': 18,
+            'price': 152.0,
+            'currency': 'USD',
+            'fx': 1,
+            'fee': 0,
+            'fxSource': '',
+            'assetType': 'stock',
+            'source': mark_source,
+            'note': 'Demo sample holding · labelled synthetic',
+        },
+        {
+            'id': 'demo-buy-nvda',
+            'date': '2025-10-20',
+            'kind': 'BUY',
+            'symbol': 'NVDA',
+            'quantity': 8,
+            'price': 128.4,
+            'currency': 'USD',
+            'fx': 1,
+            'fee': 0,
+            'fxSource': '',
+            'assetType': 'stock',
+            'source': mark_source,
+            'note': 'Demo sample holding · labelled synthetic',
+        },
+    ]
+    marks = [
+        {
+            'symbol': 'AAPL',
+            'date': as_of,
+            'price': price('AAPL'),
+            'currency': 'USD',
+            'fx': 1,
+            'fxSource': '',
+            'source': mark_source,
+        },
+        {
+            'symbol': 'TTWO',
+            'date': as_of,
+            'price': price('TTWO'),
+            'currency': 'USD',
+            'fx': 1,
+            'fxSource': '',
+            'source': mark_source,
+        },
+        {
+            'symbol': 'NVDA',
+            'date': as_of,
+            'price': price('NVDA'),
+            'currency': 'USD',
+            'fx': 1,
+            'fxSource': '',
+            'source': mark_source,
+        },
+    ]
+
+    research_raw = {
+        'version': 1,
+        'initialised': True,
+        'watchlists': [
+            {
+                'id': 'wl-demo-core',
+                'name': 'Demo core watchlist',
+                'symbols': WATCHLIST[:6],
+                'archived': False,
+                'createdAt': '2025-09-01T12:00:00+00:00',
+                'updatedAt': '2025-11-10T12:00:00+00:00',
+            }
+        ],
+        'projects': [
+            {
+                'id': 'proj-demo-ttwo',
+                'symbol': 'TTWO',
+                'title': 'Take-Two · release cadence',
+                'stage': 'Building a view',
+                'question': 'How visible is the next franchise window in saved accounts and public filings?',
+                'thesis': (
+                    'Demo sample thesis only — not investment advice. Practice workflow: link a clear '
+                    'question to dated evidence before sizing a paper trade.'
+                ),
+                'risks': (
+                    'Bundled demo figures only. Release timing, marketing spend and platform concentration '
+                    'could invalidate this practice view.'
+                ),
+                'archived': False,
+                'createdAt': '2025-10-05T10:00:00+00:00',
+                'updatedAt': '2025-11-10T12:00:00+00:00',
+                'items': [
+                    {
+                        'id': 'item-demo-note-1',
+                        'kind': 'note',
+                        'title': 'What would change my mind',
+                        'body': (
+                            'Sample research note for the public demo. Look for dated revenue mix, '
+                            'booking guidance and a clear source link before treating any figure as evidence.'
+                        ),
+                        'archived': False,
+                        'createdAt': '2025-10-08T15:30:00+00:00',
+                        'updatedAt': '2025-10-08T15:30:00+00:00',
+                    },
+                    {
+                        'id': 'item-demo-source-1',
+                        'kind': 'source',
+                        'title': 'Company investor relations (public HTTPS)',
+                        'body': 'Placeholder source row for admissions — link is public; page is not fetched or verified by this demo.',
+                        'url': 'https://www.take2games.com/',
+                        'sourceDate': '2025-11',
+                        'archived': False,
+                        'createdAt': '2025-10-12T11:00:00+00:00',
+                        'updatedAt': '2025-10-12T11:00:00+00:00',
+                    },
+                ],
+            }
+        ],
+    }
+    research = research32.normalise(research_raw)
+
+    v3_raw = {
+        'version': 3,
+        'ledger': ledger,
+        'marks': marks,
+        'checkpoints': [],
+        'events': [],
+        'manualStatements': [],
+        'home': {'order': ['watchlist', 'portfolio', 'events', 'economy', 'research'], 'hidden': []},
+        'benchmark': 'SPY',
+        'researchFocus': 'Demo sample: what evidence would change the Take-Two practice view?',
+        'analyst': {'snapshots': []},
+        'briefing': {'checkpoints': []},
+        'research': research,
+    }
+    v3 = workspace3.normalise(v3_raw)
+    account = portfolio3.calculate(v3['ledger'], v3['marks'], as_of=as_of)
+    sectors = {e['symbol']: e.get('category') or 'Sector not recorded' for e in catalog}
+    insights = insights46.build(v3['ledger'], v3['marks'], sectors=sectors, as_of=as_of)
+    # Keep comparison light on the static host (no SPY series required for display).
+    insights['comparison'] = {
+        'status': 'unavailable',
+        'notice': 'SPY comparison needs matching saved daily prices on your Mac. Demo shows holdings only.',
+    }
+
+    notes = [
+        {
+            'title': 'TTWO — franchise timing (demo sample)',
+            'thesis': (
+                'Practice note for admissions: a student can write a thesis, risks and sources in one place. '
+                'Figures here are labelled synthetic demo content, not a live research call.'
+            ),
+            'risk': (
+                'Release slips, weaker attach rates or higher marketing spend could break the practice case. '
+                'This note is bundled demo data only.'
+            ),
+            'evidence': (
+                'Sources: portfolio demo snapshot · public company IR link saved in the research project. '
+                'No Finnhub or SEC pull on this host.'
+            ),
+            'date': '10/11/2025, 12:00:00',
+        },
+        {
+            'title': 'AAPL — services mix (demo sample)',
+            'thesis': 'Second sample note so the research archive is not a single empty card on first open.',
+            'risk': 'Demo-only risks list — replace with your own contrary evidence on the Mac install.',
+            'evidence': 'Bundled snapshot · not live filings.',
+            'date': '05/11/2025, 09:30:00',
+        },
+    ]
+
     return {
         'watch': WATCHLIST,
         'names': names,
-        'notes': [{
-            'id': 'demo-note-1',
-            'symbol': 'TTWO',
-            'title': 'GTA VI timing watch',
-            'body': 'Bundled research note for the public demo. Save your own notes on your Mac.',
-            'createdAt': '2025-11-01T18:00:00Z',
-        }],
+        'notes': notes,
         'reports': [{
             'id': 'demo-report-1',
             'symbol': 'AAPL',
@@ -423,21 +655,19 @@ def workspace_bundle(catalog: list[dict]) -> dict:
             'status': 'Draft',
             'summary': 'Illustrative report shell for admissions screenshots.',
         }],
-        'research': {
-            'initialised': True,
-            'watchlists': [{'id': 'wl-demo', 'title': 'Demo watchlist', 'symbols': WATCHLIST[:6]}],
-            'projects': [{
-                'id': 'proj-demo-ttwo',
-                'symbol': 'TTWO',
-                'title': 'Take-Two · release cadence',
-                'stage': 'Investigate',
-                'question': 'How visible is the next franchise window in saved accounts?',
-                'thesis': 'Demo project only — not investment advice.',
-                'risks': 'Bundled figures only.',
-                'updatedAt': '2025-11-10T12:00:00Z',
-                'items': [],
-                'archived': False,
-            }],
+        # Kept for older readers; live research UI reads V3.research.
+        'research': research,
+        'portfolio': paper,
+        'v3': v3,
+        'v3Calc': {
+            'asOf': as_of,
+            'portfolio': account,
+            'insights': insights,
+            'performance': {
+                'status': 'insufficient',
+                'notice': 'Demo sample ledger · capture two checkpoints on your Mac to measure performance.',
+            },
+            'notice': 'Portfolio demo · labelled synthetic holdings · not live brokerage data.',
         },
     }
 

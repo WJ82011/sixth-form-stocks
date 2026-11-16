@@ -64,7 +64,11 @@
       });
   }
 
-  function defaultV3State() {
+  function clone(value) {
+    return value == null ? value : JSON.parse(JSON.stringify(value));
+  }
+
+  function emptyV3State() {
     return {
       version: 3,
       ledger: [],
@@ -77,25 +81,64 @@
       researchFocus: '',
       analyst: { snapshots: [] },
       briefing: { checkpoints: [] },
-      research: { projects: [] },
+      research: { version: 1, initialised: false, projects: [], watchlists: [] },
     };
   }
 
+  function defaultV3State() {
+    const seeded = snapshot?.workspace?.v3;
+    return seeded ? clone(seeded) : emptyV3State();
+  }
+
+  function demoLedgerIds(state) {
+    return (state?.ledger || []).map((row) => row?.id).filter(Boolean).join('|');
+  }
+
   function v3Calculate(body) {
-    const state = body?.state && typeof body.state === 'object' ? body.state : defaultV3State();
+    const incoming = body?.state && typeof body.state === 'object' ? body.state : null;
+    const state = incoming ? clone(incoming) : defaultV3State();
+    const calc = snapshot?.workspace?.v3Calc;
+    const seedIds = demoLedgerIds(snapshot?.workspace?.v3);
+    const useSeeded = Boolean(calc?.portfolio) && demoLedgerIds(state) === seedIds && seedIds.length > 0;
+    if (useSeeded) {
+      return {
+        state,
+        portfolio: {
+          ...clone(calc.portfolio),
+          notice:
+            calc.notice ||
+            'Portfolio demo · labelled synthetic holdings · practice ledger only.',
+        },
+        insights: clone(calc.insights) || { openCostUSD: 0, holdings: [], companies: [], sectors: [] },
+        performance: clone(calc.performance) || {
+          status: 'insufficient',
+          notice: 'Demo sample ledger · checkpoints stay on your Mac.',
+        },
+        demoMode: true,
+      };
+    }
+    // Edited demo ledgers keep cash/holdings honest without inventing marks.
+    const cash = (state.ledger || [])
+      .filter((e) => e.kind === 'DEPOSIT')
+      .reduce((sum, e) => sum + Number(e.amount || 0), 0);
     return {
       state,
       portfolio: {
-        complete: true,
-        cashUSD: 10000,
-        totalValueUSD: 10000,
+        complete: !(state.ledger || []).some((e) => e.kind === 'BUY' || e.kind === 'SELL'),
+        cashUSD: cash || 0,
+        totalValueUSD: cash || 0,
         realisedUSD: 0,
         knownUnrealisedUSD: 0,
         holdings: [],
-        notice: 'Practice ledger stays in your browser on the public demo.',
+        notice:
+          'Practice ledger stays in this browser on the public demo. Seeded sample marks apply only to the bundled demo ledger.',
       },
-      insights: { openCostUSD: 0, holdings: [], concentration: [], currency: [] },
-      performance: { status: 'insufficient', notice: 'Save dated marks on your Mac to measure performance.' },
+      insights: { openCostUSD: 0, holdings: [], companies: [], sectors: [], notice: 'Open the Mac app for full allocation charts after edits.' },
+      performance: {
+        status: 'insufficient',
+        notice: 'Save dated marks on your Mac to measure performance.',
+      },
+      demoMode: true,
     };
   }
 
@@ -323,14 +366,14 @@
             names: ws?.names || {},
             notes: ws?.notes || [],
             reports: ws?.reports || [],
-            portfolio: { capital: 10000, trades: [] },
+            portfolio: ws?.portfolio || { capital: 10000, trades: [] },
             preferences: {},
             design: {},
-            v3: {},
+            v3: ws?.v3 ? clone(ws.v3) : defaultV3State(),
             tapeSymbol: 'AAPL',
             analystDrafts: { version: 1, records: [] },
             journal: [],
-            research: ws?.research || { projects: [], watchlists: [] },
+            research: ws?.research || ws?.v3?.research || { projects: [], watchlists: [] },
           }
         : null;
       return { snapshot: snap, updated_at: snap ? start : 0, cloudDemo: true };
@@ -496,6 +539,7 @@
     if (p === '/api/v3/calculate' && isPost) return { ...v3Calculate(body), demoMode: true };
     if (p === '/api/v3/overview') {
       const s = defaultV3State();
+      const calc = v3Calculate({ state: s });
       const macro = (snapshot?.macro?.series || []).slice(0, 4).map((row) => ({
         title: row.title,
         unit: row.unit,
@@ -503,7 +547,7 @@
       }));
       return {
         state: s,
-        portfolio: v3Calculate({ state: s }).portfolio,
+        portfolio: calc.portfolio,
         events: [
           {
             date: '2025-11-20',
@@ -515,7 +559,7 @@
         ],
         accounts: { rows: [] },
         macro,
-        notice: 'Portfolio demo home · bundled macro and watchlist.',
+        notice: 'Portfolio demo home · bundled macro, practice ledger and watchlist.',
         demoMode: true,
       };
     }
@@ -765,6 +809,28 @@
   }
   window.WebSocket = DemoSocket;
 
+  function seedDemoWorkflow(data) {
+    const flag = 'md-demo-workflow-seed-v1';
+    try {
+      if (localStorage.getItem(flag) === '1') return;
+      const ws = data?.workspace;
+      if (!ws?.v3?.ledger?.length) return;
+      localStorage.setItem('md-reborn-v3', JSON.stringify(ws.v3));
+      if (ws.portfolio && Array.isArray(ws.portfolio.trades)) {
+        localStorage.setItem('md-reborn-portfolio', JSON.stringify(ws.portfolio));
+      }
+      if (Array.isArray(ws.notes) && ws.notes.length) {
+        localStorage.setItem('md-reborn-notes', JSON.stringify(ws.notes));
+      }
+      if (Array.isArray(ws.reports) && ws.reports.length) {
+        localStorage.setItem('md-reborn-reports', JSON.stringify(ws.reports));
+      }
+      localStorage.setItem(flag, '1');
+    } catch (error) {
+      console.warn('Demo workflow seed skipped:', error);
+    }
+  }
+
   window.MarketDeskHost = {
     mode: 'cloud-demo',
     demoMode: true,
@@ -772,9 +838,11 @@
     snapshotReady: false,
     whenSnapshotReady: () => snapshotReady,
     isCloud: () => true,
+    getWorkspaceSeed: () => clone(snapshot?.workspace || null),
   };
   snapshotReady.then((data) => {
     if (data?.label) window.MarketDeskHost.label = data.label;
+    seedDemoWorkflow(data);
   });
 
   function applyChrome() {
