@@ -8,9 +8,14 @@
   const close=document.getElementById('command-close');
   const session=document.getElementById('desk-session-label');
   const nav=Array.from(document.querySelectorAll('.nav-btn[data-view]'));
-  const entries=nav.map(b=>({view:b.dataset.view,label:b.dataset.navLabel||b.textContent.trim().replace(/\s+/g,' ')}));
+  function entryFor(b){return {view:b.dataset.view,label:b.dataset.navLabel||b.textContent.trim().replace(/\s+/g,' ')}}
+  function visibleEntries(){
+    return nav
+      .filter((b)=>!b.classList.contains('demo-nav-soft-hidden')&&!b.hidden&&b.getAttribute('aria-hidden')!=='true')
+      .map(entryFor);
+  }
   let focusIndex=0,lastFocus=null;
-  function matching(){const q=input.value.trim().toLowerCase();return entries.filter(x=>!q||x.label.toLowerCase().includes(q)||x.view.includes(q));}
+  function matching(){const q=input.value.trim().toLowerCase();return visibleEntries().filter(x=>!q||x.label.toLowerCase().includes(q)||x.view.includes(q));}
   function draw(){
     const options=matching();focusIndex=Math.min(Math.max(focusIndex,0),Math.max(0,options.length-1));
     list.replaceChildren();
@@ -43,6 +48,11 @@
   });
   function updateSession(){
     if(!session)return;
+    // Public demo keeps an honest sample-data label (cloud-host / demo-wiring).
+    if(document.documentElement.dataset.demoMode==='true'||window.MarketDeskHost?.demoMode){
+      session.textContent='SAMPLE DATA · NOT LIVE';
+      return;
+    }
     // Session classification from the existing, more complete US market-hours helper.
     // Do not infer a live data connection from this schedule.
     try{

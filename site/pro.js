@@ -27,7 +27,11 @@
     body.dataset.contrast=prefs.contrast;
     body.dataset.ticker=prefs.ticker?'on':'off';
     body.dataset.motion=prefs.motion?'on':'off';
-    el('desk-edition-label').textContent=prefs.edition==='professional'?'PROFESSIONAL / 02':'STANDARD / 01';
+    if(document.documentElement.dataset.demoMode==='true'||window.MarketDeskHost?.demoMode){
+      el('desk-edition-label').textContent='DEMO / 01';
+    }else{
+      el('desk-edition-label').textContent=prefs.edition==='professional'?'PROFESSIONAL / 02':'STANDARD / 01';
+    }
     const editionHeading=el('desk-overview-edition');if(editionHeading)editionHeading.textContent=prefs.edition==='professional'?'THE PROFESSIONAL MODE':'THE STANDARD MODE';
     for(const [id,edition] of [['edition-signal','signal'],['edition-pro','professional']]){
       const node=el(id);const active=prefs.edition===edition;

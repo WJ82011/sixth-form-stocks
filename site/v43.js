@@ -11,7 +11,10 @@ const Desk43=window.Desk43=(()=>{
     const professional=edition()==='professional';
     document.querySelectorAll('[data-v43-edition]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.v43Edition===(professional?'professional':'standard'))));
     const label=document.getElementById('desk-edition-label');
-    if(label)label.textContent=professional?'PROFESSIONAL / 02':'STANDARD / 01';
+    if(label){
+      if(document.documentElement.dataset.demoMode==='true'||window.MarketDeskHost?.demoMode)label.textContent='DEMO / 01';
+      else label.textContent=professional?'PROFESSIONAL / 02':'STANDARD / 01';
+    }
     const heading=document.getElementById('desk-overview-edition');
     if(heading)heading.textContent=professional?'THE PROFESSIONAL MODE':'THE STANDARD MODE';
     const signal=document.querySelector('#edition-signal strong');
