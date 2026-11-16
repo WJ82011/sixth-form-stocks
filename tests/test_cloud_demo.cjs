@@ -67,7 +67,8 @@ assert.ok(wiring.includes('assertDemoChrome'), 'demo wiring re-asserts DEMO DATA
 assert.ok(fs.readFileSync(path.join(root, 'site/demo-chrome.css'), 'utf8').includes('demo-nav-soft-hidden'));
 assert.ok(fs.readFileSync(path.join(root, 'site/demo-chrome.css'), 'utf8').includes('demo-mac-only'));
 assert.ok(fs.readFileSync(path.join(root, 'site/cloud-host.js'), 'utf8').includes("dataset.demoMode = 'true'"));
-assert.ok(cloud.includes('md-demo-workflow-seed-v1'), 'demo seeds portfolio/research once');
+assert.ok(cloud.includes('md-demo-workflow-seed-v2'), 'demo seeds portfolio/research once (v2)');
+assert.ok(cloud.includes('.tmp.now'), 'anonymous Vercel *.tmp.now hosts auto-enable demo mode');
 assert.ok(cloud.includes('v3Calc'), 'cloud host uses precomputed demo portfolio calc');
 assert.ok(cloud.includes('workspace?.v3') || cloud.includes('workspace.v3'), 'cloud host serves seeded V3 workspace');
 assert.ok(fs.readFileSync(path.join(root, 'site/signal.js'), 'utf8').includes('SAMPLE DATA · NOT LIVE'));

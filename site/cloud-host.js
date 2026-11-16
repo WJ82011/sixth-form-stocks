@@ -7,8 +7,13 @@
   const localPython = (host === 'localhost' || host === '127.0.0.1') && port === '8765';
   const forceLocal = params.get('demo') === 'local';
   const forceDemo = params.get('demo') === '1' || params.get('demo') === 'cloud';
-  const isVercel = host.endsWith('.vercel.app') || host.includes('sixth-form-stocks');
-  const demoMode = (forceDemo || isVercel) && !localPython && !forceLocal;
+  // Anonymous Vercel previews use *.tmp.now; production may be *.vercel.app or a custom host.
+  const isPublicDemoHost =
+    host.endsWith('.vercel.app') ||
+    host.endsWith('.tmp.now') ||
+    host.endsWith('.now.sh') ||
+    host.includes('sixth-form-stocks');
+  const demoMode = (forceDemo || isPublicDemoHost) && !localPython && !forceLocal;
   if (!demoMode) return;
 
   // Mark demo before later head scripts / DOMContentLoaded so wiring + polish can detect it.
@@ -31,7 +36,13 @@
     .then((res) => (res.ok ? res.json() : null))
     .then((data) => {
       snapshot = data;
-      if (window.MarketDeskHost) window.MarketDeskHost.snapshotReady = Boolean(snapshot);
+      if (window.MarketDeskHost) {
+        window.MarketDeskHost.snapshotReady = Boolean(snapshot);
+        if (data?.label) window.MarketDeskHost.label = data.label;
+      }
+      // Seed before any awaiter of whenSnapshotReady continues, so V3/init
+      // never hydrates an empty ledger ahead of the bundled practice portfolio.
+      seedDemoWorkflow(data);
       return snapshot;
     })
     .catch((error) => {
@@ -810,11 +821,20 @@
   window.WebSocket = DemoSocket;
 
   function seedDemoWorkflow(data) {
-    const flag = 'md-demo-workflow-seed-v1';
+    const flag = 'md-demo-workflow-seed-v2';
     try {
-      if (localStorage.getItem(flag) === '1') return;
       const ws = data?.workspace;
       if (!ws?.v3?.ledger?.length) return;
+      let existing = null;
+      try {
+        existing = JSON.parse(localStorage.getItem('md-reborn-v3') || 'null');
+      } catch {
+        existing = null;
+      }
+      const hasLedger = Array.isArray(existing?.ledger) && existing.ledger.length > 0;
+      // Re-seed when the flag is missing OR a prior visit left an empty ledger
+      // (race / cleared site data) so Practice Portfolio never stays blank.
+      if (localStorage.getItem(flag) === '1' && hasLedger) return;
       localStorage.setItem('md-reborn-v3', JSON.stringify(ws.v3));
       if (ws.portfolio && Array.isArray(ws.portfolio.trades)) {
         localStorage.setItem('md-reborn-portfolio', JSON.stringify(ws.portfolio));
@@ -826,6 +846,9 @@
         localStorage.setItem('md-reborn-reports', JSON.stringify(ws.reports));
       }
       localStorage.setItem(flag, '1');
+      try {
+        localStorage.removeItem('md-demo-workflow-seed-v1');
+      } catch {}
     } catch (error) {
       console.warn('Demo workflow seed skipped:', error);
     }
@@ -840,10 +863,6 @@
     isCloud: () => true,
     getWorkspaceSeed: () => clone(snapshot?.workspace || null),
   };
-  snapshotReady.then((data) => {
-    if (data?.label) window.MarketDeskHost.label = data.label;
-    seedDemoWorkflow(data);
-  });
 
   function applyChrome() {
     document.documentElement.dataset.demoMode = 'true';
