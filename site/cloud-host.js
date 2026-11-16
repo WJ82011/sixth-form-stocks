@@ -11,6 +11,9 @@
   const demoMode = (forceDemo || isVercel) && !localPython && !forceLocal;
   if (!demoMode) return;
 
+  // Mark demo before later head scripts / DOMContentLoaded so wiring + polish can detect it.
+  document.documentElement.dataset.demoMode = 'true';
+
   window.Desk =
     window.Desk ||
     {

@@ -35,6 +35,19 @@ def main():
                 '() => document.querySelector(".view.active")?.id === "view-overview"',
                 timeout=15000,
             )
+            # Soft-hidden on public demo nav (still reachable via changeView for checks):
+            # learning, accuracy, valuation, calendar, reports.
+            hidden = page.evaluate(
+                '''() => [...document.querySelectorAll('.nav-btn.demo-nav-soft-hidden')].map(b => b.dataset.view).sort()'''
+            )
+            assert 'learning' in hidden and 'accuracy' in hidden, f'soft-hidden nav ({hidden})'
+            assert page.locator('#api-key').evaluate('el => el.closest(".settings-card")?.classList.contains("demo-mac-only")'), (
+                'Finnhub key card should be marked Mac-only on demo'
+            )
+            edition = page.locator('#desk-edition-label').inner_text()
+            session = page.locator('#desk-session-label').inner_text()
+            assert 'DEMO' in edition, f'edition label ({edition!r})'
+            assert 'SAMPLE DATA' in session or 'NOT LIVE' in session, f'session label ({session!r})'
             for view in ('home', 'overview', 'heatmap', 'markets', 'tape', 'alerts', 'learning', 'settings'):
                 page.evaluate('(v) => changeView(v)', view)
                 page.wait_for_function(

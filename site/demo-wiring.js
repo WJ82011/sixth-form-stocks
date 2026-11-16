@@ -1,7 +1,13 @@
-/* Public demo: wire navigation affordances and no-op Mac-only actions with clear copy. */
+/* Public demo: navigation declutter, Mac-only guards, honest chrome re-assert. */
 (function () {
   'use strict';
-  if (document.documentElement.dataset.demoMode !== 'true') return;
+
+  function isDemo() {
+    return document.documentElement.dataset.demoMode === 'true' || Boolean(window.MarketDeskHost?.demoMode);
+  }
+
+  // Thin / Mac-only / crashy on the static host — keep Mac path intact when not in demo.
+  const SOFT_HIDE = new Set(['learning', 'accuracy', 'valuation', 'calendar', 'reports']);
 
   const FOCUS_FOR = {
     home: 'home',
@@ -37,7 +43,7 @@
     });
     const nav = document.querySelector('.focus-nav');
     const pill = document.getElementById('nav-indicator');
-  const button = nav?.querySelector(`[data-focus-view="${focus}"]`);
+    const button = nav?.querySelector(`[data-focus-view="${focus}"]`);
     if (pill && nav && button) {
       const box = button.getBoundingClientRect();
       const parent = nav.getBoundingClientRect();
@@ -61,6 +67,7 @@
     ['clear-key', 'No Finnhub key is stored on this host.'],
     ['massive-save-key', 'Provider keys are not stored on this public demo.'],
     ['massive-clear-key', 'No Massive key is stored on this host.'],
+    ['diagnostic-refresh', 'Connection tests need Finnhub on your Mac. This host uses the bundled snapshot.'],
   ]);
 
   function setupGuards() {
@@ -107,6 +114,63 @@
     );
   }
 
+  function softHideNav() {
+    document.querySelectorAll('.nav-btn[data-view]').forEach((button) => {
+      const view = button.dataset.view;
+      if (!SOFT_HIDE.has(view)) return;
+      button.classList.add('demo-nav-soft-hidden');
+      button.setAttribute('aria-hidden', 'true');
+      button.tabIndex = -1;
+      button.title = 'Available on the Mac install · soft-hidden on the public demo';
+    });
+    document.querySelectorAll('.sidebar-group').forEach((group) => {
+      const buttons = group.querySelectorAll('.nav-btn[data-view]');
+      if (!buttons.length) return;
+      const visible = [...buttons].some((b) => !b.classList.contains('demo-nav-soft-hidden'));
+      group.classList.toggle('demo-nav-group-empty', !visible);
+    });
+  }
+
+  function markMacOnlySettings() {
+    for (const id of ['api-key', 'massive-api-key', 'save-key', 'massive-save-key']) {
+      const el = document.getElementById(id);
+      el?.closest('.settings-card')?.classList.add('demo-mac-only');
+    }
+    const settingsTitle = document.querySelector('#view-settings .page-title > div > p');
+    if (settingsTitle && !settingsTitle.dataset.demoWiring) {
+      settingsTitle.dataset.demoWiring = '1';
+      settingsTitle.textContent =
+        'Admissions demo: appearance, guided walkthrough and file check. Provider keys stay on your Mac.';
+    }
+    const eyebrow = document.querySelector('#view-settings .page-title .eyebrow');
+    if (eyebrow) eyebrow.textContent = 'SETTINGS / PORTFOLIO DEMO';
+  }
+
+  function assertDemoChrome() {
+    const bind = (id, text) => {
+      const el = document.getElementById(id);
+      if (el && el.textContent !== text) el.textContent = text;
+    };
+    bind('connection-sub', 'Demo bundle · not a live Finnhub feed');
+    bind('connection-label', 'Portfolio demo data');
+    bind('top-status', 'DEMO DATA');
+    bind('side-identity-tagline', 'PORTFOLIO ADMISSIONS DEMO');
+    bind('desk-session-label', 'SAMPLE DATA · NOT LIVE');
+    bind('desk-edition-label', 'DEMO / 01');
+    bind('preferences-state', 'DEMO · BROWSER ONLY');
+    const foot = document.querySelector('.side-footer');
+    if (foot && !foot.textContent.includes('PORTFOLIO DEMO')) foot.textContent = 'PORTFOLIO DEMO · 01 / 26';
+    for (const id of ['connection-dot', 'top-dot']) {
+      const dot = document.getElementById(id);
+      if (dot) dot.className = 'status-dot amber';
+    }
+    document.querySelectorAll('#api-key, #massive-api-key, #save-key, #massive-save-key').forEach((el) => {
+      if (!el) return;
+      el.disabled = true;
+      if (el.type === 'password' || el.type === 'text') el.placeholder = 'Not used on public demo';
+    });
+  }
+
   function wireDeskShortcuts() {
     const jumpHeat = document.getElementById('desk-open-heat');
     jumpHeat?.addEventListener('click', () => {
@@ -144,12 +208,23 @@
   }
 
   function onReady() {
+    if (!isDemo()) return;
+    document.documentElement.dataset.demoMode = 'true';
+    softHideNav();
+    markMacOnlySettings();
+    assertDemoChrome();
     setupGuards();
     wireDeskShortcuts();
     settingsTour();
     const view = window.E?.view || 'overview';
     syncFocusNav(view);
-    window.addEventListener('marketdesk:ready', () => syncFocusNav(window.E?.view || 'overview'));
+    window.addEventListener('marketdesk:ready', () => {
+      assertDemoChrome();
+      syncFocusNav(window.E?.view || 'overview');
+      window.MarketDeskDemoPolish?.refresh();
+    });
+    window.addEventListener('marketdesk:edition-change', assertDemoChrome);
+    window.addEventListener('marketdesk:preference-saved', assertDemoChrome);
     const nav = document.getElementById('nav');
     if (nav) {
       new MutationObserver(() => {
@@ -162,5 +237,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', onReady);
   else onReady();
 
-  window.MarketDeskDemo = { syncFocusNav, FOCUS_FOR };
+  window.MarketDeskDemo = { syncFocusNav, FOCUS_FOR, SOFT_HIDE, assertDemoChrome };
 })();

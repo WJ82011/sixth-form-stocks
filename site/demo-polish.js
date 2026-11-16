@@ -1,13 +1,20 @@
 /* Public demo: replace contradictory Mac/local copy and tune peripheral chrome. */
 (function () {
   'use strict';
-  if (document.documentElement.dataset.demoMode !== 'true') return;
+
+  function isDemo() {
+    return document.documentElement.dataset.demoMode === 'true' || Boolean(window.MarketDeskHost?.demoMode);
+  }
 
   const EXACT = new Map([
     ['.desk-local', 'Portfolio demo · bundled snapshot'],
     ['#preferences-state', 'DEMO · BROWSER ONLY'],
     ['#v3-global-status', null],
     ['#view-learning .page-title > div > p', 'Sample training results from the bundle. Live collection needs server.py on your Mac.'],
+    ['#view-markets .page-title .eyebrow', 'PORTFOLIO DEMO / BUNDLED QUOTES'],
+    ['#view-tape .page-title .eyebrow', 'PORTFOLIO DEMO / BUNDLED TRADES'],
+    ['#view-tape .page-title > div > p', 'Replay labelled sample trades from the demo bundle. Live Finnhub sockets run on your Mac.'],
+    ['#view-reports .page-title .eyebrow', 'INVESTMENT RESEARCH / DEMO BROWSER'],
   ]);
 
   const SUBTREE_PHRASES = [
@@ -28,12 +35,27 @@
     ['LOCAL RESEARCH TERMINAL', 'PORTFOLIO DEMO'],
     ['LOCAL WORKSTATION', 'PORTFOLIO DEMO'],
     ['FEED OFFLINE', 'DEMO DATA'],
+    ['LIVE TERMINAL / FINNHUB', 'PORTFOLIO DEMO / BUNDLED QUOTES'],
+    ['RECORDED FINNHUB TRADES', 'BUNDLED DEMO TRADES'],
+    ['See the trades Finnhub sends to your app.', 'Replay labelled sample trades from the demo bundle.'],
+    ['Uses data saved on this Mac.', 'Uses the labelled demo snapshot on this host.'],
+    ['SAVED ON YOUR MAC', 'SAVED IN THIS BROWSER'],
+    ['PRIVATE & LOCAL', 'DEMO · BROWSER ONLY'],
+    ['Connecting to Finnhub…', 'Sample watchlist quotes from the bundled snapshot'],
+    ['Finnhub market feed', 'Demo bundle · not a live Finnhub feed'],
+    ['Waiting for Finnhub trades. Prices are never made up.', 'Bundled demo trades · not a live Finnhub socket.'],
+    ['Watchlist prices will appear here when Finnhub supplies them.', 'Sample watchlist quotes from the bundled snapshot.'],
+    ['search for a stock on Finnhub', 'search the bundled demo directory'],
+    ['with the same Finnhub data and research tools', 'with the same bundled demo tools'],
+    ['Your browser needs this key to receive Finnhub’s live feed.', 'Provider keys are not used on this public demo host.'],
   ];
 
   const LEARNING_CARD =
     'Background collection is part of the Mac install. This public demo shows bundled prices and charts only — no overnight collector runs here.';
 
   let v3StatusStamp = '';
+  let polishing = false;
+  let polishTimer = 0;
 
   function replaceInTextNode(node) {
     let text = node.textContent;
@@ -74,7 +96,7 @@
       }
     }
     const roots = document.querySelectorAll(
-      '#view-overview, #view-home, #view-learning, #view-settings, #view-alerts, #view-reports'
+      '#view-overview, #view-home, #view-learning, #view-settings, #view-alerts, #view-reports, #view-markets, #view-tape, #view-intelligence, #view-news, #view-sources'
     );
     for (const root of roots) {
       const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -113,45 +135,66 @@
   }
 
   function onViewChange() {
-    polishTextRoots();
-    polishTapeChrome();
+    if (!isDemo() || polishing) return;
+    polishing = true;
+    try {
+      polishTextRoots();
+      polishTapeChrome();
+    } finally {
+      polishing = false;
+    }
+  }
+
+  function schedulePolish() {
+    if (!isDemo() || polishing) return;
+    clearTimeout(polishTimer);
+    polishTimer = setTimeout(onViewChange, 80);
   }
 
   function watchDynamicCopy() {
     const status = document.getElementById('v3-global-status');
     if (!status) return;
     new MutationObserver(() => {
-      if (status.textContent === v3StatusStamp) return;
+      if (polishing || status.textContent === v3StatusStamp) return;
       v3StatusStamp = status.textContent;
-      polishTextRoots();
+      schedulePolish();
     }).observe(status, { childList: true, characterData: true, subtree: true });
   }
 
   function bindNav() {
-    document.getElementById('nav')?.addEventListener('click', () => setTimeout(onViewChange, 120));
+    document.getElementById('nav')?.addEventListener('click', () => setTimeout(schedulePolish, 120));
     window.addEventListener('marketdesk:ready', () => {
       deskStub();
       onViewChange();
       watchDynamicCopy();
     });
-    new MutationObserver(onViewChange).observe(document.body, {
+    // Only react to view class toggles — never to our own text rewrites.
+    new MutationObserver((records) => {
+      if (polishing) return;
+      const relevant = records.some(
+        (r) =>
+          r.type === 'attributes' &&
+          r.attributeName === 'class' &&
+          (r.target.classList?.contains('view') || r.target.classList?.contains('nav-btn'))
+      );
+      if (relevant) schedulePolish();
+    }).observe(document.body, {
       subtree: true,
-      childList: true,
       attributes: true,
       attributeFilter: ['class'],
     });
   }
 
-  deskStub();
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      polishTextRoots();
-      bindNav();
-    });
-  } else {
+  function boot() {
+    if (!isDemo()) return;
+    document.documentElement.dataset.demoMode = 'true';
+    deskStub();
     polishTextRoots();
     bindNav();
   }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
 
   window.MarketDeskDemoPolish = { refresh: onViewChange };
 })();

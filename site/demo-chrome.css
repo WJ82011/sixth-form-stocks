@@ -97,3 +97,22 @@ html[data-demo-mode='true'] #view-learning .page-title > div > p {
 html[data-demo-mode='true'] #preferences-state {
   color: var(--demo-accent);
 }
+
+/* Soft-hide thin / Mac-only / crashy workspaces on the public demo. */
+html[data-demo-mode='true'] .nav-btn.demo-nav-soft-hidden {
+  display: none !important;
+}
+
+html[data-demo-mode='true'] .sidebar-group.demo-nav-group-empty {
+  display: none !important;
+}
+
+/* Provider key cards cannot work on the static host — keep System status + guided demo. */
+html[data-demo-mode='true'] #view-settings .demo-mac-only {
+  display: none !important;
+}
+
+html[data-demo-mode='true'] #desk-session-label,
+html[data-demo-mode='true'] #desk-edition-label {
+  letter-spacing: 0.04em;
+}
