@@ -1,66 +1,138 @@
 #!/usr/bin/env python3
-"""Build site/demo/snapshot.json for the public Vercel demo. No API keys or network."""
+"""Build site/demo/snapshot.json for the public Vercel demo.
+
+Equity closes come from distinct historical session pairs (never a flat % on all names).
+Preferred refresh when keys exist: Finnhub free-tier quotes + Massive Basic daily bars.
+Always-free public paths: Coinbase Exchange REST (crypto), FRED CSV (macro).
+Offline: tools/demo_fixtures/equity_bars.json.
+"""
 from __future__ import annotations
 
+import datetime as dt
 import hashlib
 import json
 import math
+import os
 import sys
 from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+TOOLS = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+if str(TOOLS) not in sys.path:
+    sys.path.insert(0, str(TOOLS))
+
+import demo_data_sources as providers  # noqa: E402
+
 CATALOG = ROOT / 'ai_catalog.json'
 OUT = ROOT / 'site' / 'demo' / 'snapshot.json'
 
-BASE_PRICES = {
-    'AAPL': 228.4, 'NVDA': 139.2, 'MSFT': 416.8, 'GOOGL': 176.5, 'AMZN': 198.3,
-    'META': 572.1, 'TSLA': 338.7, 'AMD': 122.6, 'PLTR': 51.9, 'JPM': 243.2,
-    'KO': 63.4, 'DIS': 112.8, 'NFLX': 892.0, 'BA': 178.4, 'TSM': 172.3, 'TTWO': 158.2,
-}
-CRYPTO_USD = {
+WATCHLIST = [
+    'AAPL', 'NVDA', 'MSFT', 'GOOGL', 'AMZN', 'META', 'TSLA', 'AMD',
+    'PLTR', 'JPM', 'KO', 'DIS', 'NFLX', 'BA', 'TSM', 'TTWO',
+]
+CRYPTO_PRODUCTS = [
+    'BTC-USD', 'ETH-USD', 'SOL-USD', 'XRP-USD', 'DOGE-USD', 'ADA-USD', 'LINK-USD', 'AVAX-USD',
+]
+# Fallback crypto marks only if Coinbase is unreachable during export.
+CRYPTO_USD_FALLBACK = {
     'BTC-USD': 97240.0, 'ETH-USD': 3425.0, 'SOL-USD': 198.5, 'XRP-USD': 1.12,
     'DOGE-USD': 0.38, 'ADA-USD': 0.72, 'LINK-USD': 17.2, 'AVAX-USD': 38.5,
 }
-WATCHLIST = list(BASE_PRICES)
-QUOTE_TS = 1_763_164_800_000
-BASE_TS_SEC = 1_763_100_000
+QUOTE_TS = int(dt.datetime.now(dt.timezone.utc).timestamp() * 1000)
+BASE_TS_SEC = QUOTE_TS // 1000
 TAPE_SYMBOLS = ['AAPL', 'NVDA', 'TSLA', 'AMD', 'TTWO', 'MSFT']
+
+# Filled in main() from fixtures / live providers.
+EQUITY: dict = {}
+CRYPTO_LIVE: dict = {}
+FRED_LIVE: dict = {}
+PROVENANCE: list[str] = []
 
 
 def seed(sym: str, salt: str = '') -> int:
     return int(hashlib.md5(f'{sym}{salt}'.encode(), usedforsecurity=False).hexdigest()[:8], 16)
 
 
+def _quote_row(sym: str) -> dict | None:
+    return (EQUITY.get('quotes') or {}).get(sym)
+
+
 def price(sym: str) -> float:
-    if sym in BASE_PRICES:
-        return BASE_PRICES[sym]
+    row = _quote_row(sym)
+    if row and row.get('c'):
+        return float(row['c'])
     return round(25 + (seed(sym) % 5000) / 20, 2)
 
 
-def change_for(sym: str) -> float:
-    return round((seed(sym, '1D') % 2000) / 100 - 10, 2)
+def prev_close(sym: str) -> float:
+    """Distinct previous close from the session pair — never close * 0.99 for every name."""
+    row = _quote_row(sym)
+    if row and row.get('pc'):
+        return float(row['pc'])
+    sessions = (EQUITY.get('sessions') or {}).get(sym) or []
+    if len(sessions) >= 2 and sessions[-2].get('c'):
+        return float(sessions[-2]['c'])
+    # Last-resort: tiny symbol-specific offset so the book never shows one flat %.
+    return round(price(sym) / (1 + ((seed(sym, 'pc') % 900) - 450) / 10000), 4)
+
+
+def change_for(sym: str) -> float | None:
+    row = _quote_row(sym)
+    if row:
+        pct = providers.session_change_pct(float(row['c']), float(row['pc']))
+        if pct is not None:
+            return round(pct, 2)
+    sessions = (EQUITY.get('sessions') or {}).get(sym) or []
+    if len(sessions) >= 2:
+        pct = providers.session_change_pct(float(sessions[-1]['c']), float(sessions[-2]['c']))
+        if pct is not None:
+            return round(pct, 2)
+    return None
 
 
 def spark(sym: str, n: int = 5) -> list[dict]:
-    base = price(sym)
+    sessions = (EQUITY.get('sessions') or {}).get(sym) or []
+    if len(sessions) >= 2:
+        use = sessions[-n:]
+        return [
+            {
+                'date': dt.datetime.fromtimestamp(int(pt['t']), dt.timezone.utc).date().isoformat(),
+                'price': round(float(pt['c']), 4),
+            }
+            for pt in use
+        ]
+    # Insufficient history — two honest points from close/prevClose rather than a synthetic ramp.
+    c, pc = price(sym), prev_close(sym)
+    day = dt.datetime.fromtimestamp(BASE_TS_SEC, dt.timezone.utc).date()
     return [
-        {
-            'date': f'2025-11-{(8 + i):02d}',
-            'price': round(base * (0.97 + 0.01 * i + 0.003 * math.sin(i + ord(sym[0]))), 4),
-        }
-        for i in range(n)
+        {'date': (day - dt.timedelta(days=1)).isoformat(), 'price': round(pc, 4)},
+        {'date': day.isoformat(), 'price': round(c, 4)},
     ]
 
 
 def daily_bars(sym: str, days: int = 260) -> dict:
-    base = price(sym)
-    base_ts = 1_730_000_000
-    t = [base_ts + i * 86400 for i in range(days)]
-    c = [round(base * (0.88 + (i / days) * 0.2 + 0.02 * math.sin(i / 11)), 4) for i in range(days)]
-    return {'s': 'ok', 't': t, 'c': c, 'h': [x * 1.01 for x in c], 'l': [x * 0.99 for x in c], 'o': c}
+    bars = (EQUITY.get('dailyBars') or {}).get(sym)
+    if bars and bars.get('c') and len(bars['c']) >= 2:
+        return {k: bars[k] for k in ('s', 't', 'c', 'o', 'h', 'l', 'v') if k in bars} | {'s': 'ok'}
+    # No invented multi-month sine path: emit the real session pair only.
+    row = _quote_row(sym)
+    if row:
+        t0 = int(row.get('prevT') or (int(row['t']) - 86400))
+        t1 = int(row['t'])
+        c0, c1 = float(row['pc']), float(row['c'])
+        return {
+            's': 'ok',
+            't': [t0, t1],
+            'c': [c0, c1],
+            'o': [c0, float(row.get('o') or c1)],
+            'h': [max(c0, c1), float(row.get('h') or c1)],
+            'l': [min(c0, c1), float(row.get('l') or c1)],
+            'v': [0, 0],
+        }
+    raise ValueError(f'No historical closes available for {sym}')
 
 
 def metric(sym: str, field: str) -> float | None:
@@ -77,8 +149,11 @@ def metric(sym: str, field: str) -> float | None:
 def screener_row(entry: dict, stamp: int) -> dict:
     sym = entry['symbol']
     p = price(sym)
-    prev = round(p * (1 - change_for(sym) / 100), 4)
-    quote_sec = BASE_TS_SEC
+    prev = prev_close(sym)
+    ch = change_for(sym)
+    row = _quote_row(sym) or {}
+    raw_t = int(row.get('t') or BASE_TS_SEC)
+    quote_ms = raw_t if raw_t >= 10_000_000_000 else raw_t * 1000
     return {
         'symbol': sym,
         'name': entry['name'],
@@ -89,8 +164,8 @@ def screener_row(entry: dict, stamp: int) -> dict:
         'inDirectory': True,
         'price': p,
         'previousClose': prev,
-        'change': change_for(sym),
-        'quoteTime': quote_sec * 1000,
+        'change': ch,
+        'quoteTime': quote_ms,
         'quoteFetchedAt': stamp,
         'pe': metric(sym, 'pe'),
         'peField': 'peTTM',
@@ -102,7 +177,7 @@ def screener_row(entry: dict, stamp: int) -> dict:
         'financialsFetchedAt': stamp,
         'profileFetchedAt': stamp,
         'financialPeriod': 'Not supplied by this snapshot',
-        'source': 'Portfolio demo bundle',
+        'source': 'Portfolio demo · historical session closes (not live Finnhub on this host)',
         'profileUrl': 'https://finnhub.io/docs/api/company-profile2',
         'metricsUrl': 'https://finnhub.io/docs/api/company-basic-financials',
         'quoteUrl': 'https://finnhub.io/docs/api/quote',
@@ -110,11 +185,12 @@ def screener_row(entry: dict, stamp: int) -> dict:
 
 
 def heatmap_rows(catalog: list[dict], stamp: int) -> list[dict]:
-    start, end = '2025-11-07', '2025-11-12'
     rows = []
     for entry in catalog:
         sym = entry['symbol']
         points = spark(sym)
+        start = points[0]['date'] if points else None
+        end = points[-1]['date'] if points else None
         rows.append({
             'symbol': sym,
             'name': entry['name'],
@@ -122,12 +198,12 @@ def heatmap_rows(catalog: list[dict], stamp: int) -> list[dict]:
             'inDirectory': True,
             'listingCurrency': entry.get('currency', 'USD'),
             'change': change_for(sym),
-            'price': points[-1]['price'],
+            'price': points[-1]['price'] if points else price(sym),
             'start': start,
             'end': end,
             'period': '1D',
             'points': points,
-            'reason': None,
+            'reason': None if change_for(sym) is not None else 'missing-close',
             'fetchedAt': stamp,
             'quoteTime': stamp,
             'quoteFetchedAt': stamp,
@@ -155,10 +231,12 @@ def overview60_packet(heatmap_rows: list[dict]) -> dict:
         {'name': name, 'count': len(vals), 'changePct': round(sum(vals) / len(vals), 4)}
         for name, vals in sectors.items() if len(vals) >= 2
     ]
+    ends = [r.get('end') for r in heatmap_rows if r.get('end')]
+    starts = [r.get('start') for r in heatmap_rows if r.get('start')]
     equity = {
         'calendar': 'New York sessions',
-        'start': '2025-11-11',
-        'end': '2025-11-12',
+        'start': min(starts) if starts else None,
+        'end': max(ends) if ends else None,
         'evaluated': len(heatmap_rows),
         'included': len(companies),
         'advancing': sum(1 for r in companies if r['changePct'] > 0),
@@ -169,23 +247,28 @@ def overview60_packet(heatmap_rows: list[dict]) -> dict:
         'sectors': sorted(sector_rows, key=lambda x: -abs(x['changePct']))[:12],
         'unusual': unusual[:15],
         'thresholdPct': 3.0,
-        'notice': 'Demo overview from bundled directory closes. Not a live session recap.',
+        'notice': 'Demo overview from bundled historical directory closes. Not a live session recap.',
     }
     crypto_companies = []
-    for product, px in list(CRYPTO_USD.items())[:8]:
-        ch = round((seed(product, '1D') % 400) / 10 - 15, 2)
-        crypto_companies.append({'symbol': product, 'changePct': ch, 'start': px * 0.99, 'end': px})
+    for product in CRYPTO_PRODUCTS:
+        live = CRYPTO_LIVE.get(product) or {}
+        end_px = float(live.get('price') or CRYPTO_USD_FALLBACK.get(product) or 0)
+        start_px = float(live.get('previous') or end_px)
+        ch = providers.session_change_pct(end_px, start_px) if start_px else None
+        if ch is None:
+            continue
+        crypto_companies.append({'symbol': product, 'changePct': round(ch, 2), 'start': start_px, 'end': end_px})
     crypto = {
         'calendar': 'UTC days',
-        'start': '2025-11-13',
-        'end': '2025-11-14',
-        'evaluated': len(CRYPTO_USD),
+        'start': None,
+        'end': None,
+        'evaluated': len(CRYPTO_PRODUCTS),
         'included': len(crypto_companies),
         'advancing': sum(1 for r in crypto_companies if r['changePct'] > 0),
         'declining': sum(1 for r in crypto_companies if r['changePct'] < 0),
         'excluded': [],
         'companies': crypto_companies,
-        'notice': 'Demo crypto UTC-day changes from bundled candles.',
+        'notice': 'Demo crypto UTC-day changes from Coinbase public candles when reachable, else bundled marks.',
     }
     return {
         'method': 'market-overview-v6.0-demo',
@@ -196,12 +279,27 @@ def overview60_packet(heatmap_rows: list[dict]) -> dict:
 
 
 def crypto_points(product: str, count: int, step_ms: int) -> list[dict]:
-    base = CRYPTO_USD.get(product, 100.0)
+    live = CRYPTO_LIVE.get(product) or {}
+    charts = live.get('charts') or {}
+    # Prefer real Coinbase points when the export refreshed them.
+    for key in ('1D', '1W', '1H'):
+        pts = charts.get(key)
+        if pts and len(pts) >= 2:
+            # Resample / trim to requested count when possible.
+            if key == '1D' and step_ms == 300_000:
+                return pts[-count:] if len(pts) >= 2 else pts
+            if key == '1W' and step_ms == 3_600_000:
+                return pts[-count:] if len(pts) >= 2 else pts
+            if key == '1H' and step_ms == 60_000:
+                return pts[-count:] if len(pts) >= 2 else pts
+    base = float(live.get('price') or CRYPTO_USD_FALLBACK.get(product) or 100.0)
+    prev = float(live.get('previous') or base)
     end = QUOTE_TS
+    # Honest two-anchor path between previous and latest — not a flat book % across products.
     return [
         {
             't': end - (count - i) * step_ms,
-            'p': round(base * (0.96 + 0.04 * (i / max(1, count - 1)) + 0.01 * math.sin(i / 7)), 4),
+            'p': round(prev + (base - prev) * (i / max(1, count - 1)), 6 if base < 10 else 4),
         }
         for i in range(count)
     ]
@@ -209,14 +307,23 @@ def crypto_points(product: str, count: int, step_ms: int) -> list[dict]:
 
 def crypto_bundle() -> dict:
     followed = ['BTC-USD', 'ETH-USD', 'SOL-USD']
-    quotes = {
-        product: {'price': px, 'time': QUOTE_TS, 'status': 'cached', 'product': product}
-        for product, px in CRYPTO_USD.items()
-    }
+    products = {p: float((CRYPTO_LIVE.get(p) or {}).get('price') or CRYPTO_USD_FALLBACK[p]) for p in CRYPTO_PRODUCTS}
+    quotes = {}
+    for product, px in products.items():
+        live = CRYPTO_LIVE.get(product) or {}
+        quotes[product] = {
+            'price': px,
+            'time': int(live.get('time') or QUOTE_TS),
+            'status': 'cached',
+            'product': product,
+            'previous': live.get('previous'),
+            'source': live.get('source') or 'Bundled demo crypto mark',
+        }
     charts = {}
-    for product in CRYPTO_USD:
+    for product in products:
         for rng, (step, count) in {'1H': (60_000, 60), '1D': (300_000, 288), '1W': (3_600_000, 168)}.items():
             pts = crypto_points(product, count, step)
+            live_src = (CRYPTO_LIVE.get(product) or {}).get('source')
             charts[f'{product}|{rng}'] = {
                 'product': product,
                 'points': pts,
@@ -226,13 +333,21 @@ def crypto_bundle() -> dict:
                 'expected': count,
                 'fetchedAt': QUOTE_TS,
                 'status': 'cached',
-                'coverage': {'label': 'Bundled Coinbase-style demo candles', 'gaps': 0},
+                'coverage': {
+                    'label': live_src or 'Bundled Coinbase-style demo candles',
+                    'gaps': 0,
+                },
             }
     board_rows = []
-    for product, name_px in [(p, CRYPTO_USD[p]) for p in CRYPTO_USD]:
+    for product, name_px in products.items():
         day = charts.get(f'{product}|1D', {})
         pts = day.get('points') or []
-        ch24 = round((pts[-1]['p'] / pts[0]['p'] - 1) * 100, 2) if len(pts) >= 2 else None
+        live = CRYPTO_LIVE.get(product) or {}
+        if live.get('previous') and live.get('price'):
+            ch24 = providers.session_change_pct(float(live['price']), float(live['previous']))
+            ch24 = round(ch24, 2) if ch24 is not None else None
+        else:
+            ch24 = round((pts[-1]['p'] / pts[0]['p'] - 1) * 100, 2) if len(pts) >= 2 else None
         board_rows.append({
             'product': product,
             'name': product.split('-')[0],
@@ -240,21 +355,26 @@ def crypto_bundle() -> dict:
             'base': product.split('-')[0],
             'quote': 'USD',
             'price': name_px,
-            'time': QUOTE_TS,
+            'time': int(live.get('time') or QUOTE_TS),
             'quoteStatus': 'cached',
             'change24h': ch24,
-            'change7d': round(ch24 * 1.8, 2) if ch24 is not None else None,
+            'change7d': None,
             'coverage': day.get('coverage'),
         })
+    used_live = bool(CRYPTO_LIVE)
     return {
         'followed': followed,
         'quotes': quotes,
         'charts': charts,
         'board': {
-            'exchange': 'Coinbase Exchange (demo bundle)',
+            'exchange': 'Coinbase Exchange (public demo bundle)',
             'quote': 'USD',
             'timezone': 'UTC',
-            'trading': '24/7 demo candles · not live Coinbase on this host.',
+            'trading': (
+                'Coinbase public REST candles bundled at export · not a live socket on this host.'
+                if used_live else
+                'Bundled crypto marks · refresh export with network for Coinbase public candles.'
+            ),
             'unavailable': [],
             'rows': board_rows,
             'followed': followed,
@@ -382,27 +502,37 @@ def forecast_packet(sym: str) -> dict:
 def macro_bundle() -> dict:
     series_defs = {
         'UNRATE': {'title': 'US unemployment', 'unit': '% of labour force', 'frequency': 'monthly',
-                   'source': 'Bundled FRED-style demo', 'adjustment': 'Seasonally adjusted'},
+                   'source': 'U.S. Bureau of Labor Statistics via FRED', 'adjustment': 'Seasonally adjusted'},
         'CPIAUCSL': {'title': 'US consumer prices', 'unit': 'Index, 1982–1984 = 100', 'frequency': 'monthly',
-                    'source': 'Bundled FRED-style demo', 'adjustment': 'Seasonally adjusted'},
+                    'source': 'U.S. Bureau of Labor Statistics via FRED', 'adjustment': 'Seasonally adjusted'},
         'FEDFUNDS': {'title': 'US effective federal funds rate', 'unit': '% · monthly average', 'frequency': 'monthly',
-                     'source': 'Bundled FRED-style demo', 'adjustment': 'Not seasonally adjusted'},
+                     'source': 'Federal Reserve Board via FRED', 'adjustment': 'Not seasonally adjusted'},
         'GDPC1': {'title': 'US real GDP', 'unit': 'Billions of chained 2017 USD, annual rate', 'frequency': 'quarterly',
-                 'source': 'Bundled FRED-style demo', 'adjustment': 'Seasonally adjusted annual rate'},
+                 'source': 'U.S. Bureau of Economic Analysis via FRED', 'adjustment': 'Seasonally adjusted annual rate'},
     }
-    latest = {'UNRATE': 4.1, 'CPIAUCSL': 314.2, 'FEDFUNDS': 4.58, 'GDPC1': 23245.0}
+    fallback_latest = {
+        'UNRATE': {'date': '2025-10-01', 'value': 4.1},
+        'CPIAUCSL': {'date': '2025-10-01', 'value': 314.2},
+        'FEDFUNDS': {'date': '2025-10-01', 'value': 4.58},
+        'GDPC1': {'date': '2025-07-01', 'value': 23245.0},
+    }
     series = []
     for code, definition in series_defs.items():
-        val = latest[code]
+        live = FRED_LIVE.get(code) or {}
+        latest = live.get('latest') or fallback_latest[code]
         series.append({
             **definition,
             'id': code,
             'url': f'https://fred.stlouisfed.org/series/{code}',
             'fetchedAt': QUOTE_TS,
-            'latest': {'date': '2025-10-01', 'value': val},
-            'yearAgoChangePct': 2.1 if code in ('CPIAUCSL', 'GDPC1') else None,
+            'latest': latest,
+            'yearAgoChangePct': live.get('yearAgoChangePct'),
             'frequency': definition['frequency'],
-            'notice': 'Bundled observation for the admissions demo. Live macro refresh needs your Mac.',
+            'notice': (
+                'FRED public CSV observation bundled at export · not a live macro socket on this host.'
+                if live else
+                'Bundled observation for the admissions demo. Re-run export with network for FRED CSV.'
+            ),
         })
     return {'series': series, 'available': series_defs}
 
@@ -416,7 +546,7 @@ def workspace_bundle(catalog: list[dict]) -> dict:
 
     names = {e['symbol']: e['name'] for e in catalog}
     as_of = '2025-11-12'
-    mark_source = 'Portfolio demo bundle · labelled synthetic close · not live Finnhub'
+    mark_source = 'Portfolio demo bundle · historical bundled close · not live Finnhub'
 
     # V2 paper portfolio (legacy details under Practice Portfolio)
     paper_trades = [
@@ -426,7 +556,7 @@ def workspace_bundle(catalog: list[dict]) -> dict:
             'qty': 12,
             'price': 214.5,
             'date': '2025-09-15T15:30:00.000Z',
-            'note': 'Demo sample BUY · synthetic practice price',
+            'note': 'Demo sample BUY · practice ledger price',
         },
         {
             'symbol': 'TTWO',
@@ -434,7 +564,7 @@ def workspace_bundle(catalog: list[dict]) -> dict:
             'qty': 18,
             'price': 152.0,
             'date': '2025-10-02T14:05:00.000Z',
-            'note': 'Demo sample BUY · synthetic practice price',
+            'note': 'Demo sample BUY · practice ledger price',
         },
         {
             'symbol': 'NVDA',
@@ -442,7 +572,7 @@ def workspace_bundle(catalog: list[dict]) -> dict:
             'qty': 8,
             'price': 128.4,
             'date': '2025-10-20T16:00:00.000Z',
-            'note': 'Demo sample BUY · synthetic practice price',
+            'note': 'Demo sample BUY · practice ledger price',
         },
     ]
     paper = {'capital': 10000, 'trades': paper_trades}
@@ -667,7 +797,7 @@ def workspace_bundle(catalog: list[dict]) -> dict:
                 'status': 'insufficient',
                 'notice': 'Demo sample ledger · capture two checkpoints on your Mac to measure performance.',
             },
-            'notice': 'Portfolio demo · labelled synthetic holdings · not live brokerage data.',
+            'notice': 'Portfolio demo · labelled practice holdings · not live brokerage data.',
         },
     }
 
@@ -682,11 +812,11 @@ def news_bundle() -> tuple[list[dict], dict]:
             'summary': 'Bundled headline for the public demo. Live Finnhub news needs the Mac app.',
         },
         {
-            'headline': 'Heatmap directory uses labelled synthetic closes',
+            'headline': 'Heatmap directory uses distinct historical session closes',
             'source': 'Demo bundle',
             'url': 'https://example.com/market-desk-heatmap',
             'datetime': BASE_TS_SEC - 7200,
-            'summary': '221-name directory tile colours come from snapshot.json, not a live Massive sync.',
+            'summary': 'Directory tile colours come from bundled historical close/prevClose pairs, not a live Massive sync.',
         },
     ]
     by_symbol = {}
@@ -715,8 +845,8 @@ def learning_bundle() -> dict:
             'firstUsed': '2024-11-12',
             'lastUsed': '2025-11-12',
             'latestSavedDate': '2025-11-12',
-            'latestSavedPrice': 228.4,
-            'source': 'Portfolio demo · synthetic daily closes',
+            'latestSavedPrice': price('AAPL'),
+            'source': 'Portfolio demo · historical daily closes',
         },
         'anchorDate': '2025-11-12',
         'latestEligibleDate': '2025-11-12',
@@ -782,7 +912,7 @@ def learning_bundle() -> dict:
         **common,
         'symbol': 'AAPL',
         'closes': 240,
-        'coverage': {**common['coverage'], 'latestSavedPrice': 228.4},
+        'coverage': {**common['coverage'], 'latestSavedPrice': price('AAPL')},
         'rows': [row(1, 'insufficient', False), row(5, 'learned', True), row(20, 'learned', True)],
         'lab': [lab_block(5), lab_block(20)],
         'scorecard': {'message': 'Bundled AAPL lab rows for screenshots.', 'summary': {'count': 1, 'averageErrorPP': 1.9, 'baselineAverageErrorPP': 2.3, 'rangeCoveragePct': 80.0, 'rangeCount': 1, 'beatBaseline': True}, 'pending': [], 'graded': []},
@@ -826,7 +956,7 @@ def alerts_bundle() -> dict:
                 'arm': 1,
                 'last_ts': QUOTE_TS - 7_200_000,
                 'last_received': QUOTE_TS - 7_100_000,
-                'last_price': 139.2,
+                'last_price': price('NVDA'),
                 'frequency': 'once',
                 'rule_text': 'Crosses below 130 USD',
                 'evaluation_note': 'Paused for the demo · live evaluation needs your Mac.',
@@ -859,33 +989,87 @@ def alerts_bundle() -> dict:
     }
 
 
+def build_quotes_map(watch_symbols: list[str], catalog_symbols: list[str]) -> dict:
+    """Watchlist quotes plus any catalog symbols that have fixture/live rows."""
+    wanted = list(dict.fromkeys([*watch_symbols, *catalog_symbols]))
+    out = {}
+    for sym in wanted:
+        row = _quote_row(sym)
+        if not row:
+            continue
+        out[sym] = {'c': float(row['c']), 'pc': float(row['pc'])}
+    # Guarantee watchlist coverage
+    for sym in watch_symbols:
+        if sym not in out:
+            out[sym] = {'c': price(sym), 'pc': prev_close(sym)}
+    return out
+
+
 def main() -> None:
+    global EQUITY, CRYPTO_LIVE, FRED_LIVE, PROVENANCE, QUOTE_TS, BASE_TS_SEC
+    allow_network = os.environ.get('MARKETDESK_DEMO_OFFLINE', '').strip() not in {'1', 'true', 'yes'}
     catalog = json.loads(CATALOG.read_text())
+    catalog_symbols = [e['symbol'] for e in catalog]
+
+    EQUITY = providers.equity_from_fixture_or_live(catalog_symbols, WATCHLIST, allow_network=allow_network)
+    PROVENANCE = list(EQUITY.get('sources') or [])
+    if allow_network:
+        CRYPTO_LIVE = providers.fetch_coinbase_products(CRYPTO_PRODUCTS)
+        if CRYPTO_LIVE:
+            PROVENANCE.append(f'Coinbase Exchange public REST ({len(CRYPTO_LIVE)} products)')
+        FRED_LIVE = providers.fetch_fred_latest(['UNRATE', 'CPIAUCSL', 'FEDFUNDS', 'GDPC1'])
+        if FRED_LIVE:
+            PROVENANCE.append(f'FRED public CSV ({len(FRED_LIVE)} series)')
+    else:
+        CRYPTO_LIVE = {}
+        FRED_LIVE = {}
+        PROVENANCE.append('offline export (MARKETDESK_DEMO_OFFLINE)')
+
+    QUOTE_TS = int(dt.datetime.now(dt.timezone.utc).timestamp() * 1000)
+    BASE_TS_SEC = QUOTE_TS // 1000
     stamp = QUOTE_TS
     rows = heatmap_rows(catalog, stamp)
     global_news, news_by_symbol = news_bundle()
+    ends = sorted({r.get('end') for r in rows if r.get('end')})
+    starts = sorted({r.get('start') for r in rows if r.get('start')})
+    session_end = ends[-1] if ends else EQUITY.get('asOf')
+    session_start = starts[0] if starts else session_end
+
+    quotes = build_quotes_map(WATCHLIST, catalog_symbols)
+    # Sanity: refuse to ship a flat book % across the watchlist.
+    pcts = []
+    for sym, q in quotes.items():
+        pct = providers.session_change_pct(q['c'], q['pc'])
+        if pct is not None:
+            pcts.append(round(pct, 2))
+    if len(pcts) >= 4 and len(set(pcts)) == 1:
+        raise SystemExit(f'Refused to write snapshot: every quote move is {pcts[0]}% (flat synthetic book).')
 
     snapshot = {
         'version': 3,
-        'label': 'PORTFOLIO DEMO · labelled synthetic snapshot · not live market data',
-        'generated': '2026-11-15',
+        'label': 'PORTFOLIO DEMO · historical bundled closes · DEMO DATA · not live market data',
+        'generated': dt.datetime.now(dt.timezone.utc).date().isoformat(),
+        'provenance': PROVENANCE,
         'watchlist': WATCHLIST,
-        'quotes': {sym: {'c': price(sym), 'pc': round(price(sym) * 0.99, 2)} for sym in BASE_PRICES},
+        'quotes': quotes,
         'heatmap': {
             'rows': rows,
             'period': '1D',
-            'start': '2025-11-07',
-            'end': '2025-11-12',
-            'generation': '2025-11-12',
-            'latestAvailableSession': '2025-11-12',
+            'start': session_start,
+            'end': session_end,
+            'generation': session_end,
+            'latestAvailableSession': session_end,
             'stale': False,
             'completed': 6,
             'required': 6,
             'nextDay': None,
             'configured': True,
             'asOf': stamp,
-            'source': 'Portfolio demo bundle · not Massive',
-            'notice': 'Split-adjusted close-to-close demo changes for admissions screenshots only.',
+            'source': ' · '.join(PROVENANCE) or 'Portfolio demo historical closes',
+            'notice': (
+                'Close-to-close changes use distinct historical session pairs per symbol. '
+                'Static host is not a live Finnhub/Massive feed.'
+            ),
         },
         'dailyBars': {sym: daily_bars(sym) for sym in WATCHLIST},
         'news': global_news,
@@ -894,14 +1078,14 @@ def main() -> None:
             'asOf': stamp,
             'directoryCount': len(catalog),
             'rows': [screener_row(e, stamp) for e in catalog],
-            'notice': 'Bundled screener snapshots for the full directory on the public demo.',
+            'notice': 'Bundled screener rows use the same historical close/prevClose pairs as quotes.',
         },
         'overview60': overview60_packet(rows),
         'crypto': crypto_bundle(),
         'tape': {
             sym: {
                 'events': tape_events(sym),
-                'recordingDays': [{'date': '2025-11-12', 'count': 120}],
+                'recordingDays': [{'date': session_end or 'bundled', 'count': 120}],
             }
             for sym in TAPE_SYMBOLS
         },
@@ -914,10 +1098,15 @@ def main() -> None:
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(snapshot, separators=(',', ':')))
+    sample = {sym: quotes[sym] for sym in ('AAPL', 'NVDA') if sym in quotes}
     print(
         f'Wrote {OUT} ({len(rows)} heatmap rows, {len(snapshot["screener"]["rows"])} screener rows, '
         f'{OUT.stat().st_size} bytes)'
     )
+    print('Provenance:', '; '.join(PROVENANCE))
+    for sym, q in sample.items():
+        pct = providers.session_change_pct(q['c'], q['pc'])
+        print(f"  {sym}: c={q['c']} pc={q['pc']} pct={pct}")
 
 
 if __name__ == '__main__':

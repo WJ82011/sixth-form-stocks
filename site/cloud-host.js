@@ -55,9 +55,19 @@
 
   function quote(sym) {
     const hit = snapshot?.quotes?.[sym];
-    if (hit) return hit;
-    const fallback = 96.5;
-    return { c: fallback, pc: fallback * 0.99 };
+    if (hit && Number.isFinite(hit.c) && Number.isFinite(hit.pc) && hit.pc > 0) return hit;
+    const row = snapshot?.heatmap?.rows?.find((r) => r.symbol === sym);
+    if (row && Number.isFinite(row.price) && row.price > 0 && Number.isFinite(row.change)) {
+      const c = row.price;
+      const pc = c / (1 + row.change / 100);
+      if (Number.isFinite(pc) && pc > 0) return { c, pc };
+    }
+    const screener = snapshot?.screener?.rows?.find((r) => r.symbol === sym);
+    if (screener && Number.isFinite(screener.price) && Number.isFinite(screener.previousClose) && screener.previousClose > 0) {
+      return { c: screener.price, pc: screener.previousClose };
+    }
+    // Unchanged fallback — never invent a flat +1% book move.
+    return { c: 96.5, pc: 96.5 };
   }
 
   function quoteItems(symbols) {
@@ -310,7 +320,7 @@
     if (bars) {
       return {
         status: 'ok',
-        source: 'Portfolio demo bundle · synthetic daily path',
+        source: 'Portfolio demo bundle · historical daily closes',
         provider: 'demo',
         cached: true,
         adjusted: true,
@@ -319,20 +329,21 @@
         cloudDemo: true,
       };
     }
-    const base = quote(sym).c;
-    const days = 120;
-    const t = [];
-    const c = [];
-    for (let i = days; i >= 0; i--) {
-      t.push(sec - i * 86400);
-      c.push(+(base * (0.92 + ((days - i) / days) * 0.14)).toFixed(4));
-    }
+    const q = quote(sym);
+    // Two honest session points only — do not invent a flat multi-month path.
     return {
       status: 'ok',
-      source: 'Portfolio demo · generated path',
+      source: 'Portfolio demo · session close/prevClose only',
       provider: 'demo',
       cached: true,
-      candles: { s: 'ok', t, c },
+      candles: {
+        s: 'ok',
+        t: [sec - 86400, sec],
+        c: [q.pc, q.c],
+        o: [q.pc, q.c],
+        h: [Math.max(q.pc, q.c), Math.max(q.pc, q.c)],
+        l: [Math.min(q.pc, q.c), Math.min(q.pc, q.c)],
+      },
       cloudDemo: true,
     };
   }
