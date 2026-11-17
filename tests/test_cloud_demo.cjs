@@ -18,6 +18,27 @@ assert.ok(coloured.length >= 180, 'most tiles should have a period change');
 assert.ok(snapshot.dailyBars.AAPL.c.length > 100, 'AAPL daily chart series');
 assert.ok(snapshot.overview60.equity.included > 50, 'overview60 equity included');
 assert.ok(snapshot.crypto.board.rows.length >= 6, 'crypto board rows');
+// Quotes must be distinct session moves — never a flat ~+1.01% book.
+{
+  const watch = snapshot.watchlist || Object.keys(snapshot.quotes || {});
+  const pcts = watch.map((sym) => {
+    const q = snapshot.quotes[sym];
+    assert.ok(q && q.c > 0 && q.pc > 0, `quote pair for ${sym}`);
+    return +(((q.c - q.pc) / q.pc) * 100).toFixed(2);
+  });
+  assert.ok(new Set(pcts).size >= Math.min(8, pcts.length), 'watchlist % moves must differ across symbols');
+  assert.notEqual(
+    +(((snapshot.quotes.AAPL.c - snapshot.quotes.AAPL.pc) / snapshot.quotes.AAPL.pc) * 100).toFixed(2),
+    +(((snapshot.quotes.NVDA.c - snapshot.quotes.NVDA.pc) / snapshot.quotes.NVDA.pc) * 100).toFixed(2),
+    'AAPL and NVDA day % must differ'
+  );
+  const flat101 = pcts.filter((p) => Math.abs(p - 1.01) < 0.05).length;
+  assert.ok(flat101 < pcts.length / 2, 'must not apply ~+1.01% to most symbols');
+}
+assert.match(String(snapshot.label || ''), /DEMO DATA|not live/i, 'snapshot stays honestly labelled');
+assert.ok(!fs.readFileSync(path.join(root, 'tools/export-demo-snapshot.py'), 'utf8').includes("price(sym) * 0.99"), 'exporter must not force pc=c*0.99');
+assert.ok(fs.existsSync(path.join(root, 'tools/demo_fixtures/equity_bars.json')), 'equity fixture present');
+assert.ok(fs.existsSync(path.join(root, 'tools/demo_data_sources.py')), 'free-provider helper present');
 assert.ok(snapshot.tape.AAPL.events.length > 20, 'tape events');
 assert.ok(snapshot.intelligence.TTWO.hour.count > 0, 'intelligence hour points');
 assert.equal(snapshot.forecasts.TTWO.status, 'learned', 'TTWO shown forecast');
