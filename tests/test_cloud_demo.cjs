@@ -100,7 +100,12 @@ assert.ok(polish.includes('MarketDeskPublicHost'), 'polish shares public-host de
 assert.ok(wiring.includes('PUBLIC PORTFOLIO'), 'wiring chrome says public portfolio');
 assert.ok(polish.includes('PUBLIC PORTFOLIO'), 'polish chrome says public portfolio');
 assert.ok(cloud.includes('PUBLIC PORTFOLIO'), 'cloud-host chrome says public portfolio');
-assert.ok(cloud.includes('DEMO DATA'), 'status stays honestly labelled DEMO DATA');
+assert.ok(cloud.includes('DEMO DATA'), 'status stays honestly labelled DEMO DATA on snapshot fallback');
+assert.ok(cloud.includes('tryLiveQuoteApi'), 'public host prefers serverless /api/quotes when available');
+assert.ok(cloud.includes('LIVE QUOTES (CACHED)'), 'live proxy upgrades status pill honestly');
+assert.ok(fs.existsSync(path.join(root, 'api/quotes.js')), 'Vercel /api/quotes handler present');
+assert.ok(fs.existsSync(path.join(root, 'api/quote.js')), 'Vercel /api/quote handler present');
+assert.ok(fs.existsSync(path.join(root, 'lib/quotes-api.js')), 'shared quotes helper present');
 assert.ok(fs.readFileSync(path.join(root, 'site/desk.js'), 'utf8').includes('window.Desk='), 'desk assigns window.Desk to avoid TDZ race');
 assert.ok(fs.readFileSync(path.join(root, 'site/app.js'), 'utf8').includes('BUNDLED DEMO OBSERVATIONS'), 'overview chart source honest on demo');
 assert.ok(fs.readFileSync(path.join(root, 'site/app.js'), 'utf8').includes('hydrateDemoForecast'), 'forecast auto-hydrates on demo');
