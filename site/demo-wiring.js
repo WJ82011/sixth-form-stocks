@@ -3,7 +3,10 @@
   'use strict';
 
   function isDemo() {
-    return document.documentElement.dataset.demoMode === 'true' || Boolean(window.MarketDeskHost?.demoMode);
+    if (document.documentElement.dataset.demoMode === 'true') return true;
+    if (window.MarketDeskHost?.demoMode) return true;
+    // Same helper as cloud-host — works on bare `/` when production hostname auto-enables.
+    return Boolean(window.MarketDeskPublicHost?.resolve?.(location)?.demoMode);
   }
 
   // Thin / Mac-only / crashy on the static host — keep Mac path intact when not in demo.
@@ -140,10 +143,10 @@
     if (settingsTitle && !settingsTitle.dataset.demoWiring) {
       settingsTitle.dataset.demoWiring = '1';
       settingsTitle.textContent =
-        'Admissions demo: appearance, guided walkthrough and file check. Provider keys stay on your Mac.';
+        'Public portfolio: appearance, guided walkthrough and file check. Provider keys stay on your Mac.';
     }
     const eyebrow = document.querySelector('#view-settings .page-title .eyebrow');
-    if (eyebrow) eyebrow.textContent = 'SETTINGS / PORTFOLIO DEMO';
+    if (eyebrow) eyebrow.textContent = 'SETTINGS / PUBLIC PORTFOLIO';
   }
 
   function assertDemoChrome() {
@@ -151,15 +154,17 @@
       const el = document.getElementById(id);
       if (el && el.textContent !== text) el.textContent = text;
     };
-    bind('connection-sub', 'Demo bundle · not a live Finnhub feed');
-    bind('connection-label', 'Portfolio demo data');
+    bind('connection-sub', 'Public portfolio · bundled snapshot · not a live Finnhub feed');
+    bind('connection-label', 'Public portfolio data');
     bind('top-status', 'DEMO DATA');
-    bind('side-identity-tagline', 'PORTFOLIO ADMISSIONS DEMO');
+    bind('side-identity-tagline', 'PUBLIC PORTFOLIO · DEMO DATA');
     bind('desk-session-label', 'SAMPLE DATA · NOT LIVE');
     bind('desk-edition-label', 'DEMO / 01');
     bind('preferences-state', 'DEMO · BROWSER ONLY');
     const foot = document.querySelector('.side-footer');
-    if (foot && !foot.textContent.includes('PORTFOLIO DEMO')) foot.textContent = 'PORTFOLIO DEMO · 01 / 26';
+    if (foot && !/PUBLIC PORTFOLIO|PORTFOLIO DEMO/.test(foot.textContent)) {
+      foot.textContent = 'PUBLIC PORTFOLIO · 01 / 26';
+    }
     for (const id of ['connection-dot', 'top-dot']) {
       const dot = document.getElementById(id);
       if (dot) dot.className = 'status-dot amber';

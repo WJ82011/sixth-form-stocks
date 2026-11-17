@@ -3,29 +3,31 @@
   'use strict';
 
   function isDemo() {
-    return document.documentElement.dataset.demoMode === 'true' || Boolean(window.MarketDeskHost?.demoMode);
+    if (document.documentElement.dataset.demoMode === 'true') return true;
+    if (window.MarketDeskHost?.demoMode) return true;
+    return Boolean(window.MarketDeskPublicHost?.resolve?.(location)?.demoMode);
   }
 
   const EXACT = new Map([
-    ['.desk-local', 'Portfolio demo · bundled snapshot'],
+    ['.desk-local', 'Public portfolio · bundled snapshot'],
     ['#preferences-state', 'DEMO · BROWSER ONLY'],
     ['#v3-global-status', null],
     ['#overview-chart-source', 'BUNDLED DEMO OBSERVATIONS'],
     ['#view-learning .page-title > div > p', 'Sample training results from the bundle. Live collection needs server.py on your Mac.'],
-    ['#view-markets .page-title .eyebrow', 'PORTFOLIO DEMO / BUNDLED QUOTES'],
-    ['#view-tape .page-title .eyebrow', 'PORTFOLIO DEMO / BUNDLED TRADES'],
+    ['#view-markets .page-title .eyebrow', 'PUBLIC PORTFOLIO / BUNDLED QUOTES'],
+    ['#view-tape .page-title .eyebrow', 'PUBLIC PORTFOLIO / BUNDLED TRADES'],
     ['#view-tape .page-title > div > p', 'Replay labelled sample trades from the demo bundle. Live Finnhub sockets run on your Mac.'],
     ['#view-forecast .page-title .eyebrow', 'PRICE ESTIMATES / DEMO DATA'],
-    ['#view-forecast .forecast-banner p', 'This public demo uses bundled daily closes. Calculate shows a labelled learned or withheld path — no Massive key on this host.'],
+    ['#view-forecast .forecast-banner p', 'This public portfolio uses bundled daily closes. Calculate shows a labelled learned or withheld path — no Massive key on this host.'],
     ['#view-reports .page-title .eyebrow', 'INVESTMENT RESEARCH / DEMO BROWSER'],
-    ['#view-research .page-title .eyebrow', 'YOUR RESEARCH / PORTFOLIO DEMO'],
-    ['#view-portfolio .page-title .eyebrow', 'PRACTICE / PORTFOLIO DEMO'],
+    ['#view-research .page-title .eyebrow', 'YOUR RESEARCH / PUBLIC PORTFOLIO'],
+    ['#view-portfolio .page-title .eyebrow', 'PRACTICE / PUBLIC PORTFOLIO'],
     ['#view-screener .v3-card .desk-eyebrow', 'DEMO TTM RATIOS / ACCOUNTS SAMPLE'],
   ]);
 
   const SUBTREE_PHRASES = [
-    ['Private workspace · saved on this Mac', 'Portfolio demo · bundled snapshot'],
-    ['Private research workspace ·', 'Portfolio demo ·'],
+    ['Private workspace · saved on this Mac', 'Public portfolio · bundled snapshot'],
+    ['Private research workspace ·', 'Public portfolio ·'],
     [
       'Private research projects · saved on this Mac and included in your full research backup.',
       'Demo sample research · labelled synthetic project in this browser.',
@@ -36,9 +38,9 @@
       'Demo sample ledger ready. All trades are hypothetical · labelled synthetic.',
     ],
     ['saved on this Mac', 'in this demo bundle'],
-    ['on this Mac', 'on the public demo host'],
+    ['on this Mac', 'on the public portfolio host'],
     ['this Mac has saved', 'the demo bundle includes'],
-    ['Saved data stays on this Mac.', 'Saved data on the public demo stays in your browser only.'],
+    ['Saved data stays on this Mac.', 'Saved data on the public portfolio stays in your browser only.'],
     ['while the Mac is awake', 'while server.py runs on your Mac'],
     ['Enable Background at Login.command in the Mac folder.', 'On your Mac, use Enable Background at Login.command for overnight collection.'],
     ['Nothing is collected while this Mac is off.', 'This public host does not run overnight collectors.'],
@@ -47,10 +49,10 @@
     ['BACKED UP LOCALLY', 'DEMO · BROWSER ONLY'],
     ['Settings are saved automatically on this Mac.', 'Settings are saved in your browser on this demo.'],
     ['backed up on this Mac', 'saved in your browser on this demo'],
-    ['LOCAL RESEARCH TERMINAL', 'PORTFOLIO DEMO'],
-    ['LOCAL WORKSTATION', 'PORTFOLIO DEMO'],
+    ['LOCAL RESEARCH TERMINAL', 'PUBLIC PORTFOLIO'],
+    ['LOCAL WORKSTATION', 'PUBLIC PORTFOLIO'],
     ['FEED OFFLINE', 'DEMO DATA'],
-    ['LIVE TERMINAL / FINNHUB', 'PORTFOLIO DEMO / BUNDLED QUOTES'],
+    ['LIVE TERMINAL / FINNHUB', 'PUBLIC PORTFOLIO / BUNDLED QUOTES'],
     ['LOCALLY RECORDED FINNHUB OBSERVATIONS', 'BUNDLED DEMO OBSERVATIONS'],
     ['RECORDED FINNHUB OBSERVATIONS', 'BUNDLED DEMO OBSERVATIONS'],
     ['RECORDED FINNHUB TRADES', 'BUNDLED DEMO TRADES'],
@@ -61,12 +63,12 @@
     ['SAVED ON YOUR MAC', 'SAVED IN THIS BROWSER'],
     ['PRIVATE & LOCAL', 'DEMO · BROWSER ONLY'],
     ['Connecting to Finnhub…', 'Sample watchlist quotes from the bundled snapshot'],
-    ['Finnhub market feed', 'Demo bundle · not a live Finnhub feed'],
+    ['Finnhub market feed', 'Public portfolio · bundled snapshot · not a live Finnhub feed'],
     ['Waiting for Finnhub trades. Prices are never made up.', 'Bundled demo trades · not a live Finnhub socket.'],
     ['Watchlist prices will appear here when Finnhub supplies them.', 'Sample watchlist quotes from the bundled snapshot.'],
     ['search for a stock on Finnhub', 'search the bundled demo directory'],
     ['with the same Finnhub data and research tools', 'with the same bundled demo tools'],
-    ['Your browser needs this key to receive Finnhub’s live feed.', 'Provider keys are not used on this public demo host.'],
+    ['Your browser needs this key to receive Finnhub’s live feed.', 'Provider keys are not used on this public portfolio host.'],
   ];
 
   const LEARNING_CARD =
@@ -96,13 +98,16 @@
         if (el.textContent !== value) el.textContent = value;
         continue;
       }
-      if (selector === '#v3-global-status' && el.textContent.startsWith('Private research workspace')) {
+      if (
+        selector === '#v3-global-status' &&
+        (el.textContent.startsWith('Private research workspace') || el.textContent.startsWith('Portfolio demo'))
+      ) {
         const date = new Date().toLocaleDateString('en-GB', {
           weekday: 'long',
           day: 'numeric',
           month: 'long',
         });
-        const next = 'Portfolio demo · ' + date + ' · source dates stay visible.';
+        const next = 'Public portfolio · ' + date + ' · source dates stay visible.';
         if (el.textContent !== next) el.textContent = next;
       }
     }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Admission-path navigation for public demo (?demo=1)."""
+"""Admission-path navigation for public demo (?demo=1 + production-host resolve)."""
 import subprocess
 import sys
 import time
@@ -10,6 +10,32 @@ ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / 'site'
 PORT = 8777
 BASE = f'http://127.0.0.1:{PORT}/?demo=1'
+BARE = f'http://127.0.0.1:{PORT}/'
+
+
+def assert_public_host_resolve(page):
+    """Hostname auto-enable must not require ?demo=1 (P0-a)."""
+    result = page.evaluate(
+        '''() => {
+          const api = window.MarketDeskPublicHost;
+          if (!api || typeof api.resolve !== 'function') return { ok: false, reason: 'missing MarketDeskPublicHost' };
+          const cases = [
+            [{ hostname: 'sixth-form-stocks.vercel.app', port: '', search: '' }, true],
+            [{ hostname: 'preview.tmp.now', port: '', search: '' }, true],
+            [{ hostname: 'sixth-form-stocks.vercel.app', port: '', search: '?demo=local' }, true],
+            [{ hostname: '127.0.0.1', port: '8765', search: '' }, false],
+            [{ hostname: '127.0.0.1', port: '8777', search: '' }, false],
+            [{ hostname: '127.0.0.1', port: '8777', search: '?demo=1' }, true],
+            [{ hostname: 'localhost', port: '8777', search: '?demo=local' }, false],
+          ];
+          for (const [loc, expect] of cases) {
+            const got = api.resolve(loc).demoMode;
+            if (got !== expect) return { ok: false, reason: JSON.stringify(loc) + ' => ' + got + ' expected ' + expect };
+          }
+          return { ok: true };
+        }'''
+    )
+    assert result.get('ok'), f'public host resolve ({result})'
 
 
 def main():
@@ -26,6 +52,16 @@ def main():
             browser = pw.chromium.launch(headless=True, args=['--no-sandbox', '--disable-dev-shm-usage'])
             page = browser.new_page(viewport={'width': 1400, 'height': 900})
             page.on('pageerror', lambda e: errors.append(str(e)))
+
+            # Bare local static / must NOT auto-enable (Mac-shaped shell until ?demo=1).
+            page.goto(BARE, wait_until='domcontentloaded', timeout=60000)
+            page.wait_for_function('() => typeof window.MarketDeskPublicHost?.resolve === "function"', timeout=15000)
+            bare = page.evaluate(
+                '() => ({ demo: document.documentElement.dataset.demoMode === "true", host: Boolean(window.MarketDeskHost?.demoMode) })'
+            )
+            assert not bare['demo'] and not bare['host'], f'bare local static must stay off ({bare})'
+            assert_public_host_resolve(page)
+
             page.goto(BASE, wait_until='networkidle', timeout=60000)
             page.wait_for_function(
                 '() => document.documentElement.dataset.demoMode === "true" && typeof changeView === "function"',
@@ -44,7 +80,10 @@ def main():
             page.wait_for_selector('#demo-first-run-cta', timeout=15000)
             status = page.locator('#top-status').inner_text()
             assert 'DEMO DATA' in status, f'top status ({status!r})'
+            tagline = page.locator('#side-identity-tagline').inner_text()
+            assert 'PUBLIC PORTFOLIO' in tagline or 'DEMO' in tagline, f'tagline ({tagline!r})'
             assert page.locator('#demo-first-run-cta').inner_text().find('DEMO DATA') >= 0
+            assert_public_host_resolve(page)
             page.locator('#demo-first-run-dismiss').click(timeout=5000)
             page.wait_for_function('() => !document.getElementById("demo-first-run-cta")', timeout=5000)
             seen = page.evaluate('() => localStorage.getItem("md-guided-demo-seen")')
