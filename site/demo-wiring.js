@@ -10,7 +10,40 @@
   }
 
   // Thin / Mac-only / crashy on the static host — keep Mac path intact when not in demo.
-  const SOFT_HIDE = new Set(['learning', 'accuracy', 'valuation', 'calendar', 'reports', 'indicators']);
+  // Home is demoted behind Overview (one public desk entry). Sources stays in All tools only.
+  const SOFT_HIDE = new Set([
+    'home',
+    'learning',
+    'accuracy',
+    'valuation',
+    'calendar',
+    'reports',
+    'indicators',
+    'sources',
+  ]);
+
+  // All-tools shortlist: admissions path + a few depth links (not Mac/thin shells).
+  const DEMO_TOOLS = [
+    'overview',
+    'heatmap',
+    'markets',
+    'screener',
+    'forecast',
+    'company',
+    'comparison',
+    'crypto',
+    'tape',
+    'news',
+    'macro',
+    'alerts',
+    'portfolio',
+    'research',
+    'intelligence',
+    'valuation',
+    'calendar',
+    'sources',
+    'settings',
+  ];
 
   const FOCUS_FOR = {
     home: 'home',
@@ -124,7 +157,18 @@
       button.classList.add('demo-nav-soft-hidden');
       button.setAttribute('aria-hidden', 'true');
       button.tabIndex = -1;
-      button.title = 'Available on the Mac install · soft-hidden on the public demo';
+      button.title =
+        view === 'home'
+          ? 'Overview is the public desk entry · Home stays on the Mac install'
+          : 'Available on the Mac install · soft-hidden on the public demo';
+    });
+    // Prefer Overview as the only top-level desk entry on the public host.
+    const overviewBtn = document.querySelector('.nav-btn[data-view="overview"] span:nth-child(2)');
+    if (overviewBtn && overviewBtn.textContent.trim() === 'Overview') {
+      overviewBtn.textContent = 'Overview desk';
+    }
+    document.querySelectorAll('.nav-btn[data-view="tape"] span:nth-child(2)').forEach((el) => {
+      if (el.textContent.trim() === 'Live Tape') el.textContent = 'Demo Tape';
     });
     document.querySelectorAll('.sidebar-group').forEach((group) => {
       const buttons = group.querySelectorAll('.nav-btn[data-view]');
@@ -132,6 +176,70 @@
       const visible = [...buttons].some((b) => !b.classList.contains('demo-nav-soft-hidden'));
       group.classList.toggle('demo-nav-group-empty', !visible);
     });
+  }
+
+  function trimAllTools() {
+    const grid = document.getElementById('focus-tools-grid');
+    const dialog = document.getElementById('focus-tools-dialog');
+    if (!grid || !dialog) return;
+    const byView = new Map();
+    document.querySelectorAll('#sidebar .nav-btn[data-view]').forEach((source) => {
+      byView.set(source.dataset.view, source);
+    });
+    grid.replaceChildren();
+    for (const view of DEMO_TOOLS) {
+      const source = byView.get(view);
+      if (!source) continue;
+      const button = document.createElement('button');
+      button.type = 'button';
+      let name =
+        source.dataset.navLabel ||
+        source.querySelector('span:nth-child(2)')?.textContent ||
+        source.textContent.trim();
+      name = String(name).replace(/\s+/g, ' ').trim();
+      if (view === 'tape' && /live tape/i.test(name)) name = 'Demo Tape';
+      if (view === 'overview') name = 'Overview desk';
+      if (view === 'sources') name = 'Sources & honesty';
+      button.textContent = name;
+      button.dataset.view = view;
+      button.dataset.area = source.dataset.area || '';
+      button.title = source.title || name;
+      button.addEventListener('click', () => {
+        dialog.close();
+        if (typeof changeView === 'function') changeView(view);
+      });
+      grid.append(button);
+    }
+    const blurb = dialog.querySelector(':scope > p');
+    if (blurb) {
+      blurb.textContent =
+        'Public portfolio tools for this demo — admissions path plus a few depth links. Mac-only studio views stay on the full install.';
+    }
+  }
+
+  function wireFocusDesk() {
+    // My Desk / brand mark / look43 rail should land on Overview, not the Mac-shaped Home shell.
+    const openOverview = (event) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (typeof changeView === 'function') changeView('overview');
+      else document.querySelector('.nav-btn[data-view="overview"]')?.click();
+      syncFocusNav('overview');
+    };
+    document.querySelectorAll('[data-focus-view="home"]').forEach((button) => {
+      button.addEventListener('click', openOverview, true);
+    });
+    document.getElementById('focus-home')?.addEventListener('click', openOverview, true);
+    document.addEventListener(
+      'click',
+      (event) => {
+        if (!isDemo()) return;
+        const railHome = event.target.closest('#look43-rail [data-view="home"]');
+        if (!railHome) return;
+        openOverview(event);
+      },
+      true
+    );
   }
 
   function markMacOnlySettings() {
@@ -308,6 +416,8 @@
     if (!isDemo()) return;
     document.documentElement.dataset.demoMode = 'true';
     softHideNav();
+    trimAllTools();
+    wireFocusDesk();
     markMacOnlySettings();
     assertDemoChrome();
     setupGuards();
@@ -316,6 +426,8 @@
     const view = window.E?.view || 'overview';
     syncFocusNav(view);
     window.addEventListener('marketdesk:ready', () => {
+      softHideNav();
+      trimAllTools();
       assertDemoChrome();
       syncFocusNav(window.E?.view || 'overview');
       window.MarketDeskDemoPolish?.refresh();
@@ -340,6 +452,8 @@
     syncFocusNav,
     FOCUS_FOR,
     SOFT_HIDE,
+    DEMO_TOOLS,
+    trimAllTools,
     assertDemoChrome,
     firstRunCta,
     markGuidedSeen,
