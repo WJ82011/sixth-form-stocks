@@ -429,7 +429,7 @@ function tapeRenderMetrics(events){
 }
 function tapeRenderTrades(events){
   const body=$('tape-trades-body');
-  if(!events.length){body.innerHTML=`<tr><td colspan="5" class="tape-empty-row">No recorded Finnhub trades within ${escapeHtml(T.range.toUpperCase())}. Keep Market Desk open during the trading session to collect real observations.</td></tr>`;$('tape-record-count').textContent='0';return}
+  if(!events.length){body.innerHTML=`<tr><td colspan="5" class="tape-empty-row">${E.demoMode?`No bundled demo trades in the ${escapeHtml(T.range.toUpperCase())} window. Try 24H, or reconnect to reload the snapshot replay.`:`No recorded Finnhub trades within ${escapeHtml(T.range.toUpperCase())}. Keep Market Desk open during the trading session to collect real observations.`}</td></tr>`;$('tape-record-count').textContent='0';return}
   const matching=[];
   for(let index=events.length-1;index>=0&&matching.length<75;index--){
     if(events[index].v>=T.minSize)matching.push(index);
