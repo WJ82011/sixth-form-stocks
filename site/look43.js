@@ -1,8 +1,9 @@
 /* Dashboard frame matched to the V4.3 layout studies. Prices and events stay real. */
 const Look43=window.Look43=(()=>{
-  let bars=[],barsSymbol='',heat='1D',series=localStorage.getItem('md-look-series')||'line';
+  let bars=[],barsSymbol='',barsSource='',heat='1D',series=localStorage.getItem('md-look-series')||'line',controlsBound=false,loadingSymbol='';
   const money=(sym,value)=>typeof fmtUnit==='function'?fmtUnit(sym,value):Number(value).toFixed(2);
   const pct=value=>Number.isFinite(value)?`${value>=0?'+':''}${value.toFixed(2)}%`:'—';
+  const notice=(text)=>{const feed=document.getElementById('look43-feed');if(feed&&text)feed.textContent=text;if(typeof toast==='function'&&text)toast(text)};
   function changeFor(symbol){
     const quote=typeof quoteFor==='function'?quoteFor(symbol):null;
     if(quote&&Number.isFinite(quote.change))return quote.change;
@@ -17,7 +18,172 @@ const Look43=window.Look43=(()=>{
     const path=values.map((value,index)=>`${index?'L':'M'}${(index/(values.length-1)*72).toFixed(1)} ${(22-(value-min)/span*18).toFixed(1)}`).join(' ');
     return `<svg viewBox="0 0 72 24" aria-hidden="true"><path d="${path}"/></svg>`;
   };
+  function wantsCandles(){
+    return series==='candles'||document.body.dataset.edition==='professional';
+  }
+  function dailyRangeForCandles(){
+    if(!['1H','1D'].includes(E.range))return false;
+    if(typeof setChartRange==='function')setChartRange('1M');
+    else{
+      E.range='1M';
+      document.querySelectorAll('#overview-ranges button').forEach(button=>button.classList.toggle('active',button.dataset.range==='1M'));
+      if(typeof loadChart==='function')loadChart();
+    }
+    return true;
+  }
+  function parseBars(candles){
+    if(!candles?.t?.length)return [];
+    return candles.t.map((stamp,index)=>({
+      t:Number(stamp)<1e12?Number(stamp)*1000:Number(stamp),
+      o:Number(candles.o?.[index]),
+      h:Number(candles.h?.[index]),
+      l:Number(candles.l?.[index]),
+      c:Number(candles.c?.[index]),
+      v:Number(candles.v?.[index]),
+    })).filter(bar=>[bar.o,bar.h,bar.l,bar.c].every(Number.isFinite));
+  }
+  async function loadCandles(force=false){
+    if(typeof E==='undefined'||!E.selected||typeof api!=='function')return;
+    const symbol=E.selected;
+    if(!force&&barsSymbol===symbol&&bars.length)return;
+    if(loadingSymbol===symbol&&!force)return;
+    loadingSymbol=symbol;
+    try{
+      if(window.MarketDeskHost?.whenSnapshotReady)await window.MarketDeskHost.whenSnapshotReady();
+      if(symbol!==E.selected)return;
+      const end=Math.floor(Date.now()/1000),start=end-86400*420;
+      const query='?symbol='+encodeURIComponent(symbol)+'&resolution=D&from='+start+'&to='+end;
+      let data=null;
+      try{data=await api('/api/saved-daily'+query)}catch{/* Prefer saved/snapshot bars; fall through to /api/candles. */}
+      if(data?.status!=='ok'||!data?.candles?.t?.length){
+        try{data=await api('/api/candles'+query)}catch(error){
+          if(symbol===E.selected&&!bars.length){
+            bars=[];barsSymbol='';barsSource='';
+            if(wantsCandles())notice('OHLC bars unavailable · '+error.message);
+          }
+          return;
+        }
+      }
+      if(symbol!==E.selected)return;
+      const next=parseBars(data?.candles);
+      bars=next;
+      barsSymbol=next.length?symbol:'';
+      barsSource=data?.source||data?.notice||(next.length?'Daily OHLC bars':'');
+      if(typeof drawChart==='function')drawChart();
+      if(wantsCandles()&&!next.length)notice('No OHLC bars for '+symbol+' in the snapshot or API.');
+      else if(wantsCandles()&&next.length&&(E.demoMode||window.MarketDeskHost?.demoMode)&&barsSource){
+        const feed=document.getElementById('look43-feed');
+        if(feed)feed.textContent='Candles · '+(barsSource.includes('DEMO')||barsSource.includes('demo')||barsSource.includes('Portfolio')?barsSource:'bundled daily OHLC');
+      }
+    }finally{if(loadingSymbol===symbol)loadingSymbol=''}
+  }
+  function applySeries(next){
+    series=next==='candles'?'candles':'line';
+    try{localStorage.setItem('md-look-series',series)}catch{}
+    syncSeriesButtons();
+    if(series==='candles'){
+      const bumped=dailyRangeForCandles();
+      const loading=loadCandles(true).then(()=>{paint();if(!bumped&&typeof drawChart==='function')drawChart()});
+      if(!bumped){paint();if(typeof drawChart==='function')drawChart()}
+      return loading;
+    }
+    paint();
+    if(typeof drawChart==='function')drawChart();
+    return Promise.resolve();
+  }
+  function applyRange(range){
+    if(window.Chart43?.backToLive)Chart43.backToLive();
+    if(typeof setChartRange==='function')setChartRange(range);
+    if(wantsCandles()&&['1H','1D'].includes(range)){
+      const feed=document.getElementById('look43-feed');
+      if(feed)feed.textContent='Candles need a daily range (1W+) · showing the line for '+range+'.';
+    }else if(wantsCandles())loadCandles();
+    paint();
+  }
+  function openAsk(){
+    if(window.Ask48?.openFrom){Ask48.openFrom({symbol:E.selected,range:E.range,area:'chart'});return}
+    if(typeof changeView==='function')changeView('intelligence');
+    notice('Intelligence opened · Ask panel loads when available.');
+  }
+  function resetView(){
+    if(window.Chart43?.reset){Chart43.reset();return}
+    if(typeof drawChart==='function')drawChart();
+  }
+  function deskAction(action){
+    if(window.Desk68?.go){Desk68.go(action);return}
+    const map={move:'company',compare:'comparison',financials:'company'};
+    if(typeof changeView==='function')changeView(map[action]||'company');
+    notice('Opened '+(map[action]||'company')+' · full desk helpers need the loaded modules.');
+  }
+  function applyEdition(next){
+    const edition=next==='professional'?'professional':'signal';
+    if(window.Desk43?.apply)Desk43.apply(edition);
+    else{
+      document.body.dataset.edition=edition;
+      window.dispatchEvent(new CustomEvent('marketdesk:edition-change',{detail:{edition}}));
+    }
+    if(edition==='professional'&&['1H','1D'].includes(E.range))dailyRangeForCandles();
+    loadCandles(true);
+    paint();
+  }
+  function onControlClick(event){
+    const style=event.target.closest('[data-look-series]');
+    if(style){event.preventDefault();event.stopPropagation();applySeries(style.dataset.lookSeries);return true}
+    const range=event.target.closest('[data-look-range]');
+    if(range){event.preventDefault();event.stopPropagation();applyRange(range.dataset.lookRange);return true}
+    const next=event.target.closest('[data-desk68]');
+    if(next){event.preventDefault();event.stopPropagation();deskAction(next.dataset.desk68);return true}
+    if(event.target.closest('#look43-ask')){event.preventDefault();event.stopPropagation();openAsk();return true}
+    if(event.target.closest('#look43-reset')){event.preventDefault();event.stopPropagation();resetView();return true}
+    return false;
+  }
+  function wireToolbarButtons(root){
+    if(!root)return;
+    root.querySelectorAll('[data-look-series]').forEach(button=>{
+      button.onclick=(event)=>{event.preventDefault();applySeries(button.dataset.lookSeries)};
+    });
+    root.querySelectorAll('[data-look-range]').forEach(button=>{
+      button.onclick=(event)=>{event.preventDefault();applyRange(button.dataset.lookRange)};
+    });
+    root.querySelectorAll('[data-desk68]').forEach(button=>{
+      button.onclick=(event)=>{event.preventDefault();deskAction(button.dataset.desk68)};
+    });
+    const ask=root.querySelector('#look43-ask');
+    if(ask)ask.onclick=(event)=>{event.preventDefault();openAsk()};
+    const reset=root.querySelector('#look43-reset');
+    if(reset)reset.onclick=(event)=>{event.preventDefault();resetView()};
+  }
+  function bindControls(){
+    if(controlsBound)return;
+    controlsBound=true;
+    // Capture phase so chart series/range clicks win even if a parent stops bubbling.
+    document.addEventListener('click',event=>{
+      if(event.target.closest('[data-look-series],[data-look-range],[data-desk68],#look43-ask,#look43-reset'))onControlClick(event);
+    },true);
+  }
+  function syncSeriesButtons(){
+    document.querySelectorAll('[data-look-series]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.lookSeries===series)));
+  }
+  function syncSeriesDock(){
+    const professional=document.body.dataset.edition==='professional';
+    let dock=document.getElementById('chart43-series');
+    if(professional){dock?.remove();return}
+    const host=document.getElementById('chart43-tools')||document.getElementById('overview-ranges');
+    if(!host)return;
+    if(!dock){
+      dock=document.createElement('div');
+      dock.id='chart43-series';
+      dock.className='look43-series chart43-series';
+      dock.setAttribute('role','group');
+      dock.setAttribute('aria-label','Chart series');
+      dock.innerHTML='<button type="button" data-look-series="line">Line</button><button type="button" data-look-series="candles">Candles</button>';
+      if(host.id==='chart43-tools')host.prepend(dock);else host.after(dock);
+      wireToolbarButtons(dock);
+    }
+    syncSeriesButtons();
+  }
   function ensure(){
+    bindControls();
     if(!document.body.classList.contains('look43-on'))document.body.classList.add('look43-on');
     const briefing=document.getElementById('v3-home');
     if(briefing&&!briefing.closest('.look43-briefing')){
@@ -50,7 +216,7 @@ const Look43=window.Look43=(()=>{
       });
       top.querySelector('#look43-mode').addEventListener('click',event=>{
         const button=event.target.closest('[data-v43-edition]');
-        if(button&&window.Desk43)Desk43.apply(button.dataset.v43Edition==='professional'?'professional':'signal');
+        if(button)applyEdition(button.dataset.v43Edition);
       });
     }
     const home=document.getElementById('home43');
@@ -69,16 +235,8 @@ const Look43=window.Look43=(()=>{
         }
         const stock=event.target.closest('[data-select]');
         if(stock){event.stopPropagation();setSelected(stock.dataset.select);if(stock.dataset.moveStart&&stock.dataset.moveEnd&&window.Move44)Move44.open({symbol:stock.dataset.select,start:stock.dataset.moveStart,end:stock.dataset.moveEnd});paint();return}
-        const range=event.target.closest('[data-look-range]');
-        if(range){if(window.Chart43?.backToLive)Chart43.backToLive();if(typeof setChartRange==='function')setChartRange(range.dataset.lookRange);paint();return}
-        const style=event.target.closest('[data-look-series]');
-        if(style){series=style.dataset.lookSeries;try{localStorage.setItem('md-look-series',series)}catch{}paint();if(typeof drawChart==='function')drawChart();return}
         const sector=event.target.closest('[data-look-sector]');
-        if(sector){heat=sector.dataset.lookSector;paintHeat();return}
-        const next=event.target.closest('[data-desk68]');
-        if(next&&window.Desk68){Desk68.go(next.dataset.desk68);return}
-        if(event.target.closest('#look43-ask')&&window.Ask48){Ask48.openFrom({symbol:E.selected,range:E.range,area:'chart'});return}
-        if(event.target.closest('#look43-reset')&&window.Chart43)Chart43.reset();
+        if(sector){heat=sector.dataset.lookSector;paintHeat()}
       });
     }
   }
@@ -92,18 +250,6 @@ const Look43=window.Look43=(()=>{
     if(!professional&&series!=='candles')return null;
     const shown=bars.filter(bar=>bar.t>=from&&bar.t<=to&&Number.isFinite(bar.o)&&Number.isFinite(bar.h)&&Number.isFinite(bar.l)&&Number.isFinite(bar.c));
     return shown.length?shown:null;
-  }
-  async function loadCandles(){
-    if(typeof E==='undefined'||!E.selected||typeof api!=='function')return;
-    const symbol=E.selected,end=Math.floor(Date.now()/1000),start=end-86400*420;
-    try{
-      const data=await api('/api/saved-daily?symbol='+encodeURIComponent(symbol)+'&from='+start+'&to='+end);
-      if(symbol!==E.selected)return;
-      const candles=data.candles;
-      bars=candles?.t?candles.t.map((stamp,index)=>({t:stamp*1000,o:candles.o[index],h:candles.h[index],l:candles.l[index],c:candles.c[index],v:candles.v[index]})).filter(bar=>[bar.o,bar.h,bar.l,bar.c].every(Number.isFinite)):[];
-      barsSymbol=symbol;
-      if(typeof drawChart==='function')drawChart();
-    }catch{if(symbol===E.selected){bars=[];barsSymbol=''}}
   }
   function paint(){
     ensure();
@@ -123,9 +269,12 @@ const Look43=window.Look43=(()=>{
     if(toolbar.dataset.edition!==document.body.dataset.look+'-68'){
       toolbar.dataset.edition=document.body.dataset.look+'-68';
       toolbar.innerHTML=`${professional?'':`<div class="look43-series"><button type="button" data-look-series="line" aria-pressed="${series!=='candles'}">Line</button><button type="button" data-look-series="candles" aria-pressed="${series==='candles'}">Candles</button></div>`}<div class="look43-ranges">${ranges.map(range=>`<button type="button" data-look-range="${range}" aria-pressed="${E.range===range}">${range}</button>`).join('')}</div><button type="button" id="look43-ask">Ask Intelligence</button><button type="button" id="look43-reset">Reset</button><button type="button" data-journal="chart">Save evidence</button><button type="button" data-desk68="move">Investigate this move</button><button type="button" data-desk68="compare">Compare a company</button><button type="button" data-desk68="financials">Supported financials</button>`;
+      wireToolbarButtons(toolbar);
+      window.Annotate60?.mount?.();
     }
-    toolbar.querySelectorAll('[data-look-series]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.lookSeries===series)));
+    syncSeriesButtons();
     toolbar.querySelectorAll('[data-look-range]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.lookRange===E.range)));
+    syncSeriesDock();
     const note=document.getElementById('overview-chart-note')?.textContent||document.getElementById('chart-data-coverage')?.textContent||'';
     const brief=document.getElementById('chart-observed-summary')?.textContent||'';
     const forecast=document.getElementById('chart-forecast-legend')?.textContent||'';
@@ -137,11 +286,14 @@ const Look43=window.Look43=(()=>{
     const label=document.createElement('summary');
     label.textContent='Coverage and forecast detail';
     const more=document.createElement('p');
-    more.textContent=[brief,forecast,note].filter(Boolean).join(' ');
+    more.textContent=[brief,forecast,note,barsSource&&wantsCandles()?'OHLC: '+barsSource:''].filter(Boolean).join(' ');
     detail.append(label,more);
     coverage.append(summary,detail);
     const observed=E.verifiedAt?new Date(E.verifiedAt).toLocaleTimeString('en-GB',{hour12:false})+' last recorded trade':'No trade recorded this session';
-    document.getElementById('look43-feed').textContent=(['1H','1D'].includes(E.range)?observed+' · collector '+(E.backgroundCollector?'on':'off'):'Daily chart uses saved closes · '+observed);
+    const feed=document.getElementById('look43-feed');
+    if(feed&&!(wantsCandles()&&barsSource&&(E.demoMode||window.MarketDeskHost?.demoMode))){
+      feed.textContent=(['1H','1D'].includes(E.range)?observed+' · collector '+(E.backgroundCollector?'on':'off'):'Daily chart uses saved closes · '+observed);
+    }
     document.querySelectorAll('#look43-mode [data-v43-edition]').forEach(button=>button.setAttribute('aria-pressed',String((professional?'professional':'standard')===button.dataset.v43Edition)));
     const active=(document.querySelector('.view.active')?.id||'').replace('view-','');
     const area={home:'home',overview:'home',alerts:'home',portfolio:'home',tape:'home',markets:'markets',heatmap:'markets',crypto:'markets',screener:'markets',comparison:'markets',indicators:'markets',news:'markets',macro:'markets',company:'company',calendar:'company',forecast:'company',accuracy:'company',valuation:'company',intelligence:'company',research:'research',reports:'research',learning:'research',settings:'settings'};
@@ -165,7 +317,6 @@ const Look43=window.Look43=(()=>{
   async function paintHeat(){
     const box=document.getElementById('look43-heat');
     if(!box||box.hidden||typeof E==='undefined')return;
-    const sectors=['All sectors','Technology','Consumer','Health Care','Financials','Communication'];
     try{
       const data=await api('/api/v3/heatmap?period=1D&symbols='+encodeURIComponent((E.watch||[]).join(',')));
       const rows=(data.rows||[]).filter(row=>(E.watch||[]).includes(row.symbol)&&Number.isFinite(row.change));
@@ -203,14 +354,18 @@ const Look43=window.Look43=(()=>{
   function refresh(){
     if(typeof E==='undefined')return;
     const price=typeof quoteFor==='function'?quoteFor(E.selected)?.p:'';
-    const key=[E.selected,E.range,document.body.dataset.edition,E.savedSession,(E.watch||[]).join(','),price,E.chartPoints?.length,E.chartPoints?.at?.(-1)?.t,document.getElementById('chart-forecast-legend')?.textContent?.slice(0,48)].join('|');
+    const key=[E.selected,E.range,document.body.dataset.edition,E.savedSession,(E.watch||[]).join(','),price,E.chartPoints?.length,E.chartPoints?.at?.(-1)?.t,document.getElementById('chart-forecast-legend')?.textContent?.slice(0,48),series].join('|');
     if(key!==paintKey){paintKey=key;paint()}
-    if(E.selected!==eventsKey){eventsKey=E.selected||'';paintEvents();loadCandles()}
+    else syncSeriesDock();
+    if(E.selected!==eventsKey){eventsKey=E.selected||'';paintEvents()}
+    if(E.selected!==barsSymbol||(wantsCandles()&&!bars.length))loadCandles();
     if((document.body.dataset.edition||'')+'|'+(E?.watch||[]).join(',')!==heatKey){heatKey=(document.body.dataset.edition||'')+'|'+(E?.watch||[]).join(',');paintHeat()}
     if((document.body.dataset.edition||'')+'|'+E?.selected!==tapeKey){tapeKey=(document.body.dataset.edition||'')+'|'+E?.selected;paintTape()}
   }
   const start=()=>{ensure();refresh();setInterval(()=>{if(document.visibilityState==='visible')refresh()},4000)};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
   window.addEventListener('marketdesk:edition-change',()=>setTimeout(refresh,0));
-  return {candleBars,refresh};
+  window.addEventListener('marketdesk:ready',()=>setTimeout(()=>{loadCandles(true);refresh()},0));
+  window.addEventListener('marketdesk:layout',()=>setTimeout(syncSeriesDock,0));
+  return {candleBars,refresh,loadCandles,setSeries:applySeries,get series(){return series},get bars(){return bars.slice()},get barsSource(){return barsSource}};
 })();

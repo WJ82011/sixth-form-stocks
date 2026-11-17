@@ -65,6 +65,9 @@ for (const needle of [
   '/api/v3/desk50',
   '/api/v3/overnight51',
   '/api/collector',
+  '/api/v3/annotate60',
+  '/api/candles',
+  '/api/saved-daily',
 ]) {
   assert.ok(shim.includes(needle), `shim routes ${needle}`);
 }
@@ -103,6 +106,9 @@ assert.ok(cloud.includes('PUBLIC PORTFOLIO'), 'cloud-host chrome says public por
 assert.ok(cloud.includes('DEMO DATA') || cloud.includes('SNAPSHOT'), 'status stays honestly labelled SNAPSHOT/DEMO DATA on fallback');
 assert.ok(cloud.includes('SNAPSHOT ·'), 'snapshot chrome uses SNAPSHOT label');
 assert.ok(cloud.includes('tryLiveQuoteApi'), 'public host prefers serverless /api/quotes when available');
+assert.ok(cloud.includes('loopback'), 'live quote probe skipped on loopback static demos');
+assert.ok(fs.readFileSync(path.join(root, 'site/look43.js'), 'utf8').includes('setSeries'), 'look43 exports candle series control');
+assert.ok(fs.readFileSync(path.join(root, 'site/look43.js'), 'utf8').includes('/api/candles'), 'look43 falls back to /api/candles for OHLC');
 assert.ok(cloud.includes('LIVE QUOTES (CACHED)'), 'live proxy upgrades status pill honestly');
 assert.ok(cloud.includes('liveMarks'), 'heatmap can overlay live marks from allowlisted quotes');
 assert.ok(
