@@ -137,9 +137,18 @@ def main():
             plotted = page.locator('#chart-observed-summary').inner_text(timeout=5000)
             assert 'No prices plotted' not in plotted, f'home chart ({plotted!r})'
             page.evaluate('() => changeView("tape")')
-            page.wait_for_timeout(2000)
+            page.wait_for_timeout(2500)
             pill = page.locator('#tape-feed-pill').inner_text(timeout=5000)
             assert 'DEMO TAPE' in pill, f'tape pill ({pill!r})'
+            # Default 1H follow window must show remapped bundled trades (not empty).
+            range_label = page.evaluate('() => T.range')
+            assert range_label == '1h', f'default tape range ({range_label!r})'
+            visible = page.evaluate('() => typeof tapeVisible === "function" ? tapeVisible().length : 0')
+            rows = page.locator('#tape-trades-body tr:not(.tape-empty-row)').count()
+            empty = page.locator('#tape-trades-body .tape-empty-row').count()
+            assert visible > 0 and rows > 0 and empty == 0, (
+                f'demo tape empty under default 1H (visible={visible}, rows={rows}, empty={empty})'
+            )
             page.evaluate('() => changeView("alerts")')
             page.wait_for_timeout(1500)
             armed = page.locator('#alerts-summary strong').first.inner_text(timeout=5000)

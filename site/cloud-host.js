@@ -317,11 +317,16 @@
     let events = saved?.events || [
       { t: start - 3000, p: quote(sym).c, v: 12, receivedAt: start - 3000, id: 1, s: sym },
     ];
-    if (events.length && start - events[events.length - 1].t > 86400000 * 7) {
+    // Bundled trades keep absolute export stamps. Remap whenever the last tick
+    // is older than a minute so the default 1H follow window is never empty on
+    // same-day / few-hour-old snapshots (previously only remapped after 7 days).
+    const STALE_MS = 60 * 1000;
+    if (events.length && start - events[events.length - 1].t > STALE_MS) {
       const span = Math.max(1000, events[events.length - 1].t - events[0].t);
       const anchor = start - Math.min(span, 6 * 3600000);
+      const origin = events[0].t;
       events = events.map((e, index) => {
-        const offset = e.t - events[0].t;
+        const offset = e.t - origin;
         const t = anchor + offset;
         return { ...e, t, receivedAt: t + 12, id: index + 1, s: sym };
       });

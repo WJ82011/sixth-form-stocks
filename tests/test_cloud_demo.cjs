@@ -40,6 +40,8 @@ assert.ok(!fs.readFileSync(path.join(root, 'tools/export-demo-snapshot.py'), 'ut
 assert.ok(fs.existsSync(path.join(root, 'tools/demo_fixtures/equity_bars.json')), 'equity fixture present');
 assert.ok(fs.existsSync(path.join(root, 'tools/demo_data_sources.py')), 'free-provider helper present');
 assert.ok(snapshot.tape.AAPL.events.length > 20, 'tape events');
+assert.ok(shim.includes('STALE_MS'), 'demo tape remaps stale bundled trades for the default 1H window');
+assert.ok(!shim.includes('86400000 * 7'), 'demo tape must not wait 7 days before remapping');
 assert.ok(snapshot.intelligence.TTWO.hour.count > 0, 'intelligence hour points');
 assert.equal(snapshot.forecasts.TTWO.status, 'learned', 'TTWO shown forecast');
 assert.equal(snapshot.forecasts.AMD.status, 'withheld', 'AMD withheld forecast');
