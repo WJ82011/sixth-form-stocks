@@ -154,11 +154,20 @@
       const el = document.getElementById(id);
       if (el && el.textContent !== text) el.textContent = text;
     };
-    bind('connection-sub', 'Public portfolio · bundled snapshot · not a live Finnhub feed');
-    bind('connection-label', 'Public portfolio data');
-    bind('top-status', 'DEMO DATA');
-    bind('side-identity-tagline', 'PUBLIC PORTFOLIO · DEMO DATA');
-    bind('desk-session-label', 'SAMPLE DATA · NOT LIVE');
+    const live = window.MarketDeskHost?.quoteSource === 'live';
+    if (live) {
+      bind('connection-sub', 'Live quotes via host proxy · short cache · snapshot fallback ready');
+      bind('connection-label', 'Live quotes (cached)');
+      bind('top-status', 'LIVE QUOTES (CACHED)');
+      bind('side-identity-tagline', 'PUBLIC PORTFOLIO · LIVE QUOTES');
+      bind('desk-session-label', 'LIVE QUOTES · CACHED');
+    } else {
+      bind('connection-sub', 'Public portfolio · bundled snapshot · not a live Finnhub feed');
+      bind('connection-label', 'Public portfolio data');
+      bind('top-status', 'DEMO DATA');
+      bind('side-identity-tagline', 'PUBLIC PORTFOLIO · DEMO DATA');
+      bind('desk-session-label', 'SAMPLE DATA · NOT LIVE');
+    }
     bind('desk-edition-label', 'DEMO / 01');
     bind('preferences-state', 'DEMO · BROWSER ONLY');
     const foot = document.querySelector('.side-footer');
@@ -167,7 +176,7 @@
     }
     for (const id of ['connection-dot', 'top-dot']) {
       const dot = document.getElementById(id);
-      if (dot) dot.className = 'status-dot amber';
+      if (dot) dot.className = live ? 'status-dot green' : 'status-dot amber';
     }
     document.querySelectorAll('#api-key, #massive-api-key, #save-key, #massive-save-key').forEach((el) => {
       if (!el) return;

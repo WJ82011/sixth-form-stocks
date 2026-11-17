@@ -819,26 +819,103 @@
   }
 
   const nativeFetch = window.fetch.bind(window);
+
+  function jsonFetchResponse(payload, status) {
+    const ok = status >= 200 && status < 300 && !payload?.error;
+    return {
+      ok,
+      status: status || (ok ? 200 : 503),
+      json: async () => payload,
+      text: async () => JSON.stringify(payload),
+    };
+  }
+
+  function markQuoteSource(data) {
+    const host = window.MarketDeskHost;
+    if (!host) return;
+    const live =
+      data &&
+      data.live === true &&
+      data.demoMode !== true &&
+      Array.isArray(data.items) &&
+      data.items.some((it) => it && it.status === 'ok' && it.quote && !it.demoMode);
+    host.quoteSource = live ? 'live' : 'snapshot';
+    host.label = live ? 'Public portfolio · LIVE QUOTES (CACHED)' : 'Public portfolio · DEMO DATA';
+    document.documentElement.dataset.quoteSource = host.quoteSource;
+    const bind = (id, text) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    };
+    if (live) {
+      bind('top-status', 'LIVE QUOTES (CACHED)');
+      bind('side-identity-tagline', 'PUBLIC PORTFOLIO · LIVE QUOTES');
+      bind('connection-label', 'Live quotes (cached)');
+      bind('connection-sub', 'Live quotes via host proxy · short cache · snapshot fallback ready');
+      bind('desk-session-label', 'LIVE QUOTES · CACHED');
+      for (const id of ['connection-dot', 'top-dot']) {
+        const dot = document.getElementById(id);
+        if (dot) dot.className = 'status-dot green';
+      }
+      const alert = document.getElementById('global-alert');
+      if (alert) {
+        alert.textContent =
+          'Public portfolio · live quotes via serverless proxy (short cache). Snapshot remains the fallback if the provider budget trips.';
+        alert.classList.remove('hidden');
+      }
+    } else {
+      bind('top-status', 'DEMO DATA');
+      bind('side-identity-tagline', 'PUBLIC PORTFOLIO · DEMO DATA');
+      bind('connection-label', 'Public portfolio data');
+      bind('connection-sub', 'Public portfolio · bundled snapshot · not a live Finnhub feed');
+      bind('desk-session-label', 'SAMPLE DATA · NOT LIVE');
+      for (const id of ['connection-dot', 'top-dot']) {
+        const dot = document.getElementById(id);
+        if (dot) dot.className = 'status-dot amber';
+      }
+    }
+    window.MarketDeskDemoWiring?.assertDemoChrome?.();
+  }
+
+  async function tryLiveQuoteApi(pathname, options) {
+    try {
+      const res = await nativeFetch(pathname, options);
+      if (!res || !res.ok) return null;
+      const data = await res.json();
+      if (!data || !Array.isArray(data.items) || !data.items.length) return null;
+      markQuoteSource(data);
+      return jsonFetchResponse(data, 200);
+    } catch {
+      return null;
+    }
+  }
+
   window.fetch = async function cloudFetch(url, options) {
     const text = String(url);
     if (!text.includes('/api/')) return nativeFetch(url, options);
     let pathname = text;
+    let pathOnly = text;
     try {
       const u = new URL(text, location.origin);
       pathname = u.pathname + u.search;
+      pathOnly = u.pathname;
     } catch {
       /* ignore */
     }
     if (!pathname.startsWith('/api/')) return nativeFetch(url, options);
+
+    // Prefer serverless /api/quote(s) on Vercel; fall back to snapshot intercept.
+    if (pathOnly === '/api/quotes' || pathOnly === '/api/quote') {
+      const live = await tryLiveQuoteApi(pathname, options);
+      if (live) return live;
+    }
+
     await snapshotReady;
     const payload = route(pathname, options);
+    if (pathOnly === '/api/quotes' || pathOnly === '/api/quote') {
+      markQuoteSource({ ...payload, demoMode: true, live: false });
+    }
     const ok = !payload.error;
-    return {
-      ok,
-      status: ok ? 200 : 503,
-      json: async () => payload,
-      text: async () => JSON.stringify(payload),
-    };
+    return jsonFetchResponse(payload, ok ? 200 : 503);
   };
 
   class DemoSocket extends EventTarget {
@@ -897,6 +974,7 @@
     mode: 'cloud-demo',
     demoMode: true,
     publicHost: Boolean(mode.publicHost),
+    quoteSource: 'snapshot',
     label: 'Public portfolio · DEMO DATA',
     snapshotReady: false,
     whenSnapshotReady: () => snapshotReady,
@@ -919,10 +997,11 @@
     };
     bind('connection-sub', 'Public portfolio · bundled snapshot · not a live Finnhub feed');
     bind('connection-label', 'Public portfolio data');
-    // Honest until P1 live proxy lands — never imply live quotes on snapshot-only host.
+    // Default honest DEMO DATA; live proxy upgrades via markQuoteSource when /api/quotes succeeds.
     bind('top-status', 'DEMO DATA');
     bind('side-identity-tagline', 'PUBLIC PORTFOLIO · DEMO DATA');
     bind('desk-session-label', 'SAMPLE DATA · NOT LIVE');
+    document.documentElement.dataset.quoteSource = 'snapshot';
     const deskLocal = document.querySelector('.desk-local');
     if (deskLocal) deskLocal.textContent = 'Public portfolio · bundled snapshot';
     bind('desk-edition-label', 'DEMO / 01');
