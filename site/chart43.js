@@ -60,16 +60,9 @@ const Chart43=window.Chart43=(()=>{
     if(note)note.textContent=window.Replay43?.active?'Replay is showing only prices reached so far.':state.live?'Following the latest saved price.':'Inspecting older prices. The view stays here as new prices arrive.';
     if(back)back.hidden=state.live&&!window.Replay43?.active;
   }
-  function toolbar(){
-    const ranges=document.getElementById('overview-ranges');if(!ranges||document.getElementById('chart43-tools'))return;
-    const bar=document.createElement('div');
-    bar.id='chart43-tools';bar.className='chart43-tools';
-    bar.innerHTML='<button type="button" id="chart43-reset">Reset view</button><button type="button" id="chart43-live" hidden>Back to live</button><button type="button" id="chart43-pin">Pin point</button><span id="chart43-status" role="status">Following the latest saved price.</span>';
-    ranges.after(bar);
-    bar.querySelector('#chart43-reset').onclick=reset;
-    bar.querySelector('#chart43-live').onclick=backToLive;
-    bar.querySelector('#chart43-pin').onclick=()=>pinAt();
-    const canvas=document.getElementById('overview-chart');
+  function bindCanvas(canvas){
+    if(!canvas||canvas.dataset.chart43Bound==='1')return;
+    canvas.dataset.chart43Bound='1';
     canvas.tabIndex=0;
     canvas.setAttribute('aria-keyshortcuts','ArrowLeft ArrowRight + - Home Escape');
     canvas.addEventListener('wheel',event=>{
@@ -108,6 +101,26 @@ const Chart43=window.Chart43=(()=>{
       else if(event.key==='0'){event.preventDefault();reset()}
     });
   }
+  function toolbar(){
+    const ranges=document.getElementById('overview-ranges');
+    const canvas=document.getElementById('overview-chart');
+    bindCanvas(canvas);
+    if(!ranges)return;
+    let bar=document.getElementById('chart43-tools');
+    if(!bar){
+      bar=document.createElement('div');
+      bar.id='chart43-tools';bar.className='chart43-tools';
+      bar.innerHTML='<button type="button" id="chart43-reset">Reset view</button><button type="button" id="chart43-live" hidden>Back to live</button><button type="button" id="chart43-pin">Pin point</button><span id="chart43-status" role="status">Following the latest saved price.</span>';
+      ranges.after(bar);
+      bar.querySelector('#chart43-reset').onclick=()=>{if(source().length)reset();else if(typeof toast==='function')toast('No chart prices to reset yet.')};
+      bar.querySelector('#chart43-live').onclick=backToLive;
+      bar.querySelector('#chart43-pin').onclick=()=>{if(source().length)pinAt();else if(typeof toast==='function')toast('No chart prices to pin yet.')};
+    }else if(bar.previousElementSibling!==ranges&&ranges.parentNode){
+      ranges.after(bar);
+    }
+    sync();
+    window.Look43?.refresh?.();
+  }
   function paint(ctx,X,Y,points){
     if(window.Annotate60)Annotate60.paint(ctx,X,Y,points);
     const marks=window.Strategy54&&Strategy54.markers||[];
@@ -129,6 +142,10 @@ const Chart43=window.Chart43=(()=>{
     ctx.restore();
     if(state.review){state.review=false;window.Move44?.fromPoint(nearest)}
   }
-  document.addEventListener('DOMContentLoaded',toolbar);
-  return {lens,paint,reset,backToLive,setWindow,sync,fits,window:span,get live(){return state.live},reduced};
+  const boot=()=>toolbar();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
+  window.addEventListener('marketdesk:ready',boot);
+  window.addEventListener('marketdesk:layout',boot);
+  window.addEventListener('marketdesk:edition-change',()=>setTimeout(boot,0));
+  return {lens,paint,reset,backToLive,setWindow,sync,fits,window:span,toolbar,get live(){return state.live},reduced};
 })();

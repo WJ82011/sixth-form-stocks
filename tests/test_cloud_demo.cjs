@@ -65,6 +65,9 @@ for (const needle of [
   '/api/v3/desk50',
   '/api/v3/overnight51',
   '/api/collector',
+  '/api/v3/annotate60',
+  '/api/candles',
+  '/api/saved-daily',
 ]) {
   assert.ok(shim.includes(needle), `shim routes ${needle}`);
 }
@@ -102,6 +105,9 @@ assert.ok(polish.includes('PUBLIC PORTFOLIO'), 'polish chrome says public portfo
 assert.ok(cloud.includes('PUBLIC PORTFOLIO'), 'cloud-host chrome says public portfolio');
 assert.ok(cloud.includes('DEMO DATA'), 'status stays honestly labelled DEMO DATA on snapshot fallback');
 assert.ok(cloud.includes('tryLiveQuoteApi'), 'public host prefers serverless /api/quotes when available');
+assert.ok(cloud.includes('loopback'), 'live quote probe skipped on loopback static demos');
+assert.ok(fs.readFileSync(path.join(root, 'site/look43.js'), 'utf8').includes('setSeries'), 'look43 exports candle series control');
+assert.ok(fs.readFileSync(path.join(root, 'site/look43.js'), 'utf8').includes('/api/candles'), 'look43 falls back to /api/candles for OHLC');
 assert.ok(cloud.includes('LIVE QUOTES (CACHED)'), 'live proxy upgrades status pill honestly');
 assert.ok(fs.existsSync(path.join(root, 'api/quotes.js')), 'Vercel /api/quotes handler present');
 assert.ok(fs.existsSync(path.join(root, 'api/quote.js')), 'Vercel /api/quote handler present');

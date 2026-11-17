@@ -681,6 +681,13 @@
         demoMode: true,
       };
     }
+    if (p === '/api/v3/annotate60') {
+      return {
+        items: [],
+        notice: 'Chart annotations stay in this browser on the public demo · DEMO DATA OHLC comes from the snapshot.',
+        demoMode: true,
+      };
+    }
     if (p === '/api/v3/forecast61') {
       const sym = qs.get('symbol') || 'AAPL';
       const packet = snapshot?.forecasts?.[sym] || snapshot?.forecasts?.AMD;
@@ -903,10 +910,15 @@
     }
     if (!pathname.startsWith('/api/')) return nativeFetch(url, options);
 
-    // Prefer serverless /api/quote(s) on Vercel; fall back to snapshot intercept.
+    // Prefer serverless /api/quote(s) on deployed public hosts; skip the probe on
+    // loopback static demos so the console is not filled with expected 404s.
     if (pathOnly === '/api/quotes' || pathOnly === '/api/quote') {
-      const live = await tryLiveQuoteApi(pathname, options);
-      if (live) return live;
+      const host = location.hostname;
+      const loopback = host === 'localhost' || host === '127.0.0.1' || host === '::1';
+      if (!loopback) {
+        const live = await tryLiveQuoteApi(pathname, options);
+        if (live) return live;
+      }
     }
 
     await snapshotReady;

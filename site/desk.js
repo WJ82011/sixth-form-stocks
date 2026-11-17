@@ -146,7 +146,7 @@ window.Desk=(()=>{
  async function reload(force=false){
   if(!ready)return;if(request&&!force)return request;
   const symbols=browseSymbols().join(','),id=++sequence;lastLoad=Date.now();
-  let task;task=(async()=>{try{const r=await api('/api/desk?symbols='+encodeURIComponent(symbols));if(id!==sequence||symbols!==browseSymbols().join(','))return;data=r;
+  let task;task=(async()=>{try{if(typeof api!=='function'){if(id===sequence)$('desk-status').textContent='Waiting for Market Desk API…';return}const r=await api('/api/desk?symbols='+encodeURIComponent(symbols));if(id!==sequence||symbols!==browseSymbols().join(','))return;data=r;
     for(const row of r.rows||[]){if(!browseSymbols().includes(row.symbol)||!Number.isFinite(row.price)||row.price<=0||row.price>1e9||!Number.isInteger(row.quoteTime)||row.quoteTime<946684800000||row.quoteTime>Date.now())continue;const t=row.quoteTime/1000;if(!Number.isInteger(t)||(E.quotes.get(row.symbol)?.quote?.t||0)>=t)continue;E.quotes.set(row.symbol,{symbol:row.symbol,quote:{c:row.price,pc:row.previousClose,t},cached:true,source:'Finnhub saved quote snapshot',receivedAt:row.quoteFetchedAt});}
     lastRenderKey='';memory();renderAll();if(!busy)$('desk-status').textContent='Saved data checked '+time(r.asOf)+'. Source dates stay visible on each card.';}catch(error){if(id===sequence)$('desk-status').textContent='Saved briefing data could not be read: '+error.message;}finally{if(request===task)request=null}})();request=task;return task;
  }

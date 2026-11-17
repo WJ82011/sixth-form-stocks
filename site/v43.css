@@ -15,6 +15,9 @@ body.v43 .focus-top,body.v43 .focus-actions{flex-wrap:wrap}
 .v43-collapse{display:flex;gap:8px;flex-wrap:wrap}
 .chart43-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
 .chart43-tools button,.replay43-controls button{border:1px solid #24344c;background:#0c121c;color:#e7eef8;padding:7px 12px}
+.chart43-series{display:flex;gap:6px;padding:4px;border-radius:14px;background:#0c121c;margin:8px 0}
+.chart43-series button{border:0;border-radius:10px;background:transparent;color:#d5e2f2;padding:7px 10px;cursor:pointer}
+.chart43-series button[aria-pressed=true]{background:#1d4ed8;color:#fff}
 #overview-chart{touch-action:none;outline:none}
 #overview-chart:focus-visible{outline:2px solid #7eb6ff;outline-offset:3px}
 .replay43{margin-top:18px;padding:18px;border:1px solid #24344c;border-radius:22px;background:#101826}
