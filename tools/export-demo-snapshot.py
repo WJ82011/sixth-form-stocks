@@ -1045,9 +1045,17 @@ def main() -> None:
     if len(pcts) >= 4 and len(set(pcts)) == 1:
         raise SystemExit(f'Refused to write snapshot: every quote move is {pcts[0]}% (flat synthetic book).')
 
+    used_finnhub = any('Finnhub' in p for p in PROVENANCE)
+    used_massive = any('Massive' in p for p in PROVENANCE)
+    if used_finnhub or used_massive:
+        # Still a static file on Vercel — honest DEMO DATA, not a browser live feed.
+        label = 'PORTFOLIO DEMO · Finnhub/Massive snapshot refresh · DEMO DATA · not live market data'
+    else:
+        label = 'PORTFOLIO DEMO · historical bundled closes · DEMO DATA · not live market data'
+
     snapshot = {
         'version': 3,
-        'label': 'PORTFOLIO DEMO · historical bundled closes · DEMO DATA · not live market data',
+        'label': label,
         'generated': dt.datetime.now(dt.timezone.utc).date().isoformat(),
         'provenance': PROVENANCE,
         'watchlist': WATCHLIST,
