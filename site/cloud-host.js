@@ -1,23 +1,27 @@
 /* Public portfolio demo: intercept /api/* with bundled snapshot when not on local server.py */
 (function () {
   'use strict';
-  const params = new URLSearchParams(location.search);
-  const host = location.hostname;
-  const port = location.port;
-  const localPython = (host === 'localhost' || host === '127.0.0.1') && port === '8765';
-  const forceLocal = params.get('demo') === 'local';
-  const forceDemo = params.get('demo') === '1' || params.get('demo') === 'cloud';
-  // Anonymous Vercel previews use *.tmp.now; production may be *.vercel.app or a custom host.
-  const isPublicDemoHost =
-    host.endsWith('.vercel.app') ||
-    host.endsWith('.tmp.now') ||
-    host.endsWith('.now.sh') ||
-    host.includes('sixth-form-stocks');
-  const demoMode = (forceDemo || isPublicDemoHost) && !localPython && !forceLocal;
-  if (!demoMode) return;
+  const resolve =
+    (typeof window !== 'undefined' && window.MarketDeskPublicHost?.resolve) ||
+    null;
+  const mode = resolve
+    ? resolve(location)
+    : {
+        // Fallback if public-host-mode.js failed to load — keep production safe.
+        demoMode:
+          (location.search.includes('demo=1') ||
+            location.search.includes('demo=cloud') ||
+            /\.vercel\.app$|\.tmp\.now$|\.now\.sh$/i.test(location.hostname) ||
+            /sixth-form-stocks/i.test(location.hostname)) &&
+          !((location.hostname === 'localhost' || location.hostname === '127.0.0.1') && location.port === '8765') &&
+          !(location.search.includes('demo=local') && (location.hostname === 'localhost' || location.hostname === '127.0.0.1')),
+        publicHost: /\.vercel\.app$|\.tmp\.now$|\.now\.sh$/i.test(location.hostname) || /sixth-form-stocks/i.test(location.hostname),
+      };
+  if (!mode.demoMode) return;
 
   // Mark demo before later head scripts / DOMContentLoaded so wiring + polish can detect it.
   document.documentElement.dataset.demoMode = 'true';
+  document.documentElement.dataset.publicPortfolio = mode.publicHost ? 'true' : 'force';
 
   window.Desk =
     window.Desk ||
@@ -892,7 +896,8 @@
   window.MarketDeskHost = {
     mode: 'cloud-demo',
     demoMode: true,
-    label: 'Portfolio demo',
+    publicHost: Boolean(mode.publicHost),
+    label: 'Public portfolio · DEMO DATA',
     snapshotReady: false,
     whenSnapshotReady: () => snapshotReady,
     isCloud: () => true,
@@ -901,27 +906,29 @@
 
   function applyChrome() {
     document.documentElement.dataset.demoMode = 'true';
+    if (mode.publicHost) document.documentElement.dataset.publicPortfolio = 'true';
     const alert = document.getElementById('global-alert');
     if (alert) {
       alert.textContent =
-        'Portfolio demo · labelled snapshot on this host · run server.py on your Mac for live Finnhub research (see README-START-HERE.txt).';
+        'Public portfolio · labelled DEMO DATA snapshot on this host (no ?demo=1 needed) · run server.py on your Mac for live Finnhub research (see README-START-HERE.txt).';
       alert.classList.remove('hidden');
     }
     const bind = (id, text) => {
       const el = document.getElementById(id);
       if (el) el.textContent = text;
     };
-    bind('connection-sub', 'Demo bundle · not a live Finnhub feed');
-    bind('connection-label', 'Portfolio demo data');
+    bind('connection-sub', 'Public portfolio · bundled snapshot · not a live Finnhub feed');
+    bind('connection-label', 'Public portfolio data');
+    // Honest until P1 live proxy lands — never imply live quotes on snapshot-only host.
     bind('top-status', 'DEMO DATA');
-    bind('side-identity-tagline', 'PORTFOLIO ADMISSIONS DEMO');
+    bind('side-identity-tagline', 'PUBLIC PORTFOLIO · DEMO DATA');
     bind('desk-session-label', 'SAMPLE DATA · NOT LIVE');
     const deskLocal = document.querySelector('.desk-local');
-    if (deskLocal) deskLocal.textContent = 'Portfolio demo · bundled snapshot';
+    if (deskLocal) deskLocal.textContent = 'Public portfolio · bundled snapshot';
     bind('desk-edition-label', 'DEMO / 01');
     bind('preferences-state', 'DEMO · BROWSER ONLY');
     const overline = document.querySelector('.top-location-overline');
-    if (overline) overline.innerHTML = 'PORTFOLIO DEMO <i>◆</i> RESEARCH DESK';
+    if (overline) overline.innerHTML = 'PUBLIC PORTFOLIO <i>◆</i> RESEARCH DESK';
     const ribbonRight = document.querySelector('.desk-ribbon-right');
     if (ribbonRight && !ribbonRight.dataset.demoRibbon) {
       ribbonRight.dataset.demoRibbon = '1';
@@ -933,17 +940,17 @@
     const ticker = document.querySelector('.ticker-placeholder');
     if (ticker) ticker.textContent = 'Sample watchlist quotes from the bundled snapshot';
     const mast = document.querySelector('.masthead-caption');
-    if (mast) mast.innerHTML = 'ADMISSIONS WALKTHROUGH &nbsp; · &nbsp; LABELLED SNAPSHOT, INDEPENDENT RESEARCH';
+    if (mast) mast.innerHTML = 'PUBLIC PORTFOLIO &nbsp; · &nbsp; LABELLED SNAPSHOT, INDEPENDENT RESEARCH';
     const foot = document.querySelector('.side-footer');
-    if (foot) foot.textContent = 'PORTFOLIO DEMO · 01 / 26';
+    if (foot) foot.textContent = 'PUBLIC PORTFOLIO · 01 / 26';
     const ribbonLeft = document.querySelector('.desk-ribbon-left');
     if (ribbonLeft) {
       ribbonLeft.querySelectorAll('span').forEach((span) => {
         if (span.classList.contains('ribbon-edition')) span.textContent = 'DEMO / 01';
-        else if (!span.classList.contains('ribbon-divider') && /LOCAL|FINNHUB/i.test(span.textContent)) {
+        else if (!span.classList.contains('ribbon-divider') && /LOCAL|FINNHUB|PORTFOLIO|WORKSTATION/i.test(span.textContent)) {
           span.innerHTML = /FINNHUB/i.test(span.textContent)
             ? 'BUNDLED <b>SNAPSHOT</b>'
-            : 'PORTFOLIO <b>DEMO</b>';
+            : 'PUBLIC <b>PORTFOLIO</b>';
         }
       });
     }
