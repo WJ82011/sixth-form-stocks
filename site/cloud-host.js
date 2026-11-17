@@ -22,6 +22,7 @@
   window.Desk =
     window.Desk ||
     {
+      open() {},
       selected() {},
       memory() {},
       reload() {},
@@ -29,6 +30,7 @@
       chartMount() {
         return document.getElementById('desk-chart-mount');
       },
+      revealSelected() {},
     };
 
   let snapshot = null;
@@ -610,10 +612,32 @@
     }
     if (p === '/api/v3/screen') {
       const screen = screenerPacket();
+      // Demo snapshot carries Finnhub TTM margin/growth ratios, not SEC dollar
+      // sales/profit. Map honestly — leave revenue/profit null so the UI can hide
+      // those columns instead of painting a full table of "Unavailable".
+      const rows = screen.rows
+        .filter((r) => r.inDirectory)
+        .slice(0, 60)
+        .map((r) => ({
+          symbol: r.symbol,
+          name: r.name,
+          currency: r.filingCurrency || r.listingCurrency || 'USD',
+          start: '',
+          end: '',
+          revenue: Number.isFinite(r.revenue) ? r.revenue : null,
+          profit: Number.isFinite(r.profit) ? r.profit : null,
+          margin: Number.isFinite(r.margin) ? r.margin : null,
+          growth: Number.isFinite(r.growth) ? r.growth : null,
+          source: r.source || 'Portfolio demo · TTM ratios in snapshot (not live Finnhub)',
+          notice:
+            'Demo sample: TTM margin and sales growth from the bundled snapshot. Dollar annual sales and net profit need SEC accounts on your Mac.',
+        }));
       return {
-        rows: screen.rows.filter((r) => r.inDirectory).slice(0, 60),
-        notice: screen.notice,
+        rows,
+        notice:
+          'Accounts sample incomplete on the public demo — TTM margin and growth are shown; annual sales and net profit stay on your Mac with SEC accounts.',
         demoMode: true,
+        accountsIncomplete: true,
       };
     }
     if (p === '/api/v3/macro') {

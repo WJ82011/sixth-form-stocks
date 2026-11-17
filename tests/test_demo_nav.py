@@ -61,7 +61,7 @@ def main():
             hidden = page.evaluate(
                 '''() => [...document.querySelectorAll('.nav-btn.demo-nav-soft-hidden')].map(b => b.dataset.view).sort()'''
             )
-            assert 'learning' in hidden and 'accuracy' in hidden, f'soft-hidden nav ({hidden})'
+            assert 'learning' in hidden and 'accuracy' in hidden and 'indicators' in hidden, f'soft-hidden nav ({hidden})'
             assert page.locator('#api-key').evaluate('el => el.closest(".settings-card")?.classList.contains("demo-mac-only")'), (
                 'Finnhub key card should be marked Mac-only on demo'
             )
@@ -102,6 +102,8 @@ def main():
             lab = page.locator('#learning40-results').inner_text(timeout=8000)
             assert 'Forecast Lab' in lab, f'learning ({lab[:80]!r})'
             browser.close()
+        desk_errs = [e for e in errors if 'Desk is not defined' in e]
+        assert not desk_errs, f'Desk race still present: {desk_errs}'
         print('PASS demo navigation', {'tiles': tiles, 'price': price, 'console': len(errors)})
         if errors:
             print('WARN page errors:', errors[:3], file=sys.stderr)

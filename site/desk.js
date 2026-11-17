@@ -40,7 +40,9 @@ const DeskMath=(()=>{
  return {quote,briefing,rangeState,headlines,companyHeadlines};
 })();
 if(typeof module!=='undefined'&&module.exports)module.exports=DeskMath;
-const Desk=(()=>{
+/* Assign to window.Desk (not a bare const) so terminal/app can resolve during boot
+   without hitting a temporal-dead-zone ReferenceError while setup() runs. */
+window.Desk=(()=>{
  'use strict';if(typeof document==='undefined')return {};
  const $=id=>document.getElementById(id),esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),DAY=86400000;
  const NOTES={
@@ -144,7 +146,7 @@ const Desk=(()=>{
  async function reload(force=false){
   if(!ready)return;if(request&&!force)return request;
   const symbols=browseSymbols().join(','),id=++sequence;lastLoad=Date.now();
-  const task=(async()=>{try{const r=await api('/api/desk?symbols='+encodeURIComponent(symbols));if(id!==sequence||symbols!==browseSymbols().join(','))return;data=r;
+  let task;task=(async()=>{try{const r=await api('/api/desk?symbols='+encodeURIComponent(symbols));if(id!==sequence||symbols!==browseSymbols().join(','))return;data=r;
     for(const row of r.rows||[]){if(!browseSymbols().includes(row.symbol)||!Number.isFinite(row.price)||row.price<=0||row.price>1e9||!Number.isInteger(row.quoteTime)||row.quoteTime<946684800000||row.quoteTime>Date.now())continue;const t=row.quoteTime/1000;if(!Number.isInteger(t)||(E.quotes.get(row.symbol)?.quote?.t||0)>=t)continue;E.quotes.set(row.symbol,{symbol:row.symbol,quote:{c:row.price,pc:row.previousClose,t},cached:true,source:'Finnhub saved quote snapshot',receivedAt:row.quoteFetchedAt});}
     lastRenderKey='';memory();renderAll();if(!busy)$('desk-status').textContent='Saved data checked '+time(r.asOf)+'. Source dates stay visible on each card.';}catch(error){if(id===sequence)$('desk-status').textContent='Saved briefing data could not be read: '+error.message;}finally{if(request===task)request=null}})();request=task;return task;
  }
@@ -193,6 +195,10 @@ const Desk=(()=>{
   });
   setMode('stock');reload();setInterval(()=>{if(document.visibilityState==='visible'&&E.view==='overview'){if(Date.now()-lastLoad>25000)reload();else memory()}},10000);
  }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});else setup();
- return {open,memory,selected,reload,historyChanged,chartMount,revealSelected:()=>safeScroll(mode==='advanced'?$('main-chart-panel'):$('desk-company-name'))};
+ // Defer setup until after window.Desk is assigned — setMode dispatches edition-change,
+ // and terminal.js moveChart must see a finished Desk (not a TDZ / missing binding).
+ const api={open,memory,selected,reload,historyChanged,chartMount,revealSelected:()=>safeScroll(mode==='advanced'?$('main-chart-panel'):$('desk-company-name'))};
+ const boot=()=>{if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});else setup();};
+ queueMicrotask(boot);
+ return api;
 })();

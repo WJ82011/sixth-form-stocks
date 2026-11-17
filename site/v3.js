@@ -132,8 +132,28 @@ const V3=(()=>{
   message('v3-listing-status',e.message+(index?'':' · bundled listing index could not be loaded.'));
  }}
  function filteredScreen(){const minG=$('v3-screen-growth').value,minM=$('v3-screen-margin').value,profit=$('v3-screen-profit').value;return screenData.filter(r=>(minG===''||finite(r.growth)&&r.growth>=Number(minG))&&(minM===''||finite(r.margin)&&r.margin>=Number(minM))&&(profit==='all'||finite(r.profit)&&(profit==='positive'?r.profit>0:r.profit<0)))}
- function renderScreen(){const rows=filteredScreen();$('v3-screen-output').innerHTML='<table><thead><tr><th>Company</th><th>Annual sales</th><th>Net profit/loss</th><th>Margin</th><th>Sales growth</th><th>Actual period / source</th></tr></thead><tbody>'+rows.map(r=>'<tr><th><button type="button" class="link-btn" data-v3-stock="'+esc(r.symbol)+'">'+esc(r.symbol)+'</button><small>'+esc(r.name)+'</small></th><td>'+compact(r.revenue)+'</td><td>'+compact(r.profit)+'</td><td>'+esc(finite(r.margin)?r.margin.toFixed(1)+'%':'Unavailable')+'</td><td>'+esc(finite(r.growth)?r.growth.toFixed(1)+'%':'Unavailable')+'</td><td>'+esc(r.start)+' → '+esc(r.end)+'<br>'+link(r.source,'Filing')+'</td></tr>').join('')+'</tbody></table>';message('v3-screen-status',rows.length+' of '+screenData.length+' loaded annual USD account records match. This is not a whole-market scan.')}
- async function screen(){try{const d=await request('/api/v3/screen');screenData=d.rows;renderScreen()}catch(e){message('v3-screen-status',e.message)}}
+ function renderScreen(){
+  const rows=filteredScreen();
+  const showDollars=screenData.some(r=>finite(r.revenue)||finite(r.profit));
+  const profitFilter=$('v3-screen-profit');
+  if(profitFilter)profitFilter.closest('label').hidden=!showDollars;
+  const head=showDollars
+    ?'<th>Company</th><th>Annual sales</th><th>Net profit/loss</th><th>Margin</th><th>Sales growth</th><th>Actual period / source</th>'
+    :'<th>Company</th><th>Margin</th><th>Sales growth</th><th>Source</th>';
+  const body=rows.map(r=>{
+    const company='<th><button type="button" class="link-btn" data-v3-stock="'+esc(r.symbol)+'">'+esc(r.symbol)+'</button><small>'+esc(r.name)+'</small></th>';
+    const ratios='<td>'+esc(finite(r.margin)?r.margin.toFixed(1)+'%':'Unavailable')+'</td><td>'+esc(finite(r.growth)?r.growth.toFixed(1)+'%':'Unavailable')+'</td>';
+    if(showDollars){
+      return '<tr>'+company+'<td>'+compact(r.revenue)+'</td><td>'+compact(r.profit)+'</td>'+ratios+'<td>'+esc(r.start)+' → '+esc(r.end)+'<br>'+link(r.source,'Filing')+'</td></tr>';
+    }
+    return '<tr>'+company+ratios+'<td>'+esc(r.source||'Demo TTM ratios')+'</td></tr>';
+  }).join('');
+  $('v3-screen-output').innerHTML='<table><thead><tr>'+head+'</tr></thead><tbody>'+body+'</tbody></table>';
+  const base=rows.length+' of '+screenData.length+(showDollars?' loaded annual USD account records match. This is not a whole-market scan.':' demo TTM ratio rows match. Annual sales and net profit need SEC accounts on your Mac.');
+  message('v3-screen-status',(screenNotice?screenNotice+' ':'')+base);
+ }
+ let screenNotice='';
+ async function screen(){try{const d=await request('/api/v3/screen');screenData=d.rows;screenNotice=d.notice||'';renderScreen()}catch(e){message('v3-screen-status',e.message)}}
  async function macro(){try{const d=await request('/api/v3/macro');$('v3-macro-grid').innerHTML=Object.entries(d.available).map(([id,definition])=>{const m=d.series.find(x=>x.id===id);return '<article class="v3-card"><p class="desk-eyebrow">'+esc(definition.source)+'</p><h2>'+esc(definition.title)+'</h2><strong class="v3-big">'+esc(m?m.latest.value:'Not loaded')+'</strong><p>'+esc(definition.unit)+'</p><p>'+(m?'Observation '+esc(m.latest.date)+' · '+esc(m.frequency)+'<br>Retrieved '+stamp(m.fetchedAt):'No observation saved yet.')+'</p>'+(finite(m?.yearAgoChangePct)?'<p>Calculated year-ago change: '+m.yearAgoChangePct.toFixed(2)+'%</p>':'')+'<button type="button" class="ghost-btn" data-v3-macro="'+id+'">Update this series</button><p>'+link('https://fred.stlouisfed.org/series/'+id,'Official series and definition')+'</p><small>'+esc(m?.notice||definition.adjustment)+'</small></article>'}).join('')}catch(e){message('v3-macro-status',e.message)}}
  async function sources(){try{const d=await request('/api/v3/sources');$('v3-source-output').innerHTML='<div class="v3-metrics"><article class="v3-metric"><span>Saved SEC issuers</span><strong>'+d.accounts.count+'</strong><small>Latest retrieval '+stamp(d.accounts.latestFetch)+'</small></article><article class="v3-metric"><span>SEC listing associations</span><strong>'+d.listings.count.toLocaleString()+'</strong><small>'+stamp(d.listings.checkedAt)+'</small></article></div><section class="v3-card"><h2>The boundaries matter.</h2>'+d.limits.map(x=>'<p>'+esc(x)+'</p>').join('')+'</section><section class="v3-card"><h2>Official macro coverage</h2>'+d.macro.map(m=>'<p>'+link(m.url,m.id)+' · observation '+esc(m.date)+' · retrieved '+stamp(m.fetchedAt)+'</p>').join('')+'</section>'}catch(e){$('v3-source-output').textContent=e.message}}
  async function chartCompare(){try{const syms=['compare-a','compare-b','compare-c'].map(id=>$(id).value).filter(Boolean);const d=await request('/api/v3/chart-compare?symbols='+encodeURIComponent(syms.join(',')));comparison=d;message('v3-chart-status',d.notice);if(d.status!=='ok'){$('v3-chart-output').textContent='No compatible comparison to plot.';return}const all=d.rows.flatMap(r=>r.points),lo=Math.min(100,...all.map(p=>p.index)),hi=Math.max(100,...all.map(p=>p.index)),span=hi-lo||1,start=Date.parse(d.dates[0]),end=Date.parse(d.dates.at(-1));

@@ -25,7 +25,7 @@
     if(!panel)return;
     if(!anchor){anchor=document.createComment('overview-chart-original-position');panel.parentNode.insertBefore(anchor,panel)}
     const slotted=window.Shell43?.chartSlot();
-    const goal=slotted||(current()?byId('pro-chart-mount'):((typeof Desk!=='undefined'&&Desk.chartMount())||anchor.parentNode));
+    const goal=slotted||(current()?byId('pro-chart-mount'):((typeof window.Desk!=='undefined'&&typeof window.Desk.chartMount==='function'&&window.Desk.chartMount())||anchor.parentNode));
     if(slotted&&panel.parentNode===slotted)return;
     if(!goal)return;
     if(!current() && panel.classList.contains('is-expanded') && typeof toggleExpandedChart==='function')toggleExpandedChart(false);

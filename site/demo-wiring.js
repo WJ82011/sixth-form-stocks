@@ -7,7 +7,7 @@
   }
 
   // Thin / Mac-only / crashy on the static host — keep Mac path intact when not in demo.
-  const SOFT_HIDE = new Set(['learning', 'accuracy', 'valuation', 'calendar', 'reports']);
+  const SOFT_HIDE = new Set(['learning', 'accuracy', 'valuation', 'calendar', 'reports', 'indicators']);
 
   const FOCUS_FOR = {
     home: 'home',

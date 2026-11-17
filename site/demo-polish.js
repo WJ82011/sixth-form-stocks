@@ -10,13 +10,17 @@
     ['.desk-local', 'Portfolio demo · bundled snapshot'],
     ['#preferences-state', 'DEMO · BROWSER ONLY'],
     ['#v3-global-status', null],
+    ['#overview-chart-source', 'BUNDLED DEMO OBSERVATIONS'],
     ['#view-learning .page-title > div > p', 'Sample training results from the bundle. Live collection needs server.py on your Mac.'],
     ['#view-markets .page-title .eyebrow', 'PORTFOLIO DEMO / BUNDLED QUOTES'],
     ['#view-tape .page-title .eyebrow', 'PORTFOLIO DEMO / BUNDLED TRADES'],
     ['#view-tape .page-title > div > p', 'Replay labelled sample trades from the demo bundle. Live Finnhub sockets run on your Mac.'],
+    ['#view-forecast .page-title .eyebrow', 'PRICE ESTIMATES / DEMO DATA'],
+    ['#view-forecast .forecast-banner p', 'This public demo uses bundled daily closes. Calculate shows a labelled learned or withheld path — no Massive key on this host.'],
     ['#view-reports .page-title .eyebrow', 'INVESTMENT RESEARCH / DEMO BROWSER'],
     ['#view-research .page-title .eyebrow', 'YOUR RESEARCH / PORTFOLIO DEMO'],
     ['#view-portfolio .page-title .eyebrow', 'PRACTICE / PORTFOLIO DEMO'],
+    ['#view-screener .v3-card .desk-eyebrow', 'DEMO TTM RATIOS / ACCOUNTS SAMPLE'],
   ]);
 
   const SUBTREE_PHRASES = [
@@ -47,7 +51,11 @@
     ['LOCAL WORKSTATION', 'PORTFOLIO DEMO'],
     ['FEED OFFLINE', 'DEMO DATA'],
     ['LIVE TERMINAL / FINNHUB', 'PORTFOLIO DEMO / BUNDLED QUOTES'],
+    ['LOCALLY RECORDED FINNHUB OBSERVATIONS', 'BUNDLED DEMO OBSERVATIONS'],
+    ['RECORDED FINNHUB OBSERVATIONS', 'BUNDLED DEMO OBSERVATIONS'],
     ['RECORDED FINNHUB TRADES', 'BUNDLED DEMO TRADES'],
+    ['Add a Massive key for US daily history on Stocks Basic. Finnhub history depends on your plan.', 'Bundled daily closes only on this host. Try TTWO for a shown path or AMD for a withheld example.'],
+    ['Check your Massive plan and request limit in Settings.', 'No provider key is used here — pick TTWO or AMD from the demo bundle.'],
     ['See the trades Finnhub sends to your app.', 'Replay labelled sample trades from the demo bundle.'],
     ['Uses data saved on this Mac.', 'Uses the labelled demo snapshot on this host.'],
     ['SAVED ON YOUR MAC', 'SAVED IN THIS BROWSER'],
@@ -107,7 +115,7 @@
       }
     }
     const roots = document.querySelectorAll(
-      '#view-overview, #view-home, #view-learning, #view-settings, #view-alerts, #view-reports, #view-markets, #view-tape, #view-intelligence, #view-news, #view-sources, #view-research, #view-portfolio, #p32-projects, #v3-portfolio'
+      '#view-overview, #view-home, #view-learning, #view-settings, #view-alerts, #view-reports, #view-markets, #view-tape, #view-intelligence, #view-news, #view-sources, #view-research, #view-portfolio, #view-forecast, #view-screener, #p32-projects, #v3-portfolio'
     );
     for (const root of roots) {
       const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -133,8 +141,8 @@
   }
 
   function deskStub() {
-    if (typeof window.Desk !== 'undefined') return;
-    window.Desk = {
+    const stub = {
+      open() {},
       selected() {},
       memory() {},
       reload() {},
@@ -142,7 +150,21 @@
       chartMount() {
         return document.getElementById('desk-chart-mount');
       },
+      revealSelected() {},
     };
+    if (typeof window.Desk === 'undefined') {
+      window.Desk = stub;
+      return;
+    }
+    for (const key of Object.keys(stub)) {
+      if (typeof window.Desk[key] !== 'function') window.Desk[key] = stub[key];
+    }
+  }
+
+  function polishTapeNav() {
+    document.querySelectorAll('.nav-btn[data-view="tape"] span:nth-child(2)').forEach((el) => {
+      if (el.textContent.trim() === 'Live Tape') el.textContent = 'Demo Tape';
+    });
   }
 
   function onViewChange() {
@@ -151,6 +173,7 @@
     try {
       polishTextRoots();
       polishTapeChrome();
+      polishTapeNav();
     } finally {
       polishing = false;
     }
