@@ -83,7 +83,12 @@ assert.ok(fs.readFileSync(path.join(root, 'site/index.html'), 'utf8').includes('
 assert.ok(fs.readFileSync(path.join(root, 'site/cloud-host.js'), 'utf8').includes("querySelector('.desk-local')"));
 const wiring = fs.readFileSync(path.join(root, 'site/demo-wiring.js'), 'utf8');
 assert.ok(wiring.includes('SOFT_HIDE'), 'demo wiring soft-hides thin nav');
+assert.ok(wiring.includes("'indicators'"), 'demo wiring soft-hides chart indicators');
 assert.ok(wiring.includes('demo-nav-soft-hidden'), 'demo wiring marks soft-hidden nav');
+assert.ok(fs.readFileSync(path.join(root, 'site/desk.js'), 'utf8').includes('window.Desk='), 'desk assigns window.Desk to avoid TDZ race');
+assert.ok(fs.readFileSync(path.join(root, 'site/app.js'), 'utf8').includes('BUNDLED DEMO OBSERVATIONS'), 'overview chart source honest on demo');
+assert.ok(fs.readFileSync(path.join(root, 'site/app.js'), 'utf8').includes('hydrateDemoForecast'), 'forecast auto-hydrates on demo');
+assert.ok(shim.includes('accountsIncomplete'), 'v3 screen marks incomplete dollar accounts on demo');
 assert.ok(wiring.includes('assertDemoChrome'), 'demo wiring re-asserts DEMO DATA chrome');
 assert.ok(fs.readFileSync(path.join(root, 'site/demo-chrome.css'), 'utf8').includes('demo-nav-soft-hidden'));
 assert.ok(fs.readFileSync(path.join(root, 'site/demo-chrome.css'), 'utf8').includes('demo-mac-only'));
