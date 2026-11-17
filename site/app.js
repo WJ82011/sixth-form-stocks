@@ -202,13 +202,19 @@ function quoteFor(sym){
 function currentMode(){if(E.demoMode)return 'quotes';if(E.wsOpen&&E.verifiedAt && nowMs()-E.verifiedAt<180000)return 'live';if(E.lastGoodQuoteAt && nowMs()-E.lastGoodQuoteAt<180000)return 'quotes';if(E.wsOpen)return 'waiting';return E.configured?'error':'offline'}
 function syncConnectionUI(){
   if(E.demoMode){
-    for(const id of ['connection-dot','top-dot']){const el=$(id);if(el)el.className='status-dot amber'}
-    $('top-status').textContent='DEMO DATA';
-    $('connection-label').textContent='Portfolio demo data';
-    $('connection-sub').textContent='Bundled snapshot · not live Finnhub';
+    const live=window.MarketDeskHost?.quoteSource==='live';
+    const stamp=(String(window.MarketDeskHost?.snapshotGenerated||window.MarketDeskHost?.label||'').match(/(\d{4}-\d{2}-\d{2})/)||[])[1]||'';
+    for(const id of ['connection-dot','top-dot']){const el=$(id);if(el)el.className=live?'status-dot green':'status-dot amber'}
+    $('top-status').textContent=live?'LIVE QUOTES (CACHED)':(stamp?'SNAPSHOT · '+stamp:'SNAPSHOT · DEMO DATA');
+    $('connection-label').textContent=live?'Live quotes (cached)':'Snapshot portfolio data';
+    $('connection-sub').textContent=live
+      ?'Live quotes via host proxy · short cache · snapshot fallback ready'
+      :(stamp?'Public portfolio · snapshot refreshed '+stamp+' · not a live Finnhub feed':'Bundled snapshot · not live Finnhub');
     $('diag-server').textContent='Static portfolio host';
-    $('diag-probe').textContent='✓ Demo bundle';
-    $('diag-message').textContent='Public admissions demo. Run the Mac server for Finnhub, SEC accounts and live research.';
+    $('diag-probe').textContent=live?'✓ Live quotes proxy':'✓ Demo bundle';
+    $('diag-message').textContent=live
+      ?'Public portfolio · live quotes via serverless proxy. Snapshot remains the fallback.'
+      :'Public admissions demo. Run the Mac server for Finnhub, SEC accounts and live research.';
     $('diag-message').className='diag-result good';
     $('key-state').textContent='NOT ON THIS HOST';
     $('massive-key-state').textContent='NOT ON THIS HOST';

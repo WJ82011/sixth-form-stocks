@@ -79,9 +79,10 @@ def main():
             )
             page.wait_for_selector('#demo-first-run-cta', timeout=15000)
             status = page.locator('#top-status').inner_text()
-            assert 'DEMO DATA' in status, f'top status ({status!r})'
+            assert 'SNAPSHOT' in status or 'DEMO DATA' in status or 'LIVE QUOTES' in status, f'top status ({status!r})'
+            assert 'FEED OFFLINE' not in status, f'stale FEED OFFLINE chrome ({status!r})'
             tagline = page.locator('#side-identity-tagline').inner_text()
-            assert 'PUBLIC PORTFOLIO' in tagline or 'DEMO' in tagline, f'tagline ({tagline!r})'
+            assert 'PUBLIC PORTFOLIO' in tagline or 'DEMO' in tagline or 'SNAPSHOT' in tagline, f'tagline ({tagline!r})'
             assert page.locator('#demo-first-run-cta').inner_text().find('DEMO DATA') >= 0
             assert_public_host_resolve(page)
             page.locator('#demo-first-run-dismiss').click(timeout=5000)
@@ -107,7 +108,14 @@ def main():
             edition = page.locator('#desk-edition-label').inner_text()
             session = page.locator('#desk-session-label').inner_text()
             assert 'DEMO' in edition, f'edition label ({edition!r})'
-            assert 'SAMPLE DATA' in session or 'NOT LIVE' in session, f'session label ({session!r})'
+            assert (
+                'SAMPLE DATA' in session
+                or 'NOT LIVE' in session
+                or 'SNAPSHOT' in session
+                or 'LIVE QUOTES' in session
+            ), f'session label ({session!r})'
+            briefing = page.locator('#desk-status').inner_text()
+            assert 'api is not a function' not in briefing.lower(), f'briefing api shadow ({briefing!r})'
             for view in ('home', 'overview', 'heatmap', 'markets', 'tape', 'alerts', 'learning', 'settings'):
                 page.evaluate('(v) => changeView(v)', view)
                 page.wait_for_function(

@@ -100,9 +100,19 @@ assert.ok(polish.includes('MarketDeskPublicHost'), 'polish shares public-host de
 assert.ok(wiring.includes('PUBLIC PORTFOLIO'), 'wiring chrome says public portfolio');
 assert.ok(polish.includes('PUBLIC PORTFOLIO'), 'polish chrome says public portfolio');
 assert.ok(cloud.includes('PUBLIC PORTFOLIO'), 'cloud-host chrome says public portfolio');
-assert.ok(cloud.includes('DEMO DATA'), 'status stays honestly labelled DEMO DATA on snapshot fallback');
+assert.ok(cloud.includes('DEMO DATA') || cloud.includes('SNAPSHOT'), 'status stays honestly labelled SNAPSHOT/DEMO DATA on fallback');
+assert.ok(cloud.includes('SNAPSHOT ·'), 'snapshot chrome uses SNAPSHOT label');
 assert.ok(cloud.includes('tryLiveQuoteApi'), 'public host prefers serverless /api/quotes when available');
 assert.ok(cloud.includes('LIVE QUOTES (CACHED)'), 'live proxy upgrades status pill honestly');
+assert.ok(cloud.includes('liveMarks'), 'heatmap can overlay live marks from allowlisted quotes');
+assert.ok(
+  !fs.readFileSync(path.join(root, 'site/desk.js'), 'utf8').includes('const api={open'),
+  'desk.js must not shadow global api() (briefing "api is not a function")'
+);
+assert.ok(
+  fs.readFileSync(path.join(root, 'site/desk.js'), 'utf8').includes('const deskApi='),
+  'desk.js exports deskApi without shadowing fetch helper'
+);
 assert.ok(fs.existsSync(path.join(root, 'api/quotes.js')), 'Vercel /api/quotes handler present');
 assert.ok(fs.existsSync(path.join(root, 'api/quote.js')), 'Vercel /api/quote handler present');
 assert.ok(fs.existsSync(path.join(root, 'lib/quotes-api.js')), 'shared quotes helper present');
@@ -120,7 +130,8 @@ assert.ok(hostMode.includes('.vercel.app'), 'production *.vercel.app hosts auto-
 assert.ok(hostMode.includes("params.get('demo') === 'local'"), 'loopback ?demo=local stays supported');
 assert.ok(cloud.includes('v3Calc'), 'cloud host uses precomputed demo portfolio calc');
 assert.ok(cloud.includes('workspace?.v3') || cloud.includes('workspace.v3'), 'cloud host serves seeded V3 workspace');
-assert.ok(fs.readFileSync(path.join(root, 'site/signal.js'), 'utf8').includes('SAMPLE DATA · NOT LIVE'));
+assert.ok(fs.readFileSync(path.join(root, 'site/signal.js'), 'utf8').includes('SNAPSHOT · DEMO DATA'));
+assert.ok(fs.readFileSync(path.join(root, 'site/signal.js'), 'utf8').includes('LIVE QUOTES · CACHED'));
 assert.ok(fs.readFileSync(path.join(root, 'site/pro.js'), 'utf8').includes('DEMO / 01'));
 assert.ok(fs.existsSync(path.join(root, 'site/stock-directory.json')));
 const release = fs.readFileSync(path.join(root, 'site/release.js'), 'utf8');

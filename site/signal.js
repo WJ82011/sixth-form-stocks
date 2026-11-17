@@ -48,9 +48,16 @@
   });
   function updateSession(){
     if(!session)return;
-    // Public demo keeps an honest sample-data label (cloud-host / demo-wiring).
+    // Public portfolio: leave LIVE / SNAPSHOT chrome to cloud-host + demo-wiring.
     if(document.documentElement.dataset.demoMode==='true'||window.MarketDeskHost?.demoMode){
-      session.textContent='SAMPLE DATA · NOT LIVE';
+      const live=window.MarketDeskHost?.quoteSource==='live';
+      const current=session.textContent||'';
+      if(live){
+        if(!/LIVE QUOTES/.test(current))session.textContent='LIVE QUOTES · CACHED';
+        return;
+      }
+      if(/SNAPSHOT|DEMO DATA|SAMPLE DATA|NOT LIVE/.test(current))return;
+      session.textContent='SNAPSHOT · DEMO DATA';
       return;
     }
     // Session classification from the existing, more complete US market-hours helper.

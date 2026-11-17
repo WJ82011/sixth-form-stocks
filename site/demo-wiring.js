@@ -149,12 +149,23 @@
     if (eyebrow) eyebrow.textContent = 'SETTINGS / PUBLIC PORTFOLIO';
   }
 
+  function snapshotStamp() {
+    const host = window.MarketDeskHost;
+    const raw = host?.snapshotGenerated || host?.label || host?.bundleLabel || '';
+    const match = String(raw).match(/(\d{4}-\d{2}-\d{2})/);
+    if (match) return match[1];
+    const status = document.getElementById('top-status')?.textContent || '';
+    const fromStatus = status.match(/SNAPSHOT · (\d{4}-\d{2}-\d{2})/);
+    return fromStatus ? fromStatus[1] : '';
+  }
+
   function assertDemoChrome() {
     const bind = (id, text) => {
       const el = document.getElementById(id);
       if (el && el.textContent !== text) el.textContent = text;
     };
     const live = window.MarketDeskHost?.quoteSource === 'live';
+    const stamp = snapshotStamp();
     if (live) {
       bind('connection-sub', 'Live quotes via host proxy · short cache · snapshot fallback ready');
       bind('connection-label', 'Live quotes (cached)');
@@ -162,11 +173,16 @@
       bind('side-identity-tagline', 'PUBLIC PORTFOLIO · LIVE QUOTES');
       bind('desk-session-label', 'LIVE QUOTES · CACHED');
     } else {
-      bind('connection-sub', 'Public portfolio · bundled snapshot · not a live Finnhub feed');
-      bind('connection-label', 'Public portfolio data');
-      bind('top-status', 'DEMO DATA');
-      bind('side-identity-tagline', 'PUBLIC PORTFOLIO · DEMO DATA');
-      bind('desk-session-label', 'SAMPLE DATA · NOT LIVE');
+      bind(
+        'connection-sub',
+        stamp
+          ? 'Public portfolio · snapshot refreshed ' + stamp + ' · not a live Finnhub feed'
+          : 'Public portfolio · bundled snapshot · not a live Finnhub feed'
+      );
+      bind('connection-label', 'Snapshot portfolio data');
+      bind('top-status', stamp ? 'SNAPSHOT · ' + stamp : 'SNAPSHOT · DEMO DATA');
+      bind('side-identity-tagline', 'PUBLIC PORTFOLIO · SNAPSHOT');
+      bind('desk-session-label', stamp ? 'SNAPSHOT · ' + stamp : 'SNAPSHOT · DEMO DATA');
     }
     bind('desk-edition-label', 'DEMO / 01');
     bind('preferences-state', 'DEMO · BROWSER ONLY');
@@ -177,6 +193,12 @@
     for (const id of ['connection-dot', 'top-dot']) {
       const dot = document.getElementById(id);
       if (dot) dot.className = live ? 'status-dot green' : 'status-dot amber';
+    }
+    const marketsEye = document.querySelector('#view-markets .page-title .eyebrow');
+    if (marketsEye) {
+      marketsEye.textContent = live
+        ? 'PUBLIC PORTFOLIO / LIVE QUOTES (CACHED)'
+        : 'PUBLIC PORTFOLIO / SNAPSHOT QUOTES';
     }
     document.querySelectorAll('#api-key, #massive-api-key, #save-key, #massive-save-key').forEach((el) => {
       if (!el) return;
@@ -248,7 +270,7 @@
     cue.innerHTML =
       '<div class="demo-first-run-copy">' +
       '<strong>Optional walkthrough</strong>' +
-      '<p>DEMO DATA only — labelled sample figures, not a live feed. Open Settings for the guided demo (Overview → Heatmap → Stock Browser → Forecast Lab).</p>' +
+      '<p>SNAPSHOT / DEMO DATA — labelled sample figures unless live quotes upgrade the chrome. Open Settings for the guided demo (Overview → Heatmap → Stock Browser → Forecast Lab).</p>' +
       '</div>' +
       '<div class="demo-first-run-actions">' +
       '<button type="button" class="primary-btn" id="demo-first-run-start">Start guided demo</button>' +

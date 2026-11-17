@@ -44,11 +44,18 @@
       snapshot = data;
       if (window.MarketDeskHost) {
         window.MarketDeskHost.snapshotReady = Boolean(snapshot);
-        if (data?.label) window.MarketDeskHost.label = data.label;
+        if (data?.generated) window.MarketDeskHost.snapshotGenerated = data.generated;
+        else if (data?.heatmap?.end) window.MarketDeskHost.snapshotGenerated = data.heatmap.end;
+        if (data?.label && window.MarketDeskHost.quoteSource !== 'live') {
+          // Keep honesty label from markQuoteSource/applyChrome; retain bundle label separately.
+          window.MarketDeskHost.bundleLabel = data.label;
+        }
       }
       // Seed before any awaiter of whenSnapshotReady continues, so V3/init
       // never hydrates an empty ledger ahead of the bundled practice portfolio.
       seedDemoWorkflow(data);
+      // Refresh SNAPSHOT chrome with generated date once the bundle is in memory.
+      if (typeof applyChrome === 'function') applyChrome();
       return snapshot;
     })
     .catch((error) => {
@@ -172,12 +179,42 @@
   function heatmapPacket(period) {
     if (!snapshot?.heatmap) return { rows: [], error: 'Demo snapshot missing heatmap data.' };
     const scale = period === '3D' ? 1.7 : period === '1W' ? 2.4 : 1;
-    const rows = snapshot.heatmap.rows.map((row) => ({
-      ...row,
+    const liveMarks = window.MarketDeskHost?.liveMarks || {};
+    const useLive = period === '1D' && window.MarketDeskHost?.quoteSource === 'live';
+    let liveCount = 0;
+    const rows = snapshot.heatmap.rows.map((row) => {
+      let change = row.change === null ? null : +(row.change * scale).toFixed(2);
+      let price = row.price;
+      let liveMark = false;
+      if (useLive) {
+        const mark = liveMarks[row.symbol];
+        if (mark && Number.isFinite(mark.c) && Number.isFinite(mark.pc) && mark.pc > 0) {
+          change = Number.isFinite(mark.dp)
+            ? +Number(mark.dp).toFixed(2)
+            : +(((mark.c - mark.pc) / mark.pc) * 100).toFixed(2);
+          price = mark.c;
+          liveMark = true;
+          liveCount += 1;
+        }
+      }
+      return { ...row, period, change, price, liveMark };
+    });
+    const generated = snapshot?.generated || snapshot?.heatmap?.end || '';
+    return {
+      ...snapshot.heatmap,
       period,
-      change: row.change === null ? null : +(row.change * scale).toFixed(2),
-    }));
-    return { ...snapshot.heatmap, period, rows, cloudDemo: true };
+      rows,
+      cloudDemo: true,
+      liveMarks: liveCount,
+      quoteSource: window.MarketDeskHost?.quoteSource || 'snapshot',
+      notice: liveCount
+        ? 'Live marks (cached) on ' +
+          liveCount +
+          ' allowlisted symbols · directory listings stay on the bundled snapshot.'
+        : 'Bundled snapshot' +
+          (generated ? ' · refreshed ' + String(generated).slice(0, 10) : '') +
+          ' · not live Massive downloads. Grey tiles mean missing period data in the bundle.',
+    };
   }
 
   function catalogNames() {
@@ -208,14 +245,21 @@
 
   function deskRows(symbols) {
     const catalog = catalogNames();
+    const live = window.MarketDeskHost?.liveMarks || {};
     return symbols.map((sym) => {
-      const q = quote(sym);
+      const mark = live[sym];
+      const q =
+        mark && Number.isFinite(mark.c) && Number.isFinite(mark.pc) && mark.pc > 0
+          ? { c: mark.c, pc: mark.pc }
+          : quote(sym);
       return {
         symbol: sym,
         name: catalog[sym] || sym,
         price: q.c,
+        previousClose: q.pc,
         listingCurrency: 'USD',
-        quoteTime: snapshot?.heatmap?.asOf || start,
+        quoteTime: mark?.t ? mark.t * 1000 : snapshot?.heatmap?.asOf || start,
+        quoteFetchedAt: start,
         changePct: +(((q.c - q.pc) / q.pc) * 100).toFixed(2),
       };
     });
@@ -830,6 +874,34 @@
     };
   }
 
+  function snapshotStamp() {
+    const raw =
+      snapshot?.generated ||
+      snapshot?.heatmap?.end ||
+      window.MarketDeskHost?.snapshotGenerated ||
+      snapshot?.label ||
+      '';
+    const match = String(raw).match(/(\d{4}-\d{2}-\d{2})/);
+    return match ? match[1] : '';
+  }
+
+  function rememberLiveMarks(data) {
+    const host = window.MarketDeskHost;
+    if (!host) return;
+    host.liveMarks = host.liveMarks || {};
+    for (const item of data?.items || []) {
+      const q = item?.quote;
+      if (!item?.symbol || item.status !== 'ok' || !q) continue;
+      if (!(Number.isFinite(q.c) && Number.isFinite(q.pc) && q.pc > 0)) continue;
+      host.liveMarks[item.symbol] = {
+        c: q.c,
+        pc: q.pc,
+        dp: Number.isFinite(q.dp) ? q.dp : ((q.c - q.pc) / q.pc) * 100,
+        t: Number.isInteger(q.t) ? q.t : Math.floor(Date.now() / 1000),
+      };
+    }
+  }
+
   function markQuoteSource(data) {
     const host = window.MarketDeskHost;
     if (!host) return;
@@ -840,18 +912,32 @@
       Array.isArray(data.items) &&
       data.items.some((it) => it && it.status === 'ok' && it.quote && !it.demoMode);
     host.quoteSource = live ? 'live' : 'snapshot';
-    host.label = live ? 'Public portfolio · LIVE QUOTES (CACHED)' : 'Public portfolio · DEMO DATA';
+    if (live) rememberLiveMarks(data);
+    else host.liveMarks = {};
+    const stamp = snapshotStamp();
+    host.label = live
+      ? 'Public portfolio · LIVE QUOTES (CACHED)'
+      : stamp
+        ? 'Public portfolio · SNAPSHOT · ' + stamp
+        : 'Public portfolio · SNAPSHOT · DEMO DATA';
     document.documentElement.dataset.quoteSource = host.quoteSource;
     const bind = (id, text) => {
       const el = document.getElementById(id);
       if (el) el.textContent = text;
     };
+    const ribbonRight = document.querySelector('.desk-ribbon-right');
     if (live) {
       bind('top-status', 'LIVE QUOTES (CACHED)');
       bind('side-identity-tagline', 'PUBLIC PORTFOLIO · LIVE QUOTES');
       bind('connection-label', 'Live quotes (cached)');
       bind('connection-sub', 'Live quotes via host proxy · short cache · snapshot fallback ready');
       bind('desk-session-label', 'LIVE QUOTES · CACHED');
+      if (ribbonRight) {
+        const session = document.getElementById('desk-session-label');
+        ribbonRight.innerHTML =
+          '<span class="ribbon-diamond">◆</span> LIVE QUOTES · CACHED PROXY <span class="ribbon-divider"></span>' +
+          (session ? session.outerHTML : '<span id="desk-session-label">LIVE QUOTES · CACHED</span>');
+      }
       for (const id of ['connection-dot', 'top-dot']) {
         const dot = document.getElementById(id);
         if (dot) dot.className = 'status-dot green';
@@ -863,11 +949,26 @@
         alert.classList.remove('hidden');
       }
     } else {
-      bind('top-status', 'DEMO DATA');
-      bind('side-identity-tagline', 'PUBLIC PORTFOLIO · DEMO DATA');
-      bind('connection-label', 'Public portfolio data');
-      bind('connection-sub', 'Public portfolio · bundled snapshot · not a live Finnhub feed');
-      bind('desk-session-label', 'SAMPLE DATA · NOT LIVE');
+      bind('top-status', stamp ? 'SNAPSHOT · ' + stamp : 'SNAPSHOT · DEMO DATA');
+      bind('side-identity-tagline', 'PUBLIC PORTFOLIO · SNAPSHOT');
+      bind('connection-label', 'Snapshot portfolio data');
+      bind(
+        'connection-sub',
+        stamp
+          ? 'Public portfolio · snapshot refreshed ' + stamp + ' · not a live Finnhub feed'
+          : 'Public portfolio · bundled snapshot · not a live Finnhub feed'
+      );
+      bind('desk-session-label', stamp ? 'SNAPSHOT · ' + stamp : 'SNAPSHOT · DEMO DATA');
+      if (ribbonRight) {
+        const session = document.getElementById('desk-session-label');
+        ribbonRight.innerHTML =
+          '<span class="ribbon-diamond">◆</span> LABELLED SNAPSHOT · NOT LIVE MARKET DATA <span class="ribbon-divider"></span>' +
+          (session
+            ? session.outerHTML
+            : '<span id="desk-session-label">' +
+              (stamp ? 'SNAPSHOT · ' + stamp : 'SNAPSHOT · DEMO DATA') +
+              '</span>');
+      }
       for (const id of ['connection-dot', 'top-dot']) {
         const dot = document.getElementById(id);
         if (dot) dot.className = 'status-dot amber';
@@ -975,7 +1076,10 @@
     demoMode: true,
     publicHost: Boolean(mode.publicHost),
     quoteSource: 'snapshot',
-    label: 'Public portfolio · DEMO DATA',
+    liveMarks: {},
+    snapshotGenerated: '',
+    bundleLabel: '',
+    label: 'Public portfolio · SNAPSHOT · DEMO DATA',
     snapshotReady: false,
     whenSnapshotReady: () => snapshotReady,
     isCloud: () => true,
@@ -985,36 +1089,54 @@
   function applyChrome() {
     document.documentElement.dataset.demoMode = 'true';
     if (mode.publicHost) document.documentElement.dataset.publicPortfolio = 'true';
+    const stamp = snapshotStamp();
     const alert = document.getElementById('global-alert');
     if (alert) {
-      alert.textContent =
-        'Public portfolio · labelled DEMO DATA snapshot on this host (no ?demo=1 needed) · run server.py on your Mac for live Finnhub research (see README-START-HERE.txt).';
+      alert.textContent = stamp
+        ? 'Public portfolio · labelled SNAPSHOT refreshed ' +
+          stamp +
+          ' on this host (no ?demo=1 needed) · run server.py on your Mac for full Finnhub research (see README-START-HERE.txt).'
+        : 'Public portfolio · labelled SNAPSHOT / DEMO DATA on this host (no ?demo=1 needed) · run server.py on your Mac for full Finnhub research (see README-START-HERE.txt).';
       alert.classList.remove('hidden');
     }
     const bind = (id, text) => {
       const el = document.getElementById(id);
       if (el) el.textContent = text;
     };
-    bind('connection-sub', 'Public portfolio · bundled snapshot · not a live Finnhub feed');
-    bind('connection-label', 'Public portfolio data');
-    // Default honest DEMO DATA; live proxy upgrades via markQuoteSource when /api/quotes succeeds.
-    bind('top-status', 'DEMO DATA');
-    bind('side-identity-tagline', 'PUBLIC PORTFOLIO · DEMO DATA');
-    bind('desk-session-label', 'SAMPLE DATA · NOT LIVE');
+    // Default honest SNAPSHOT; live proxy upgrades via markQuoteSource when /api/quotes succeeds.
+    // Do not clobber an already-upgraded LIVE state if applyChrome re-runs after quotes land.
+    if (window.MarketDeskHost?.quoteSource === 'live') {
+      window.MarketDeskDemoWiring?.assertDemoChrome?.();
+      return;
+    }
+    bind(
+      'connection-sub',
+      stamp
+        ? 'Public portfolio · snapshot refreshed ' + stamp + ' · not a live Finnhub feed'
+        : 'Public portfolio · bundled snapshot · not a live Finnhub feed'
+    );
+    bind('connection-label', 'Snapshot portfolio data');
+    bind('top-status', stamp ? 'SNAPSHOT · ' + stamp : 'SNAPSHOT · DEMO DATA');
+    bind('side-identity-tagline', 'PUBLIC PORTFOLIO · SNAPSHOT');
+    bind('desk-session-label', stamp ? 'SNAPSHOT · ' + stamp : 'SNAPSHOT · DEMO DATA');
     document.documentElement.dataset.quoteSource = 'snapshot';
     const deskLocal = document.querySelector('.desk-local');
-    if (deskLocal) deskLocal.textContent = 'Public portfolio · bundled snapshot';
+    if (deskLocal) deskLocal.textContent = 'Public portfolio · labelled snapshot';
     bind('desk-edition-label', 'DEMO / 01');
     bind('preferences-state', 'DEMO · BROWSER ONLY');
     const overline = document.querySelector('.top-location-overline');
     if (overline) overline.innerHTML = 'PUBLIC PORTFOLIO <i>◆</i> RESEARCH DESK';
     const ribbonRight = document.querySelector('.desk-ribbon-right');
-    if (ribbonRight && !ribbonRight.dataset.demoRibbon) {
+    if (ribbonRight) {
       ribbonRight.dataset.demoRibbon = '1';
       const session = document.getElementById('desk-session-label');
       ribbonRight.innerHTML =
         '<span class="ribbon-diamond">◆</span> LABELLED SNAPSHOT · NOT LIVE MARKET DATA <span class="ribbon-divider"></span>' +
-        (session ? session.outerHTML : '<span id="desk-session-label">SAMPLE DATA · NOT LIVE</span>');
+        (session
+          ? session.outerHTML
+          : '<span id="desk-session-label">' +
+            (stamp ? 'SNAPSHOT · ' + stamp : 'SNAPSHOT · DEMO DATA') +
+            '</span>');
     }
     const ticker = document.querySelector('.ticker-placeholder');
     if (ticker) ticker.textContent = 'Sample watchlist quotes from the bundled snapshot';
