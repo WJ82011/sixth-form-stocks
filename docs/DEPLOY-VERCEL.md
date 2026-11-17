@@ -46,6 +46,19 @@ curl -sI https://sixth-form-stocks.vercel.app/demo/snapshot.json | head -1
 
 Both should return `HTTP/2 200`. Open the site Overview tab — charts should load within a few seconds (not stuck on “Reading saved history…”).
 
+## Market data keys (not for Vercel)
+
+Browser/static Vercel **cannot** safely hold `FINNHUB_API_KEY` or `MASSIVE_API_KEY`. Production serves `site/demo/snapshot.json` as a labelled **DEMO DATA** snapshot.
+
+Refresh that snapshot from workers/CI (Cursor secrets or GitHub Actions secrets with those exact names):
+
+```bash
+python3 tools/check-demo-provider-keys.py   # boolean presence only
+python3 tools/export-demo-snapshot.py
+```
+
+Or run Actions → **Refresh demo snapshot**. Mac `server.py` keeps using local `~/.marketdesk-reborn/` keys for live.
+
 ## Known config note
 
 `vercel.json` cache headers use `/(.*)\\.(js|css|svg|png|json)`. Nested groups in the `source` pattern break Vercel validation and can block deploys.

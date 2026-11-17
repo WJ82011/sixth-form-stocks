@@ -1,0 +1,52 @@
+name: Refresh demo snapshot
+
+# Rebuild site/demo/snapshot.json with Finnhub + Massive when keys are available.
+# Static Vercel still serves a snapshot (DEMO DATA) — do not put these keys in the browser.
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: refresh-demo-snapshot
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+      MASSIVE_API_KEY: ${{ secrets.MASSIVE_API_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check provider keys (boolean only)
+        run: python3 tools/check-demo-provider-keys.py
+
+      - name: Export demo snapshot
+        run: python3 tools/export-demo-snapshot.py
+
+      - name: Guard distinct day moves
+        run: python3 -m unittest tests.test_export_demo_snapshot -v
+
+      - name: Upload snapshot artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-snapshot
+          path: site/demo/snapshot.json
+
+      - name: Open PR with refreshed snapshot
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: Refresh public demo snapshot from Finnhub and Massive.
+          title: Refresh public demo snapshot (Finnhub + Massive)
+          body: |
+            Automated refresh of `site/demo/snapshot.json` via `tools/export-demo-snapshot.py`.
+
+            - Uses GitHub Actions secrets named `FINNHUB_API_KEY` and `MASSIVE_API_KEY` (same names as Cursor Cloud Agent secrets).
+            - Public Vercel host remains a **DEMO DATA** snapshot — browser/static cannot safely hold these keys.
+            - Mac `server.py` continues to use local keys for live quotes.
+          branch: chore/refresh-demo-snapshot
+          delete-branch: true

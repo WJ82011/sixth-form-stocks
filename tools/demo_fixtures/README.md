@@ -9,7 +9,22 @@
 3. **Coinbase Exchange public REST** — crypto (no key).
 4. **FRED public CSV** — macro (no key).
 
-Run:
+### Worker / CI env names
+
+Use these exact secret names (Cursor Cloud Agent secrets or GitHub Actions repository secrets):
+
+| Name | Purpose |
+|------|---------|
+| `FINNHUB_API_KEY` | Live equity quotes for export |
+| `MASSIVE_API_KEY` | Daily bars for export |
+
+Check presence without printing values:
+
+```bash
+python3 tools/check-demo-provider-keys.py
+```
+
+Re-run export (also available as Actions → **Refresh demo snapshot**):
 
 ```bash
 python3 tools/export-demo-snapshot.py
@@ -21,4 +36,4 @@ Offline (fixture + no network):
 MARKETDESK_DEMO_OFFLINE=1 python3 tools/export-demo-snapshot.py
 ```
 
-The public Vercel host still labels the bundle as **DEMO DATA / not live**.
+The public Vercel host still labels the bundle as **DEMO DATA / not live**. Do **not** put Finnhub or Massive keys in browser/static Vercel env — the public site stays a refreshed snapshot. Mac `server.py` already reads local key files for live.
