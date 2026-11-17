@@ -113,7 +113,7 @@
       ],
     },
     settings: {
-      scripts: ['/showcase61.js?v=6.1.0b'],
+      scripts: ['/showcase61.js?v=6.1.0c'],
       styles: ['/desk61.css?v=6.0.0e'],
     },
     markets: {

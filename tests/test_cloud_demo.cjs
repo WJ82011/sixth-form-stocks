@@ -77,7 +77,14 @@ assert.ok(fs.existsSync(path.join(root, 'site/stock-directory.json')));
 const release = fs.readFileSync(path.join(root, 'site/release.js'), 'utf8');
 assert.ok(release.includes("version = '6.8.0'"), 'release.js version');
 assert.ok(!fs.readFileSync(path.join(root, 'site/index.html'), 'utf8').includes('Market Desk<span>4.3</span>'));
-assert.ok(fs.readFileSync(path.join(root, 'site/showcase61.js'), 'utf8').includes('md-guided-demo-seen'));
+const showcase = fs.readFileSync(path.join(root, 'site/showcase61.js'), 'utf8');
+assert.ok(showcase.includes('md-guided-demo-seen'));
+assert.ok(showcase.includes('MarketDeskShowcase'), 'showcase exposes beginGuidedDemo for soft CTA');
+assert.ok(!showcase.includes('openSettingsForDemo'), 'no auto-hijack to Settings on first visit');
+assert.ok(showcase.includes('Withheld on bundled sample'), 'pre-seeded tester task sample');
+assert.ok(wiring.includes('firstRunCta'), 'demo wiring mounts soft first-run CTA');
+assert.ok(wiring.includes('demo-first-run-cta'), 'soft CTA element id');
+assert.ok(fs.readFileSync(path.join(root, 'site/demo-chrome.css'), 'utf8').includes('demo-first-run-cta'));
 assert.ok(fs.existsSync(path.join(root, 'tools/export-demo-snapshot.py')));
 assert.ok(
   fs.readFileSync(path.join(root, 'tools/export-demo-snapshot.py'), 'utf8').includes('v3Calc'),
