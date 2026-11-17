@@ -126,10 +126,25 @@ let syncing=false;
   window.Desk68?.regroup();
   const tools=document.getElementById('focus-tools-dialog'),grid=document.getElementById('focus-tools-grid');let opener;
   function close(){tools.close();opener?.focus({preventScroll:true})}
-  document.querySelectorAll('#sidebar .nav-btn[data-view]').forEach(source=>{const b=document.createElement('button');b.type='button';const name=source.dataset.navLabel||source.querySelector('span:nth-child(2)')?.textContent||source.textContent.trim();b.textContent=name;b.dataset.area=source.dataset.area||'';b.title=source.title||name;b.addEventListener('click',()=>{close();changeView(source.dataset.view)});grid.append(b)});
+  function fillTools(){
+    // Public demo: admissions shortlist from demo-wiring (excludes Mac/thin shells).
+    if(typeof window.MarketDeskDemo?.trimAllTools==='function'&&(document.documentElement.dataset.demoMode==='true'||window.MarketDeskHost?.demoMode)){
+      window.MarketDeskDemo.trimAllTools();
+      return;
+    }
+    grid.replaceChildren();
+    document.querySelectorAll('#sidebar .nav-btn[data-view]').forEach(source=>{
+      if(source.classList.contains('demo-nav-soft-hidden'))return;
+      const b=document.createElement('button');b.type='button';
+      const name=source.dataset.navLabel||source.querySelector('span:nth-child(2)')?.textContent||source.textContent.trim();
+      b.textContent=name;b.dataset.area=source.dataset.area||'';b.title=source.title||name;
+      b.addEventListener('click',()=>{close();changeView(source.dataset.view)});grid.append(b);
+    });
+  }
+  fillTools();
   const search=document.getElementById('focus-tools-search');
   search?.addEventListener('input',()=>{const query=search.value.trim().toLowerCase();grid.querySelectorAll('button').forEach(button=>{button.hidden=Boolean(query)&&!button.textContent.toLowerCase().includes(query)&&!button.title.toLowerCase().includes(query)});});
-  document.getElementById('focus-tools').addEventListener('click',()=>{opener=document.activeElement;tools.showModal();document.getElementById('focus-tools-close').focus();AppDesign.detailOpen(tools)});
+  document.getElementById('focus-tools').addEventListener('click',()=>{opener=document.activeElement;fillTools();tools.showModal();document.getElementById('focus-tools-close').focus();AppDesign.detailOpen(tools)});
   document.getElementById('focus-tools-close').addEventListener('click',close);
   tools.addEventListener('click',e=>{if(e.target===tools)close()});
   document.querySelectorAll('[data-focus-view]').forEach(b=>b.addEventListener('click',()=>changeView(b.dataset.focusView)));

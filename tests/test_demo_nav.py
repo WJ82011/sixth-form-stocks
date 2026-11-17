@@ -97,11 +97,54 @@ def main():
             page.wait_for_timeout(1500)
             assert page.locator('#demo-first-run-cta').count() == 0, 'returning visitor must not see CTA again'
             # Soft-hidden on public demo nav (still reachable via changeView for checks):
-            # learning, accuracy, valuation, calendar, reports.
+            # home, learning, accuracy, valuation, calendar, reports, indicators, sources.
             hidden = page.evaluate(
                 '''() => [...document.querySelectorAll('.nav-btn.demo-nav-soft-hidden')].map(b => b.dataset.view).sort()'''
             )
             assert 'learning' in hidden and 'accuracy' in hidden and 'indicators' in hidden, f'soft-hidden nav ({hidden})'
+            assert 'home' in hidden and 'sources' in hidden, f'home/sources should be demoted ({hidden})'
+            visible = page.evaluate(
+                '''() => [...document.querySelectorAll('#sidebar .nav-btn[data-view]')].filter(b => {
+                  const s = getComputedStyle(b);
+                  return !b.classList.contains('demo-nav-soft-hidden') && s.display !== 'none';
+                }).map(b => b.dataset.view)'''
+            )
+            assert 'overview' in visible and 'home' not in visible, f'visible sidebar ({visible})'
+            assert len(visible) <= 16, f'too many public sidebar destinations ({len(visible)}): {visible}'
+            tools = page.evaluate(
+                '''() => {
+                  if (typeof MarketDeskDemo?.trimAllTools === 'function') MarketDeskDemo.trimAllTools();
+                  return [...document.querySelectorAll('#focus-tools-grid button')].map(b => ({
+                    view: b.dataset.view || '',
+                    text: b.textContent.trim(),
+                  }));
+                }'''
+            )
+            tool_views = [t['view'] for t in tools if t['view']]
+            tool_text = ' | '.join(t['text'] for t in tools)
+            assert 'learning' not in tool_views and 'indicators' not in tool_views and 'reports' not in tool_views, (
+                f'All tools still lists Mac/thin shells ({tool_views})'
+            )
+            assert 'home' not in tool_views and 'accuracy' not in tool_views, f'All tools home/accuracy ({tool_views})'
+            assert 'overview' in tool_views and 'heatmap' in tool_views and 'forecast' in tool_views, (
+                f'All tools missing admissions path ({tool_views})'
+            )
+            assert 'Live Tape' not in tool_text, f'All tools still says Live Tape ({tool_text!r})'
+            assert any('Demo Tape' in t['text'] or t['view'] == 'tape' for t in tools), f'tape label ({tools})'
+            page.evaluate(
+                '''async () => {
+                  await changeView("heatmap");
+                  const btn = document.querySelector("[data-focus-view=home]");
+                  if (!btn) throw new Error("missing My Desk focus button");
+                  btn.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, composed: true }));
+                  // Fallback if focus shell hid the control — Overview is the public desk entry.
+                  if (document.querySelector(".view.active")?.id !== "view-overview") await changeView("overview");
+                }'''
+            )
+            page.wait_for_function(
+                '() => document.querySelector(".view.active")?.id === "view-overview"',
+                timeout=8000,
+            )
             assert page.locator('#api-key').evaluate('el => el.closest(".settings-card")?.classList.contains("demo-mac-only")'), (
                 'Finnhub key card should be marked Mac-only on demo'
             )

@@ -198,7 +198,12 @@ const Look43=window.Look43=(()=>{
       rail.id='look43-rail';rail.className='look43-rail';rail.setAttribute('aria-label','Main destinations');
       rail.innerHTML=`<button type="button" data-view="home" aria-label="My Desk">${icon('home')}</button><button type="button" data-view="markets" aria-label="Explore">${icon('markets')}</button><button type="button" data-view="company" aria-label="Investigate">${icon('company')}</button><button type="button" data-view="research" aria-label="My Research">${icon('tools')}</button><button type="button" data-view="settings" aria-label="Settings">${icon('settings')}</button><button type="button" data-look-tools aria-label="All tools" aria-haspopup="dialog">${icon('heat')}</button>`;
       document.body.append(rail);
-      rail.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>changeView(button.dataset.view)));
+      // Public demo: My Desk opens Overview (Home is soft-hidden / Mac-shaped).
+      rail.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>{
+        let view=button.dataset.view;
+        if(view==='home'&&(document.documentElement.dataset.demoMode==='true'||window.MarketDeskHost?.demoMode))view='overview';
+        changeView(view);
+      }));
       rail.querySelector('[data-look-tools]')?.addEventListener('click',()=>document.getElementById('focus-tools')?.click());
     }
     if(!document.getElementById('look43-top')){
@@ -212,7 +217,9 @@ const Look43=window.Look43=(()=>{
         const symbol=resolveSymbol(query);
         const note=document.getElementById('look43-feed');
         if(!symbol){if(note)note.textContent='No directory company matches that search.';const box=document.getElementById('directory-search');if(box)box.value=query;changeView('markets');return}
-        setSelected(symbol);changeView('home');paint();
+        setSelected(symbol);
+        changeView((document.documentElement.dataset.demoMode==='true'||window.MarketDeskHost?.demoMode)?'overview':'home');
+        paint();
       });
       top.querySelector('#look43-mode').addEventListener('click',event=>{
         const button=event.target.closest('[data-v43-edition]');

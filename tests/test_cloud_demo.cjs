@@ -99,7 +99,14 @@ const polish = fs.readFileSync(path.join(root, 'site/demo-polish.js'), 'utf8');
 const hostMode = fs.readFileSync(path.join(root, 'site/public-host-mode.js'), 'utf8');
 assert.ok(wiring.includes('SOFT_HIDE'), 'demo wiring soft-hides thin nav');
 assert.ok(wiring.includes("'indicators'"), 'demo wiring soft-hides chart indicators');
+assert.ok(wiring.includes("'home'"), 'demo wiring demotes Home behind Overview');
+assert.ok(wiring.includes('DEMO_TOOLS'), 'demo wiring shortens All tools');
+assert.ok(wiring.includes('trimAllTools'), 'demo wiring rebuilds All tools shortlist');
 assert.ok(wiring.includes('demo-nav-soft-hidden'), 'demo wiring marks soft-hidden nav');
+assert.ok(
+  fs.readFileSync(path.join(root, 'site/design.js'), 'utf8').includes('trimAllTools'),
+  'design.js uses demo All-tools shortlist'
+);
 assert.ok(wiring.includes('MarketDeskPublicHost'), 'wiring shares public-host detection');
 assert.ok(polish.includes('MarketDeskPublicHost'), 'polish shares public-host detection');
 assert.ok(wiring.includes('PUBLIC PORTFOLIO'), 'wiring chrome says public portfolio');

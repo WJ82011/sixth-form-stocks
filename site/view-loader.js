@@ -10,7 +10,7 @@
     '/chart-research.js',
     '/shell43.js?v=6.8.0',
     '/look43.js?v=6.8.7',
-    '/design.js?v=6.8.0',
+    '/design.js?v=6.8.7',
     '/desk68.js?v=6.8.0',
     '/signal.js',
     '/pro.js',
