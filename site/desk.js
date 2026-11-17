@@ -197,8 +197,10 @@ window.Desk=(()=>{
  }
  // Defer setup until after window.Desk is assigned — setMode dispatches edition-change,
  // and terminal.js moveChart must see a finished Desk (not a TDZ / missing binding).
- const api={open,memory,selected,reload,historyChanged,chartMount,revealSelected:()=>safeScroll(mode==='advanced'?$('main-chart-panel'):$('desk-company-name'))};
+ // IMPORTANT: do not name this binding `api` — that shadows the global fetch helper
+ // used by reload()/downloadImport() and caused "api is not a function" on Overview.
+ const deskApi={open,memory,selected,reload,historyChanged,chartMount,revealSelected:()=>safeScroll(mode==='advanced'?$('main-chart-panel'):$('desk-company-name'))};
  const boot=()=>{if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});else setup();};
  queueMicrotask(boot);
- return api;
+ return deskApi;
 })();

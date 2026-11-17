@@ -9,12 +9,13 @@
   }
 
   const EXACT = new Map([
-    ['.desk-local', 'Public portfolio · bundled snapshot'],
+    ['.desk-local', 'Public portfolio · labelled snapshot'],
     ['#preferences-state', 'DEMO · BROWSER ONLY'],
     ['#v3-global-status', null],
     ['#overview-chart-source', 'BUNDLED DEMO OBSERVATIONS'],
     ['#view-learning .page-title > div > p', 'Sample training results from the bundle. Live collection needs server.py on your Mac.'],
-    ['#view-markets .page-title .eyebrow', 'PUBLIC PORTFOLIO / BUNDLED QUOTES'],
+    // Markets eyebrow is owned by demo-wiring assertDemoChrome (LIVE vs SNAPSHOT).
+    ['#view-markets .page-title .eyebrow', null],
     ['#view-tape .page-title .eyebrow', 'PUBLIC PORTFOLIO / BUNDLED TRADES'],
     ['#view-tape .page-title > div > p', 'Replay labelled sample trades from the demo bundle. Live Finnhub sockets run on your Mac.'],
     ['#view-forecast .page-title .eyebrow', 'PRICE ESTIMATES / DEMO DATA'],
@@ -23,10 +24,11 @@
     ['#view-research .page-title .eyebrow', 'YOUR RESEARCH / PUBLIC PORTFOLIO'],
     ['#view-portfolio .page-title .eyebrow', 'PRACTICE / PUBLIC PORTFOLIO'],
     ['#view-screener .v3-card .desk-eyebrow', 'DEMO TTM RATIOS / ACCOUNTS SAMPLE'],
+    ['#view-intelligence .ai-heading p', 'Sample assistant chrome on this host. Full local AI runs with server.py on your Mac.'],
   ]);
 
   const SUBTREE_PHRASES = [
-    ['Private workspace · saved on this Mac', 'Public portfolio · bundled snapshot'],
+    ['Private workspace · saved on this Mac', 'Public portfolio · labelled snapshot'],
     ['Private research workspace ·', 'Public portfolio ·'],
     [
       'Private research projects · saved on this Mac and included in your full research backup.',
@@ -37,6 +39,12 @@
       'Your saved V3 records are ready. All trades are hypothetical.',
       'Demo sample ledger ready. All trades are hypothetical · labelled synthetic.',
     ],
+    ['Opening or rereading this view only reads local snapshots.', 'Opening or rereading this view only reads the public portfolio snapshot.'],
+    ['Alerts are stored in the private price database on this Mac', 'Alerts on this public host stay in your browser only'],
+    ['Drafts remain on this Mac, with a private local backup.', 'Drafts on this public host stay in your browser only.'],
+    ['Practice trades are saved on this Mac and included in your private research backup.', 'Practice trades on this public host stay in your browser only.'],
+    ['Excerpts stay on this Mac and are used as unverified source material', 'Excerpts stay in this browser on the public host'],
+    ['A real language model running on your Mac', 'Sample assistant chrome on this public host'],
     ['saved on this Mac', 'in this demo bundle'],
     ['on this Mac', 'on the public portfolio host'],
     ['this Mac has saved', 'the demo bundle includes'],
@@ -45,13 +53,14 @@
     ['Enable Background at Login.command in the Mac folder.', 'On your Mac, use Enable Background at Login.command for overnight collection.'],
     ['Nothing is collected while this Mac is off.', 'This public host does not run overnight collectors.'],
     ['Nothing is collected while your Mac is off.', 'This public host does not run overnight collectors.'],
+    ['No data is collected while your Mac is off.', 'This public host does not run overnight collectors.'],
     ['Files saved on this Mac', 'Files in the full Mac workspace'],
     ['BACKED UP LOCALLY', 'DEMO · BROWSER ONLY'],
     ['Settings are saved automatically on this Mac.', 'Settings are saved in your browser on this demo.'],
     ['backed up on this Mac', 'saved in your browser on this demo'],
     ['LOCAL RESEARCH TERMINAL', 'PUBLIC PORTFOLIO'],
     ['LOCAL WORKSTATION', 'PUBLIC PORTFOLIO'],
-    ['FEED OFFLINE', 'DEMO DATA'],
+    ['FEED OFFLINE', 'SNAPSHOT · DEMO DATA'],
     ['LIVE TERMINAL / FINNHUB', 'PUBLIC PORTFOLIO / BUNDLED QUOTES'],
     ['LOCALLY RECORDED FINNHUB OBSERVATIONS', 'BUNDLED DEMO OBSERVATIONS'],
     ['RECORDED FINNHUB OBSERVATIONS', 'BUNDLED DEMO OBSERVATIONS'],
@@ -96,6 +105,14 @@
       if (!el) continue;
       if (value !== null) {
         if (el.textContent !== value) el.textContent = value;
+        continue;
+      }
+      if (selector === '#view-markets .page-title .eyebrow') {
+        const live = window.MarketDeskHost?.quoteSource === 'live';
+        const next = live
+          ? 'PUBLIC PORTFOLIO / LIVE QUOTES (CACHED)'
+          : 'PUBLIC PORTFOLIO / SNAPSHOT QUOTES';
+        if (el.textContent !== next) el.textContent = next;
         continue;
       }
       if (

@@ -4,7 +4,7 @@ Production URL: https://sixth-form-stocks.vercel.app
 
 The repo root ships static files from `site/` via `vercel.json` (`outputDirectory: "site"`) plus thin serverless routes under `api/` (`/api/quotes`, `/api/quote`). Production must include `public-host-mode.js`, `cloud-host.js`, `view-loader.js`, and `demo/snapshot.json`.
 
-Public mode auto-enables on `*.vercel.app`, `*.tmp.now`, `*.now.sh`, and hosts containing `sixth-form-stocks` — **no `?demo=1` required**. Cold load of bare `/` should show Overview with prices. Status pill reads **LIVE QUOTES (CACHED)** when the serverless proxy has a Finnhub key, otherwise honest **DEMO DATA** from the bundled snapshot. Keep `?demo=1` only for local static checks; Mac `server.py` on `localhost:8765` stays live; `?demo=local` on loopback forces Mac-shaped static.
+Public mode auto-enables on `*.vercel.app`, `*.tmp.now`, `*.now.sh`, and hosts containing `sixth-form-stocks` — **no `?demo=1` required**. Cold load of bare `/` should show Overview with prices. Status pill reads **LIVE QUOTES (CACHED)** when the serverless proxy has a Finnhub key, otherwise honest **SNAPSHOT · YYYY-MM-DD** (or **SNAPSHOT · DEMO DATA**) from the bundled snapshot. Keep `?demo=1` only for local static checks; Mac `server.py` on `localhost:8765` stays live; `?demo=local` on loopback forces Mac-shaped static.
 
 ## One-time fix (recommended): connect GitHub
 
@@ -62,8 +62,9 @@ Bare `/` (no query string) — admissions URL:
 
 1. Open https://sixth-form-stocks.vercel.app/ (not `?demo=1`).
 2. Within a few seconds Overview shows prices/charts (not stuck on “Reading saved history…”).
-3. Status pill reads **LIVE QUOTES (CACHED)** when `FINNHUB_API_KEY` is set on the Vercel project, otherwise **DEMO DATA**.
-4. Sidebar tagline / footer mention **PUBLIC PORTFOLIO**, not **LOCAL WORKSTATION** / **FEED OFFLINE**.
+3. Status pill reads **LIVE QUOTES (CACHED)** when `FINNHUB_API_KEY` is set on the Vercel project, otherwise **SNAPSHOT · YYYY-MM-DD** (or **SNAPSHOT · DEMO DATA**). Never **FEED OFFLINE** / **LOCAL WORKSTATION**.
+4. Sidebar tagline / footer mention **PUBLIC PORTFOLIO**, not **LOCAL WORKSTATION**. Overview briefing must not show `api is not a function`.
+5. Heatmap / Markets: 316 tiles; live marks only where allowlisted when the proxy is healthy; otherwise honest snapshot notice.
 
 Optional local static check (force-on without a Vercel hostname):
 
