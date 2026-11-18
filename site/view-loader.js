@@ -71,7 +71,7 @@
       styles: ['/financial-health.css?v=4.0.0'],
     },
     comparison: {
-      scripts: ['/compare.js', '/compare52.js?v=5.2.0', '/desk61.js?v=6.4.1'],
+      scripts: ['/compare.js', '/compare52.js?v=5.2.1', '/desk61.js?v=6.4.1'],
       styles: ['/desk61.css?v=6.0.0e'],
     },
     'forecast-lab': {

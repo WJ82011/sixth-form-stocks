@@ -537,6 +537,51 @@ def macro_bundle() -> dict:
     return {'series': series, 'available': series_defs}
 
 
+def calendar_bundle() -> dict:
+    """Labelled sample company dates for the public Company Calendar (no live IR)."""
+    return {
+        'notice': 'DEMO DATA · labelled sample company dates from the portfolio demo bundle.',
+        'events': [
+            {
+                'id': 'demo-cal-ttwo-earn',
+                'title': 'Take-Two earnings window (demo estimate)',
+                'date': '2026-11-06',
+                'status': 'estimated',
+                'symbol': 'TTWO',
+                'source': 'Portfolio demo calendar · labelled synthetic · not a live IR feed',
+                'note': 'DEMO DATA sample for admissions. Replace with a sourced date on your Mac.',
+                'origin': 'portfolio demo',
+                'zone': 'America/New_York',
+                'window': 'Date only · demo estimate',
+            },
+            {
+                'id': 'demo-cal-aapl-event',
+                'title': 'Apple product event window (demo sample)',
+                'date': '2026-09-09',
+                'status': 'confirmed',
+                'symbol': 'AAPL',
+                'source': 'Portfolio demo calendar · labelled synthetic',
+                'note': 'Bundled sample only — not scraped from Apple.',
+                'origin': 'portfolio demo',
+                'zone': 'America/New_York',
+                'window': 'Date only · demo sample',
+            },
+            {
+                'id': 'demo-cal-nvda-report',
+                'title': 'NVIDIA results window (demo estimate)',
+                'date': '2026-11-25',
+                'status': 'estimated',
+                'symbol': 'NVDA',
+                'source': 'Portfolio demo calendar · labelled synthetic',
+                'note': 'Future-dated DEMO DATA row so Upcoming is not empty on first open.',
+                'origin': 'portfolio demo',
+                'zone': 'America/New_York',
+                'window': 'Date only · demo estimate',
+            },
+        ],
+    }
+
+
 def workspace_bundle(catalog: list[dict]) -> dict:
     """Practice portfolio + research samples for admissions (?demo=1). Labelled synthetic only."""
     import portfolio3
@@ -729,6 +774,8 @@ def workspace_bundle(catalog: list[dict]) -> dict:
         'ledger': ledger,
         'marks': marks,
         'checkpoints': [],
+        # Calendar samples ship in snapshot.calendar (API), not v3.events,
+        # so Company Calendar does not double-render the same DEMO DATA rows.
         'events': [],
         'manualStatements': [],
         'home': {'order': ['watchlist', 'portfolio', 'events', 'economy', 'research'], 'hidden': []},
@@ -1103,6 +1150,7 @@ def main() -> None:
         'alerts': alerts_bundle(),
         'learning': learning_bundle(),
         'workspace': workspace_bundle(catalog),
+        'calendar': calendar_bundle(),
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(snapshot, separators=(',', ':')))

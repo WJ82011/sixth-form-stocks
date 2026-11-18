@@ -78,12 +78,29 @@ function mount(){
  $('compare52-fresh').onclick=async()=>{const data=await load('id='+encodeURIComponent($('compare52-saved').value));if(!data)return;render(data.fresh);$('compare52-status').textContent='Updated view from the records saved now.';};
  panel.querySelectorAll('[data-compare-ask]').forEach(button=>button.onclick=()=>ask(button.dataset.compareAsk));
  refreshList().catch(error=>{$('compare52-status').textContent=error.message;});
+ demoAutoload();
+}
+function demoAutoload(){
+ if(!(typeof MarketDeskHost!=='undefined'&&MarketDeskHost.demoMode))return;
+ const picks=[['compare-a','AAPL'],['compare-b','TTWO'],['compare-c','NVDA']];
+ for(const [id,sym] of picks){const el=$(id);if(el){if(![...el.options].some(op=>op.value===sym)){const op=document.createElement('option');op.value=sym;op.textContent=sym;el.append(op);}el.value=sym;}}
+ const start=$('compare52-start'),end=$('compare52-end');
+ // TTWO/AMD demo bars start mid-Nov 2025; keep the window inside the shared bundle.
+ if(start&&!start.value)start.value='2025-11-17';
+ if(end&&!end.value)end.value='2026-05-15';
+ const tag=panelIntroTag();
+ if(tag)tag.textContent='DEMO DATA / SHARED BUNDLED CLOSES';
+ run().catch(error=>{$('compare52-status').textContent=error.message;});
+}
+function panelIntroTag(){
+ const panel=$('compare52');
+ return panel&&panel.querySelector('.section-tag');
 }
 async function refreshList(){
  const response=await fetch('/api/v3/compare52?part=list',{cache:'no-store'});
  const data=await response.json();
  $('compare52-saved').innerHTML=(data.saved||[]).map(row=>'<option value="'+esc(row.id)+'">'+esc(row.symbols)+' · '+esc(row.start)+' to '+esc(row.end)+'</option>').join('')||'<option value="">No saved comparison</option>';
 }
-document.addEventListener('DOMContentLoaded',mount);
-return {packet,current:()=>current};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount); else mount();
+return {packet,current:()=>current,mount};
 })();
