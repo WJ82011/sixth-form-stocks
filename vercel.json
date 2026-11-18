@@ -4,11 +4,13 @@
   "functions": {
     "api/quote.js": {
       "memory": 256,
-      "maxDuration": 10
+      "maxDuration": 10,
+      "includeFiles": "{site/demo/snapshot.json,lib/demo-quotes-fallback.json}"
     },
     "api/quotes.js": {
       "memory": 256,
-      "maxDuration": 10
+      "maxDuration": 10,
+      "includeFiles": "{site/demo/snapshot.json,lib/demo-quotes-fallback.json}"
     }
   },
   "headers": [

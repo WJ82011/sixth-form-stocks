@@ -82,6 +82,7 @@ cd site && python3 -m http.server 8777 --bind 127.0.0.1
 | Bare `/` shows **FEED OFFLINE** / empty Overview | Missing or stale `cloud-host.js` / snapshot, or Root Directory wrong |
 | UI still says **LOCAL WORKSTATION** on vercel.app | Old bundle without public-host auto mode — redeploy current `main` |
 | `/api/quotes` → **404** | Root Directory set to `site/` only, or redeploy needed after P1-a |
+| Overview / watchlist shows **No saved price** / `--` while charts still draw | Serverless `/api/quotes` returned `quote:null` (snapshot missing from function bundle). Host must fall back to browser `demo/snapshot.json`; `vercel.json` `includeFiles` + `lib/demo-quotes-fallback.json` keep TTWO/core symbols priced |
 
 ## Market data keys
 

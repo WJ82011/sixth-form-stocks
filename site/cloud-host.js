@@ -1319,12 +1319,31 @@
     window.MarketDeskDemoWiring?.assertDemoChrome?.();
   }
 
+  function usableQuoteItem(item) {
+    const q = item && item.quote;
+    return Boolean(
+      item &&
+        item.status === 'ok' &&
+        q &&
+        Number.isFinite(q.c) &&
+        q.c > 0 &&
+        q.c <= 1e9 &&
+        Number.isFinite(q.pc) &&
+        q.pc > 0 &&
+        Number.isFinite(q.t)
+    );
+  }
+
   async function tryLiveQuoteApi(pathname, options) {
     try {
       const res = await nativeFetch(pathname, options);
       if (!res || !res.ok) return null;
       const data = await res.json();
+      // Empty or all-null quote payloads must not win over the browser snapshot.
+      // Serverless hosts without includeFiles used to return HTTP 200 + quote:null
+      // ("Symbol not in bundled snapshot"), which blanked Overview / watchlist prices.
       if (!data || !Array.isArray(data.items) || !data.items.length) return null;
+      if (!data.items.some(usableQuoteItem)) return null;
       markQuoteSource(data);
       return jsonFetchResponse(data, 200);
     } catch {
