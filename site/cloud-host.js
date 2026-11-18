@@ -176,6 +176,273 @@
     };
   }
 
+  function barCloses(sym) {
+    const bars = snapshot?.dailyBars?.[String(sym || '').toUpperCase()];
+    if (!bars?.t?.length || !bars?.c?.length) return {};
+    const out = {};
+    const n = Math.min(bars.t.length, bars.c.length);
+    for (let i = 0; i < n; i++) {
+      const price = Number(bars.c[i]);
+      if (!Number.isFinite(price) || price <= 0) continue;
+      const day = new Date(Number(bars.t[i]) * 1000).toISOString().slice(0, 10);
+      out[day] = price;
+    }
+    return out;
+  }
+
+  function parseCompareSymbols(raw, minCount, maxCount) {
+    const parts = String(raw || '')
+      .split(',')
+      .map((s) => s.trim().toUpperCase())
+      .filter(Boolean);
+    const chosen = [];
+    for (const sym of parts) {
+      if (!chosen.includes(sym)) chosen.push(sym);
+    }
+    if (chosen.length < minCount || chosen.length > maxCount) {
+      return { error: `Choose ${minCount} to ${maxCount} different companies.` };
+    }
+    return { symbols: chosen };
+  }
+
+  function buildChartCompare(raw) {
+    const parsed = parseCompareSymbols(raw, 2, 3);
+    if (parsed.error) return { status: 'insufficient', notice: parsed.error, demoMode: true };
+    const series = parsed.symbols.map((sym) => ({ symbol: sym, closes: barCloses(sym) }));
+    const sets = series.map((row) => new Set(Object.keys(row.closes)));
+    let shared = [...sets[0]].filter((day) => sets.every((set) => set.has(day)));
+    shared.sort();
+    shared = shared.slice(-500);
+    if (shared.length < 2) {
+      return {
+        status: 'insufficient',
+        notice:
+          'At least two shared bundled daily-close dates are needed. DEMO DATA only — no prices are invented.',
+        demoMode: true,
+      };
+    }
+    return {
+      status: 'ok',
+      dates: shared,
+      rows: series.map((row) => {
+        const base = row.closes[shared[0]];
+        return {
+          symbol: row.symbol,
+          points: shared.map((day) => ({
+            date: day,
+            price: row.closes[day],
+            index: (row.closes[day] / base) * 100,
+          })),
+        };
+      }),
+      notice:
+        'DEMO DATA · split-adjusted bundled closes rebased to 100 on the same starting date. Shared observed dates only · not live market data.',
+      demoMode: true,
+    };
+  }
+
+  function buildCompare52(rawSymbols, startDay, endDay) {
+    const parsed = parseCompareSymbols(rawSymbols, 2, 4);
+    if (parsed.error) {
+      return {
+        status: 'insufficient',
+        symbols: [],
+        dates: [],
+        rows: [],
+        events: [],
+        financials: {
+          aligned: false,
+          basis: 'No SEC accounts on the public demo host.',
+          rows: [],
+          notice: 'SEC statement packs stay on your Mac.',
+        },
+        notice: parsed.error,
+        demoMode: true,
+      };
+    }
+    const series = Object.fromEntries(parsed.symbols.map((sym) => [sym, barCloses(sym)]));
+    let shared = null;
+    for (const sym of parsed.symbols) {
+      const days = new Set(Object.keys(series[sym]));
+      shared = shared ? new Set([...shared].filter((day) => days.has(day))) : days;
+    }
+    let dates = [...(shared || [])].sort();
+    if (startDay) dates = dates.filter((day) => day >= String(startDay).slice(0, 10));
+    if (endDay) dates = dates.filter((day) => day <= String(endDay).slice(0, 10));
+    const latest = Object.fromEntries(
+      parsed.symbols.map((sym) => {
+        const keys = Object.keys(series[sym]).sort();
+        return [sym, keys.at(-1) || ''];
+      })
+    );
+    if (dates.length < 2) {
+      return {
+        status: 'insufficient',
+        symbols: parsed.symbols,
+        dates,
+        rows: parsed.symbols.map((sym) => ({
+          symbol: sym,
+          latestDate: latest[sym],
+          currency: 'USD',
+          savedCloses: Object.keys(series[sym]).length,
+        })),
+        events: [],
+        financials: {
+          aligned: false,
+          basis: 'No SEC accounts on the public demo host. Bundled closes only.',
+          rows: parsed.symbols.map((sym) => ({
+            symbol: sym,
+            name: snapshot?.workspace?.names?.[sym] || sym,
+            available: false,
+            currency: 'USD',
+            revenueGrowthPct: null,
+            netMarginPct: null,
+            operatingMarginNote: 'SEC accounts are not bundled on this public host.',
+            cash: null,
+            debt: null,
+          })),
+          notice: 'DEMO DATA · financial cards stay blank without inventing filings.',
+        },
+        notice:
+          'At least two completed sessions saved for every company are needed. DEMO DATA only — missing dates stay missing.',
+        demoMode: true,
+      };
+    }
+    const first = dates[0];
+    const last = dates.at(-1);
+    const rows = parsed.symbols.map((sym) => {
+      const points = series[sym];
+      const base = points[first];
+      const plotted = dates.map((day) => ({
+        date: day,
+        price: points[day],
+        index: (points[day] / base) * 100,
+      }));
+      return {
+        symbol: sym,
+        name: snapshot?.workspace?.names?.[sym] || sym,
+        currency: 'USD',
+        latestDate: latest[sym],
+        latestPrice: points[latest[sym]],
+        source: 'Portfolio demo bundle · labelled synthetic closes · not live Finnhub',
+        adjusted: true,
+        adjustment: 'Bundled demo closes',
+        startPrice: base,
+        endPrice: points[last],
+        indexEnd: plotted.at(-1).index,
+        returnPct: (points[last] / base - 1) * 100,
+        missing: [],
+        missingCount: 0,
+        splitNote: '',
+        points: plotted,
+      };
+    });
+    const calendar = demoCalendarEvents().filter(
+      (event) =>
+        parsed.symbols.includes(String(event.symbol || '').toUpperCase()) &&
+        event.date >= first &&
+        event.date <= last
+    );
+    return {
+      status: 'ok',
+      symbols: parsed.symbols,
+      start: first,
+      end: last,
+      dates,
+      rows,
+      events: calendar.map((event) => ({
+        symbol: event.symbol,
+        title: event.title,
+        date: event.date,
+        kindLabel: event.status === 'estimated' ? 'Estimate' : 'Demo event',
+        publishedAt: event.fetchedAt || null,
+        timeLabel: event.window || event.date,
+        timing: 'date',
+        source: event.source,
+        timingNote: 'DEMO DATA · date-only mark from the bundled portfolio calendar.',
+      })),
+      financials: {
+        aligned: false,
+        basis:
+          'SEC annual packs are not bundled on this public host. Price paths use labelled DEMO DATA closes only.',
+        rows: parsed.symbols.map((sym) => ({
+          symbol: sym,
+          name: snapshot?.workspace?.names?.[sym] || sym,
+          start: '',
+          end: '',
+          currency: 'USD',
+          revenueGrowthPct: null,
+          netMarginPct: null,
+          operatingMarginPct: null,
+          operatingMarginNote: 'Operating income is not in the demo bundle.',
+          cash: null,
+          debt: null,
+          debtScope: '',
+          filing: '',
+          available: false,
+        })),
+        notice: 'DEMO DATA · no invented SEC figures.',
+      },
+      notice:
+        'DEMO DATA · each company starts at 100 on ' +
+        first +
+        '. Only shared bundled closes are plotted · not live market data and not a total-return chart.',
+      demoMode: true,
+    };
+  }
+
+  function demoCalendarEvents() {
+    const bundled =
+      snapshot?.calendar?.events ||
+      snapshot?.workspace?.calendar?.events ||
+      snapshot?.workspace?.v3?.events;
+    if (Array.isArray(bundled) && bundled.length) return clone(bundled);
+    return [
+      {
+        id: 'demo-cal-ttwo-earn',
+        title: 'Take-Two earnings window (demo estimate)',
+        date: '2026-11-06',
+        status: 'estimated',
+        symbol: 'TTWO',
+        source: 'Portfolio demo calendar · labelled synthetic · not a live IR feed',
+        note: 'DEMO DATA sample for admissions. Replace with a sourced date on your Mac.',
+        origin: 'portfolio demo',
+        zone: 'America/New_York',
+        window: 'Date only · demo estimate',
+        fetchedAt: start,
+        history: [],
+      },
+      {
+        id: 'demo-cal-aapl-event',
+        title: 'Apple product event window (demo sample)',
+        date: '2026-09-09',
+        status: 'confirmed',
+        symbol: 'AAPL',
+        source: 'Portfolio demo calendar · labelled synthetic',
+        note: 'Bundled sample only — not scraped from Apple.',
+        origin: 'portfolio demo',
+        zone: 'America/New_York',
+        window: 'Date only · demo sample',
+        fetchedAt: start,
+        history: [],
+      },
+      {
+        id: 'demo-cal-nvda-report',
+        title: 'NVIDIA results window (demo estimate)',
+        date: '2026-11-25',
+        status: 'estimated',
+        symbol: 'NVDA',
+        source: 'Portfolio demo calendar · labelled synthetic',
+        note: 'Future-dated DEMO DATA row so Upcoming is not empty on first open.',
+        origin: 'portfolio demo',
+        zone: 'America/New_York',
+        window: 'Date only · demo estimate',
+        fetchedAt: start,
+        history: [],
+      },
+    ];
+  }
+
   function heatmapPacket(period) {
     if (!snapshot?.heatmap) return { rows: [], error: 'Demo snapshot missing heatmap data.' };
     const scale = period === '3D' ? 1.7 : period === '1W' ? 2.4 : 1;
@@ -625,22 +892,32 @@
       return {
         state: s,
         portfolio: calc.portfolio,
-        events: [
-          {
-            date: '2025-11-20',
-            title: 'Earnings estimate · bundled demo',
-            symbol: 'AAPL',
-            status: 'estimated',
-            origin: 'portfolio demo',
-          },
-        ],
+        events: demoCalendarEvents().map((event) => ({
+          date: event.date,
+          title: event.title,
+          symbol: event.symbol,
+          status: event.status,
+          origin: event.origin || 'portfolio demo',
+          note: event.note,
+          source: event.source,
+        })),
         accounts: { rows: [] },
         macro,
         notice: 'Portfolio demo home · bundled macro, practice ledger and watchlist.',
         demoMode: true,
       };
     }
-    if (p === '/api/v3/events') return { events: [], demoMode: true };
+    if (p === '/api/v3/events') {
+      return {
+        events: demoCalendarEvents().map((event) => ({
+          ...event,
+          // Calendar merges API rows that are not "user event" with browser ledger events.
+          origin: event.origin === 'user event' ? 'portfolio demo' : event.origin || 'portfolio demo',
+        })),
+        notice: 'DEMO DATA · labelled sample company dates from the portfolio demo bundle.',
+        demoMode: true,
+      };
+    }
     if (p === '/api/v3/listings-refresh') {
       return {
         ok: true,
@@ -712,21 +989,74 @@
       return { symbol: qs.get('symbol') || 'AAPL', books: [], notice: 'SEC accounts need the Mac server.', demoMode: true };
     }
     if (p === '/api/v3/chart-compare') {
-      return { status: 'insufficient', notice: 'Open Overview charts on the demo bundle instead.', demoMode: true };
+      return buildChartCompare(qs.get('symbols') || 'AAPL,MSFT,NVDA');
+    }
+    if (p === '/api/v3/compare52') {
+      if (qs.get('part') === 'list') {
+        return {
+          saved: [
+            {
+              id: 'demo-compare-aapl-ttwo-nvda',
+              title: 'AAPL · TTWO · NVDA',
+              symbols: 'AAPL,TTWO,NVDA',
+              start: '2025-11-17',
+              end: '2026-05-15',
+              createdAt: start,
+            },
+          ],
+          demoMode: true,
+        };
+      }
+      if (qs.get('id')) {
+        const built = buildCompare52('AAPL,TTWO,NVDA', '2025-11-17', '2026-05-15');
+        const saved = {
+          ...built,
+          savedAt: start,
+          title: 'AAPL · TTWO · NVDA · demo sample',
+        };
+        return { saved, fresh: built, openedAt: start, notice: built.notice, demoMode: true };
+      }
+      if (isPost) {
+        if (body?.action === 'save') {
+          const built = buildCompare52(body.symbols, body.start, body.end);
+          if (built.status !== 'ok') {
+            return { error: built.notice || 'Comparison could not be saved.', demoMode: true };
+          }
+          return {
+            id: 'demo-compare-browser',
+            saved: { ...built, savedAt: start, title: String(body.title || built.symbols.join(' · ')).slice(0, 160) },
+            notice: 'Saved in this browser only on the public demo.',
+            demoMode: true,
+          };
+        }
+        return { error: 'Choose save.', demoMode: true };
+      }
+      return buildCompare52(qs.get('symbols') || 'AAPL,TTWO,NVDA', qs.get('start') || '', qs.get('end') || '');
     }
     if (p === '/api/v3/events42') {
-      const sym = qs.get('symbol') || 'AAPL';
+      const sym = String(qs.get('symbol') || 'AAPL').toUpperCase();
+      const matched = demoCalendarEvents().filter((event) => String(event.symbol || '').toUpperCase() === sym);
+      const events = (matched.length ? matched : demoCalendarEvents().slice(0, 1)).map((event, index) => ({
+        id: event.id || 'demo-event-' + sym + '-' + index,
+        symbol: sym,
+        title: event.title,
+        timeLabel: event.window || event.date,
+        date: event.date,
+        kindLabel: event.status === 'estimated' ? 'Estimate' : 'Demo event',
+        publisher: 'Portfolio demo bundle',
+        reason: event.note || 'Bundled DEMO DATA event for admissions.',
+        source: event.source,
+        timing: 'date',
+        window: event.window || '',
+        note: event.note || '',
+      }));
       return {
         symbol: sym,
-        events: [
-          {
-            symbol: sym,
-            title: 'Earnings window · demo estimate',
-            timeLabel: 'Nov 2025',
-            kindLabel: 'Estimate',
-            reason: 'Bundled event for admissions screenshots.',
-          },
-        ],
+        events,
+        comparisons: {},
+        gaps: ['Live event refresh needs server.py on your Mac. These rows are DEMO DATA only.'],
+        updatedAt: start,
+        offline: true,
         demoMode: true,
       };
     }

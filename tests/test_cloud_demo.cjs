@@ -55,6 +55,25 @@ assert.ok(snapshot.workspace.v3?.research?.projects?.length >= 1, 'demo research
 assert.ok(snapshot.workspace.v3.research.projects[0].items?.length >= 1, 'demo research project has evidence items');
 assert.ok(snapshot.workspace.v3Calc?.portfolio?.holdings?.length >= 2, 'precomputed demo holdings');
 assert.match(String(snapshot.workspace.v3Calc.notice || snapshot.workspace.v3Calc.portfolio.notice || ''), /demo|synthetic|labelled/i, 'portfolio calc stays labelled');
+assert.ok(Array.isArray(snapshot.calendar?.events) && snapshot.calendar.events.length >= 2, 'demo calendar events seeded');
+assert.ok(
+  snapshot.calendar.events.every((e) => e.title && e.date && e.symbol && /demo|synthetic|labelled/i.test(String(e.source || e.note || ''))),
+  'calendar events stay labelled demo samples'
+);
+assert.equal((snapshot.workspace.v3?.events || []).length, 0, 'calendar samples stay out of v3.events to avoid double render');
+{
+  // Shared compare window must overlap TTWO/AMD bars (start mid-Nov 2025 in the bundle).
+  const dayOf = (sec) => new Date(sec * 1000).toISOString().slice(0, 10);
+  const closes = (sym) => {
+    const bars = snapshot.dailyBars[sym];
+    const out = new Set();
+    for (let i = 0; i < bars.t.length; i++) out.add(dayOf(bars.t[i]));
+    return out;
+  };
+  const shared = [...closes('AAPL')].filter((d) => closes('TTWO').has(d) && closes('NVDA').has(d));
+  const windowed = shared.filter((d) => d >= '2025-11-17' && d <= '2026-05-15').sort();
+  assert.ok(windowed.length >= 40, 'demo compare window has shared closes for AAPL/TTWO/NVDA');
+}
 
 for (const needle of [
   '/api/v3/heatmap',
@@ -145,6 +164,27 @@ assert.ok(hostMode.includes('.vercel.app'), 'production *.vercel.app hosts auto-
 assert.ok(hostMode.includes("params.get('demo') === 'local'"), 'loopback ?demo=local stays supported');
 assert.ok(cloud.includes('v3Calc'), 'cloud host uses precomputed demo portfolio calc');
 assert.ok(cloud.includes('workspace?.v3') || cloud.includes('workspace.v3'), 'cloud host serves seeded V3 workspace');
+assert.ok(cloud.includes('buildCompare52'), 'cloud host builds compare52 from bundled closes');
+assert.ok(cloud.includes('buildChartCompare'), 'cloud host builds chart-compare from bundled closes');
+assert.ok(cloud.includes('/api/v3/compare52'), 'cloud host routes compare52');
+assert.ok(cloud.includes('demoCalendarEvents'), 'cloud host serves labelled calendar events');
+assert.ok(!cloud.includes("if (p === '/api/v3/events') return { events: [], demoMode: true }"), 'calendar is no longer an empty stub');
+assert.ok(
+  fs.readFileSync(path.join(root, 'site/compare52.js'), 'utf8').includes('demoAutoload'),
+  'compare52 auto-loads DEMO DATA chart on public demo'
+);
+assert.ok(
+  fs.readFileSync(path.join(root, 'site/compare52.js'), 'utf8').includes("readyState==='loading'"),
+  'compare52 mounts after lazy load (not only DOMContentLoaded)'
+);
+assert.ok(
+  fs.readFileSync(path.join(root, 'tools/export-demo-snapshot.py'), 'utf8').includes('calendar_bundle'),
+  'export script builds calendar bundle'
+);
+assert.ok(
+  fs.readFileSync(path.join(root, 'tools/export-demo-snapshot.py'), 'utf8').includes('demo-cal-ttwo-earn'),
+  'export script seeds calendar events'
+);
 assert.ok(fs.readFileSync(path.join(root, 'site/signal.js'), 'utf8').includes('SNAPSHOT · DEMO DATA'));
 assert.ok(fs.readFileSync(path.join(root, 'site/signal.js'), 'utf8').includes('LIVE QUOTES · CACHED'));
 assert.ok(fs.readFileSync(path.join(root, 'site/pro.js'), 'utf8').includes('DEMO / 01'));
