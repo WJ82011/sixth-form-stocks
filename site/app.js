@@ -278,6 +278,9 @@ function setSelected(sym){
   if(changed&&E.view==='company'){if(window.Events42?.open)Events42.open();if(window.FinancialHealth?.load)FinancialHealth.load();}
   if(changed){forecastRunId++;const pane=$('forecast-content');if(pane)pane.innerHTML='<div class="empty-state"><h3>Research follows '+escapeHtml(sym)+'</h3><p>The previous forecast was cleared so a late result cannot replace this company.</p></div>';window.Move44?.clear()}
   if(typeof window.Desk!=='undefined')window.Desk.selected();renderOverview();loadChart();window.Look43?.refresh();
+  // Public demo / REST rotation only fills six symbols per cycle — fetch the
+  // newly selected ticker immediately so Overview does not stay on "No saved price".
+  if(E.configured&&E.watch.includes(sym)&&!quoteFor(sym)) loadQuotes([sym]);
 }
 function companyChoices(){return [...new Set([...STOCK_DIRECTORY.map(x=>x.symbol),...E.watch,...(E.selected?[E.selected]:[])])]}
 function browseSymbols(){return [...new Set([...(E.selected?[E.selected]:[]),...E.watch])].slice(0,60)}
@@ -351,7 +354,7 @@ async function loadQuotes(symbols){
    if(errors.some(x=>/rate limit|budget|cooldown/i.test(x)))break;
   }
   E.lastQuoteError=errors[0]||'';alertBanner(E.lastQuoteError&&E.quotes.size===0?E.lastQuoteError:'');
- }finally{E.fetching=false;renderAll();if(['1H','1D'].includes(E.range)||E.chartPoints.length>0)loadChart(false);}
+ }finally{E.fetching=false;renderAll();window.Look43?.refresh?.();if(['1H','1D'].includes(E.range)||E.chartPoints.length>0)loadChart(false);}
 }
 async function autoQuoteCycle(){
  if(!E.configured||E.fetching||!E.watch.length)return;
@@ -365,14 +368,24 @@ async function autoQuoteCycle(){
        const existing=E.quotes.get(item.symbol);
        if(!existing||existing.quote.t<=item.quote.t)E.quotes.set(item.symbol,item);
      }
-     renderAll();if(E.view==='overview')loadChart(false);
+     renderAll();window.Look43?.refresh?.();if(E.view==='overview')loadChart(false);
    }catch{/* Keep saved quotes and their original timestamps. */}
    finally{E.fetching=false;}
    return;
  }
+ // Snapshot/demo hosts have no live quote budget — fill missing watch prices
+ // (including TTWO at the end of the seeded list) in one pass so Overview is not blank.
+ if(E.demoMode){
+   const missing=[...new Set([E.selected,...E.watch].filter(sym=>safeSymbol(sym)&&E.watch.includes(sym)&&!quoteFor(sym)))];
+   if(missing.length){await loadQuotes(missing);return;}
+ }
  const visible=E.watch.slice(),start=E.refreshStep%visible.length,batch=[];
- for(let i=0;i<Math.min(6,visible.length);i++)batch.push(visible[(start+i)%visible.length]);
- E.refreshStep=(start+batch.length)%visible.length;await loadQuotes(batch);
+ if(safeSymbol(E.selected)&&E.watch.includes(E.selected)) batch.push(E.selected);
+ for(let i=0;i<visible.length&&batch.length<6;i++){
+   const sym=visible[(start+i)%visible.length];
+   if(!batch.includes(sym)) batch.push(sym);
+ }
+ E.refreshStep=(start+Math.min(6,visible.length))%Math.max(visible.length,1);await loadQuotes(batch);
 }
 
 async function setupTokenStatus(){try{if(E.demoMode){const status=await api('/api/status');E.configured=Boolean(status.configured);E.massiveConfigured=Boolean(status.massive_configured);$('diag-budget').textContent='0 / 48';syncConnectionUI();await autoQuoteCycle();loadNews();loadChart();return}if(location.port&&location.port!=='8765')alertBanner('Market Desk is on a different local port ('+location.port+'). If earlier notes appear missing, close older Market Desk Terminal windows and relaunch on port 8765 before importing/migrating.');const status=await api('/api/status');E.configured=Boolean(status.configured);E.massiveConfigured=Boolean(status.massive_configured);if(E.massiveConfigured&&E.forecastEnabled&&['1H','1D'].includes(E.range)){E.range='1Y';document.querySelectorAll('#overview-ranges button').forEach(b=>b.classList.toggle('active',b.dataset.range==='1Y'));}$('diag-budget').textContent=status.api_used_last_60s+' / '+status.api_budget;E.backgroundCollector=Boolean(status.backgroundCollector);syncConnectionUI();if(E.configured){connectWS();await autoQuoteCycle();loadNews();loadChart();}else if(E.massiveConfigured){loadChart();toast('Massive history is ready; Finnhub live quotes are not connected.');}else{alertBanner('Welcome to Market Desk Reborn. Use All tools → Settings to connect market prices. Local research, SEC accounts and practice tools can be used separately.')}}catch(e){alertBanner('Local server error: '+e.message)}}

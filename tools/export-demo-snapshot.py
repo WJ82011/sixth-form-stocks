@@ -28,6 +28,7 @@ import demo_data_sources as providers  # noqa: E402
 
 CATALOG = ROOT / 'ai_catalog.json'
 OUT = ROOT / 'site' / 'demo' / 'snapshot.json'
+QUOTES_FALLBACK = ROOT / 'lib' / 'demo-quotes-fallback.json'
 
 WATCHLIST = [
     'AAPL', 'NVDA', 'MSFT', 'GOOGL', 'AMZN', 'META', 'TSLA', 'AMD',
@@ -1154,11 +1155,22 @@ def main() -> None:
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(snapshot, separators=(',', ':')))
-    sample = {sym: quotes[sym] for sym in ('AAPL', 'NVDA') if sym in quotes}
+    # Compact watchlist quotes for serverless /api/quotes when snapshot.json is not in the lambda FS.
+    fallback = {
+        'version': 1,
+        'label': 'Embedded DEMO DATA quote fallback for serverless hosts',
+        'generated': snapshot.get('generated'),
+        'watchlist': list(WATCHLIST),
+        'quotes': {sym: quotes[sym] for sym in WATCHLIST if sym in quotes},
+    }
+    QUOTES_FALLBACK.parent.mkdir(parents=True, exist_ok=True)
+    QUOTES_FALLBACK.write_text(json.dumps(fallback, separators=(',', ':')) + '\n')
+    sample = {sym: quotes[sym] for sym in ('AAPL', 'NVDA', 'TTWO') if sym in quotes}
     print(
         f'Wrote {OUT} ({len(rows)} heatmap rows, {len(snapshot["screener"]["rows"])} screener rows, '
         f'{OUT.stat().st_size} bytes)'
     )
+    print(f'Wrote {QUOTES_FALLBACK} ({len(fallback["quotes"])} core quotes, {QUOTES_FALLBACK.stat().st_size} bytes)')
     print('Provenance:', '; '.join(PROVENANCE))
     for sym, q in sample.items():
         pct = providers.session_change_pct(q['c'], q['pc'])

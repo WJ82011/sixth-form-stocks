@@ -78,6 +78,28 @@ async function main() {
     assert.equal(result.body.items.length, 1);
     assert.equal(result.body.items[0].symbol, 'TTWO');
     assert.equal(result.body.demoMode, true);
+    assert.ok(result.body.items[0].quote?.c > 0, 'TTWO must have a DEMO DATA price');
+  }
+
+  // Missing site/demo/snapshot.json (Vercel lambda FS) → embedded watchlist fallback still prices TTWO.
+  {
+    resetQuotesApiState();
+    const result = await handleQuotesRequest({
+      mode: 'quotes',
+      query: { symbols: 'TTWO,AAPL,NVDA,MSFT' },
+      env: {},
+      cwd: path.join(root, 'does-not-exist-for-snapshot'),
+      cache: new Map(),
+    });
+    assert.equal(result.statusCode, 200);
+    assert.equal(result.body.demoMode, true);
+    assert.equal(result.body.fallback, 'snapshot');
+    for (const sym of ['TTWO', 'AAPL', 'NVDA', 'MSFT']) {
+      const item = result.body.items.find((it) => it.symbol === sym);
+      assert.ok(item, sym);
+      assert.equal(item.status, 'ok');
+      assert.ok(item.quote && item.quote.c > 0 && item.quote.pc > 0, sym + ' needs embedded DEMO DATA quote');
+    }
   }
 
   // Allowlist rejects unknown tickers (valid format, not in snapshot/directory).
@@ -220,6 +242,7 @@ async function main() {
   assert.ok(fs.existsSync(path.join(root, 'api/quote.js')));
   const cloud = fs.readFileSync(path.join(root, 'site/cloud-host.js'), 'utf8');
   assert.ok(cloud.includes('tryLiveQuoteApi'), 'cloud-host prefers live /api/quotes');
+  assert.ok(cloud.includes('usableQuoteItem'), 'live probe requires usable quote payloads');
   assert.ok(cloud.includes('LIVE QUOTES (CACHED)'), 'live honesty label');
   assert.ok(cloud.includes('quoteSource'), 'tracks quote source');
   const wiring = fs.readFileSync(path.join(root, 'site/demo-wiring.js'), 'utf8');
@@ -228,10 +251,17 @@ async function main() {
   assert.ok(deploy.includes('Cursor Cloud Agent secrets ≠ Vercel'));
   assert.ok(deploy.includes('FINNHUB_API_KEY'));
   assert.ok(deploy.includes('Environment Variables'));
+  assert.ok(deploy.includes('No saved price'), 'deploy doc covers blank quote symptom');
   const vercel = JSON.parse(fs.readFileSync(path.join(root, 'vercel.json'), 'utf8'));
   assert.equal(vercel.outputDirectory, 'site');
   assert.ok(vercel.functions['api/quotes.js']);
   assert.ok(vercel.functions['api/quote.js']);
+  assert.match(String(vercel.functions['api/quotes.js'].includeFiles || ''), /demo-quotes-fallback/);
+  assert.match(String(vercel.functions['api/quote.js'].includeFiles || ''), /snapshot\.json/);
+  assert.ok(fs.existsSync(path.join(root, 'lib/demo-quotes-fallback.json')), 'embedded DEMO DATA quotes present');
+  const embedded = JSON.parse(fs.readFileSync(path.join(root, 'lib/demo-quotes-fallback.json'), 'utf8'));
+  assert.ok(embedded.quotes?.TTWO?.c > 0, 'fallback includes TTWO');
+  assert.ok(embedded.quotes?.AAPL?.c > 0, 'fallback includes AAPL');
 
   console.log('quotes API tests OK · no real keys used');
 }
