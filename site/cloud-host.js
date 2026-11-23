@@ -1274,6 +1274,10 @@
       bind('connection-label', 'Live quotes (cached)');
       bind('connection-sub', 'Live quotes via host proxy · short cache · snapshot fallback ready');
       bind('desk-session-label', 'LIVE QUOTES · CACHED');
+      const deskLocal = document.querySelector('.desk-local');
+      if (deskLocal) deskLocal.textContent = 'Public portfolio · live quotes (cached)';
+      const chartSource = document.getElementById('overview-chart-source');
+      if (chartSource) chartSource.textContent = 'LIVE FINNHUB QUOTES (CACHED)';
       if (ribbonRight) {
         const session = document.getElementById('desk-session-label');
         ribbonRight.innerHTML =
@@ -1290,6 +1294,7 @@
           'Public portfolio · live quotes via serverless proxy (short cache). Snapshot remains the fallback if the provider budget trips.';
         alert.classList.remove('hidden');
       }
+      window.MarketDeskDemoPolish?.refresh?.();
     } else {
       bind('top-status', stamp ? 'SNAPSHOT · ' + stamp : 'SNAPSHOT · DEMO DATA');
       bind('side-identity-tagline', 'PUBLIC PORTFOLIO · SNAPSHOT');

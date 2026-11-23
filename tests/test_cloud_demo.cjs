@@ -140,6 +140,9 @@ assert.ok(fs.existsSync(path.join(root, 'lib/demo-quotes-fallback.json')), 'serv
 assert.ok(fs.readFileSync(path.join(root, 'site/look43.js'), 'utf8').includes('setSeries'), 'look43 exports candle series control');
 assert.ok(fs.readFileSync(path.join(root, 'site/look43.js'), 'utf8').includes('/api/candles'), 'look43 falls back to /api/candles for OHLC');
 assert.ok(cloud.includes('LIVE QUOTES (CACHED)'), 'live proxy upgrades status pill honestly');
+assert.ok(cloud.includes('live quotes (cached)'), 'live proxy upgrades Look43 desk-local label');
+assert.ok(polish.includes('LIVE FINNHUB QUOTES (CACHED)'), 'demo polish keeps LIVE chart source when quoteSource=live');
+assert.ok(polish.includes('liveQuotes'), 'demo polish branches on live quoteSource');
 assert.ok(cloud.includes('liveMarks'), 'heatmap can overlay live marks from allowlisted quotes');
 assert.ok(
   !fs.readFileSync(path.join(root, 'site/desk.js'), 'utf8').includes('const api={open'),
