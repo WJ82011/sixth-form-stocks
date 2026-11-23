@@ -270,7 +270,10 @@ const Look43=window.Look43=(()=>{
     const up=Number(changeFor(E.selected))>=0;
     const head=document.getElementById('look43-head');
     if(!head)return;
-    head.innerHTML=professional?`<div><strong>${escapeHtml(E.selected||'')}</strong><span>${escapeHtml(name)}</span></div><div><b>${escapeHtml(price)}</b><em class="${up?'up':'down'}">${escapeHtml(move)}</em></div><span class="look43-saved">${E.savedSession?'Saved session':'Recorded prices'}</span>`:`<div><h2>${escapeHtml(name)}</h2><span class="look43-pill">${escapeHtml(E.selected||'')}</span></div><div class="look43-price"><b>${escapeHtml(price)}</b><em class="${up?'up':'down'}">${escapeHtml(move)}</em></div><span class="look43-saved">${E.savedSession?'Saved session':'Recorded prices'}</span>`;
+    const savedLabel=E.savedSession
+      ?'Saved session'
+      :(window.MarketDeskHost?.quoteSource==='live'?'Live quote (cached)':'Recorded prices');
+    head.innerHTML=professional?`<div><strong>${escapeHtml(E.selected||'')}</strong><span>${escapeHtml(name)}</span></div><div><b>${escapeHtml(price)}</b><em class="${up?'up':'down'}">${escapeHtml(move)}</em></div><span class="look43-saved">${escapeHtml(savedLabel)}</span>`:`<div><h2>${escapeHtml(name)}</h2><span class="look43-pill">${escapeHtml(E.selected||'')}</span></div><div class="look43-price"><b>${escapeHtml(price)}</b><em class="${up?'up':'down'}">${escapeHtml(move)}</em></div><span class="look43-saved">${escapeHtml(savedLabel)}</span>`;
     const ranges=professional?['1H','1D','1W','1M']:['1H','1D','1W','1M','3M','1Y'];
     const toolbar=document.getElementById('look43-tools');
     if(toolbar.dataset.edition!==document.body.dataset.look+'-68'){

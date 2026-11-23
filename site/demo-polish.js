@@ -8,11 +8,16 @@
     return Boolean(window.MarketDeskPublicHost?.resolve?.(location)?.demoMode);
   }
 
+  function liveQuotes() {
+    return window.MarketDeskHost?.quoteSource === 'live';
+  }
+
+  // null = computed in polishTextRoots (LIVE vs SNAPSHOT).
   const EXACT = new Map([
-    ['.desk-local', 'Public portfolio · labelled snapshot'],
+    ['.desk-local', null],
     ['#preferences-state', 'DEMO · BROWSER ONLY'],
     ['#v3-global-status', null],
-    ['#overview-chart-source', 'BUNDLED DEMO OBSERVATIONS'],
+    ['#overview-chart-source', null],
     ['#view-learning .page-title > div > p', 'Sample training results from the bundle. Live collection needs server.py on your Mac.'],
     // Markets eyebrow is owned by demo-wiring assertDemoChrome (LIVE vs SNAPSHOT).
     ['#view-markets .page-title .eyebrow', null],
@@ -117,6 +122,7 @@
   }
 
   function polishTextRoots() {
+    const live = liveQuotes();
     for (const [selector, value] of EXACT) {
       const el = document.querySelector(selector);
       if (!el) continue;
@@ -124,8 +130,20 @@
         if (el.textContent !== value) el.textContent = value;
         continue;
       }
+      if (selector === '.desk-local') {
+        const next = live
+          ? 'Public portfolio · live quotes (cached)'
+          : 'Public portfolio · labelled snapshot';
+        if (el.textContent !== next) el.textContent = next;
+        continue;
+      }
+      if (selector === '#overview-chart-source') {
+        // Intraday chart history may still be bundled; the latest mark is live when upgraded.
+        const next = live ? 'LIVE FINNHUB QUOTES (CACHED)' : 'BUNDLED DEMO OBSERVATIONS';
+        if (el.textContent !== next) el.textContent = next;
+        continue;
+      }
       if (selector === '#view-markets .page-title .eyebrow') {
-        const live = window.MarketDeskHost?.quoteSource === 'live';
         const next = live
           ? 'PUBLIC PORTFOLIO / LIVE QUOTES (CACHED)'
           : 'PUBLIC PORTFOLIO / SNAPSHOT QUOTES';

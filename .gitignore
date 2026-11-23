@@ -7,3 +7,4 @@ massive_key
 *.pem
 backups/
 Reliability-Test-Report.json
+.vercel

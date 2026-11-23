@@ -785,7 +785,9 @@ async function loadChart(fetchHistorical=true,refreshDaily=false){
       if(past.length){end=past.at(-1).t;cutoff=end-timeWindow(range);actual=past.filter(valid);local=past;savedSession=true;E.chartDomain={from:cutoff,to:end,range};}
     }catch(error){console.warn('Saved session unavailable:',error.message)}
   }
-  let source=E.demoMode?'BUNDLED DEMO OBSERVATIONS':'LOCALLY RECORDED FINNHUB OBSERVATIONS';
+  let source=E.demoMode
+    ?(window.MarketDeskHost?.quoteSource==='live'?'LIVE FINNHUB QUOTES (CACHED)':'BUNDLED DEMO OBSERVATIONS')
+    :'LOCALLY RECORDED FINNHUB OBSERVATIONS';
   const haveDaily=!['1H','1D'].includes(range)&&historical?.status==='ok'&&historical.points?.length;
   if(haveDaily){
     // Never splice locally recorded minute-level observations into historical DAILY
